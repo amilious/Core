@@ -21,6 +21,8 @@ namespace Amilious.Core.Users {
     /// </summary>
     public readonly struct UserIdentity {
 
+        public const string USER_NAME_KEY = "user_name";
+        
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
         private readonly int? _id;

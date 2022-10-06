@@ -41,7 +41,7 @@ namespace Amilious.Core.Extensions {
                 value = default(T);
                 return false;
             }
-            if(dictionary.TryGetValue(key, out var dicValue)) {
+            if(dictionary.TryGetValueFix(key, out var dicValue)) {
                 if(dicValue is T value1){ 
                     value = value1;
                     return true;

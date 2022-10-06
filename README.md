@@ -13,9 +13,9 @@
   <a href="https://discord.gg/m3BhGJ6BAf">
     <img alt="Discord" src="https://img.shields.io/discord/907228288735408158?label=Amilious&logo=discord">
   </a>
-  <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/amilious/Amilious_Core">
-  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/amilious/Amilious_Core">
-  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/amilious/Amilious_Core">
+  <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/amilious/Core">
+  <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/amilious/Core">
+  <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/m/amilious/Core">
 </p>
 
 <p align="center" style="text-align: center">
@@ -33,9 +33,9 @@
 
 * Amilious Scriptable Objects - scriptable objects that can be loaded by id at runtime.
 * Utility Extension Methods - extension methods that will make your life easier.
-* Resource System (Health,Mp,Stamina)
 * Buffered Caster - an extended caster that will reuse a single array.
 * Seed - A seed class that can be used for procedural generation.
+* FishNet utilities
 * A future system for async operations
 * A custom editor
 
