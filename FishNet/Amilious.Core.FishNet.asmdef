@@ -1,0 +1,19 @@
+{
+    "name": "Amilious.Core.FishNet",
+    "rootNamespace": "Amilious.Core.FishNet",
+    "references": [
+        "FishNet.Runtime",
+        "Amilious.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "FISHNET"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
