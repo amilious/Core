@@ -16,56 +16,32 @@
 
 namespace Amilious.Core.Users {
     
-    /// <summary>
-    /// This struct is used to represent a user identity.
-    /// </summary>
-    public readonly struct UserIdentity {
-
-        public const string USER_NAME_KEY = "userName";
-        
-        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
-        
-        private readonly int? _id;
-        private readonly string _displayName;
-
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Public Fields //////////////////////////////////////////////////////////////////////////////////////////
-                              
-        /// <summary>
-        /// This is the server's identity.
-        /// </summary>
-        public static UserIdentity Server = new UserIdentity(-2, "Server");
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+    public interface IIdentityManager {
 
         /// <summary>
-        /// The user's identification number.
+        /// This method is used to try get the <see cref="UserIdentity"/> for the given id.
         /// </summary>
-        public int Id => _id ?? -1;
+        /// <param name="id">The id of the <see cref="UserIdentity"/> that you want to get.</param>
+        /// <param name="identity">The identity for the given id.</param>
+        /// <returns>True if an <see cref="UserIdentity"/> was found with the given id, otherwise false.</returns>
+        /// <remarks>This can be called from the client or server!</remarks>
+        bool TryGetIdentity(int id, out UserIdentity identity);
 
         /// <summary>
-        /// This user's display name.
+        /// This method is used to get the current user's identity.
         /// </summary>
-        public string DisplayName => _displayName ?? "User";
+        /// <returns>The identity associated with the current user.</returns>
+        /// <remarks>This method should only be called from the client!</remarks>
+        UserIdentity GetIdentity();
 
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
-        
         /// <summary>
-        /// This constructor is used to create a new UserId.
+        /// This method is used to check if a user is able to send a message to another user.
         /// </summary>
-        /// <param name="id">The id of the user.</param>
-        /// <param name="displayName">The display name of the user.</param>
-        public UserIdentity(int id, string displayName) {
-            _id = id;
-            _displayName = displayName;
-        }
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// <param name="sender">The sender of the message.</param>
+        /// <param name="recipient">The receiver of the message.</param>
+        /// <returns>True if the sender is able to send a message to the recipient, otherwise false.</returns>
+        /// <remarks>This method should only be called from the server!</remarks>
+        bool CanSendMessageTo(int sender, int recipient);
         
     }
     

@@ -26,7 +26,7 @@ namespace Amilious.Core.Saving {
         /// <summary>
         /// This method is used to get the server's identifier.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The servers identifier.</returns>
         public abstract string Server_GetServerIdentifier();
         
         /// <summary>
@@ -76,6 +76,10 @@ namespace Amilious.Core.Saving {
         /// </summary>
         /// <returns>The id's of the registered users.</returns>
         public abstract IEnumerable<int> Server_GetStoredUserIds();
+
+        public abstract bool Server_TryBlockUser(int blocker, int blocked);
+
+        public abstract bool Server_IsBlocked(int blocker, int blocked);
 
     }
     
