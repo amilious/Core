@@ -23,6 +23,8 @@ namespace Amilious.Core.Saving {
     /// </summary>
     public abstract class AbstractDataManager : AmiliousBehavior {
 
+        #region Server & Users /////////////////////////////////////////////////////////////////////////////////////////
+        
         /// <summary>
         /// This method is used to get the server's identifier.
         /// </summary>
@@ -77,10 +79,24 @@ namespace Amilious.Core.Saving {
         /// <returns>The id's of the registered users.</returns>
         public abstract IEnumerable<int> Server_GetStoredUserIds();
 
-        public abstract bool Server_TryBlockUser(int blocker, int blocked);
+        /// <summary>
+        /// This method is used to block a user.
+        /// </summary>
+        /// <param name="blocker">The user id of the user who is blocking another user.</param>
+        /// <param name="blocked">The user id of the user that will be blocked.</param>
+        public abstract void Server_BlockUser(int blocker, int blocked);
 
-        public abstract bool Server_IsBlocked(int blocker, int blocked);
+        /// <summary>
+        /// This method is used to check if a user has blocked another.
+        /// </summary>
+        /// <param name="blocker">The user id of the user who blocked another user.</param>
+        /// <param name="blocked">The user id of the user who was blocked.</param>
+        /// <returns>True if the <paramref name="blocker"/> has blocked the <paramref name="blocked"/>, otherwise false.
+        /// </returns>
+        public abstract bool Server_HasBlocked(int blocker, int blocked);
 
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
     
 }

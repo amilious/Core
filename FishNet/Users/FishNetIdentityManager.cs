@@ -90,8 +90,8 @@ namespace Amilious.Core.FishNet.Users {
 
         /// <inheritdoc />
         public virtual bool CanSendMessageTo(int sender, int recipient) {
-            return _dataManager.Server_IsBlocked(sender, recipient) || 
-                   _dataManager.Server_IsBlocked(recipient, sender);
+            return _dataManager.Server_HasBlocked(sender, recipient) || 
+                   _dataManager.Server_HasBlocked(recipient, sender);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
