@@ -24,6 +24,12 @@ namespace Amilious.Core.Saving {
     public abstract class AbstractDataManager : AmiliousBehavior {
 
         /// <summary>
+        /// This method is used to get the server's identifier.
+        /// </summary>
+        /// <returns></returns>
+        public abstract string Server_GetServerIdentifier();
+        
+        /// <summary>
         /// This method is used to check if the given user id is valid.
         /// </summary>
         /// <param name="userId">The user id that you want to check.</param>

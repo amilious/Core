@@ -18,27 +18,18 @@ using FishNet.Broadcast;
 
 namespace Amilious.Core.FishNet.Authentication {
     
-    public struct AuthenticationStep1Broadcast : IBroadcast {
+    public struct AuthenticationBroadcast : IBroadcast {
         public string UserName;
-        public int UserId;
-    }
-
-    public struct AuthenticationStep2Broadcast : IBroadcast {
-        public int UserId;
-        public string ServerIdentifier;
-        public string UserSecret;
-    }
-    
-    public struct AuthenticationStep3Broadcast : IBroadcast {
-        public int UserId;
         public string HashedPassword;
-        public string UserSecret;
+        public int UserId;
     }
     
     public struct AuthenticationResultBroadcast : IBroadcast {
         public bool Passed;
-        public string ServerIdentifier;
+        public bool NewUser;
         public int UserId;
+        public string ServerIdentifier;
+        public string UserName;
     }
 
 }

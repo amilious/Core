@@ -22,7 +22,6 @@ using FishNet.Transporting;
 using System.ComponentModel;
 using FishNet.Authenticating;
 using FishNet.Managing.Logging;
-using Amilious.Core.Extensions;
 using System.Collections.Generic;
 
 namespace Amilious.Core.FishNet.Authentication {
@@ -75,63 +74,46 @@ namespace Amilious.Core.FishNet.Authentication {
 
         private void InitializeServer(NetworkManager networkManager) {
             //listen for broadcast from client on server
-            networkManager.ServerManager.RegisterBroadcast<AuthenticationStep1Broadcast>(
+            networkManager.ServerManager.RegisterBroadcast<AuthenticationBroadcast>(
                 Server_OnAuthenticationBroadcast, false);
-            networkManager.ServerManager.RegisterBroadcast<AuthenticationStep3Broadcast>(
-                Server_OnAuthenticationBroadcast2, false);
         }
 
         private void Server_OnAuthenticationBroadcast(NetworkConnection con, 
-            AuthenticationStep1Broadcast authenticationInfo) {
+            AuthenticationBroadcast authenticationInfo) {
             if(con.Authenticated) { con.Disconnect(true); return; }
             //authenticate the connection
-            if(Server_AuthenticateGetUserId(authenticationInfo, out var userId)){
-                //assign user id to connection
-                con.AssignUserId(userId);
-                var secret = Server_GenerateSecret(userId);
-                UserSecrets[con.ClientId] = secret;
-                //create step 2
-                var step2 = new AuthenticationStep2Broadcast() {
+            if(Server_AuthenticateGetUserId(authenticationInfo, out var userId,out bool newUser)){
+                //check password
+                var valid = Server_AuthenticateCheckPassword(authenticationInfo.UserId, authenticationInfo.HashedPassword);
+                var result = new AuthenticationResultBroadcast() {
+                    Passed = valid,
                     ServerIdentifier = Server_GetServerIdentifier(),
                     UserId = userId,
-                    UserSecret = secret
+                    NewUser = newUser
                 };
-                NetworkManager.ServerManager.Broadcast(con,step2,false);
+                //send the authentication response
+                NetworkManager.ServerManager.Broadcast(con,result,false);
+                //trigger authentication result event
+                OnAuthenticationResult?.Invoke(con,valid);
                 return;
             }
             
-            var result = new AuthenticationResultBroadcast() {
+            var result2 = new AuthenticationResultBroadcast() {
                 Passed = false,
+                NewUser = false,
                 ServerIdentifier = Server_GetServerIdentifier(),
                 UserId = userId
             };
             //send the authentication response
-            NetworkManager.ServerManager.Broadcast(con,result,false);
+            NetworkManager.ServerManager.Broadcast(con,result2,false);
             //trigger authentication result event
             OnAuthenticationResult?.Invoke(con,false);
         }
 
-        private void Server_OnAuthenticationBroadcast2(NetworkConnection con, AuthenticationStep3Broadcast info) {
-            var valid = UserSecrets.TryGetValueFix(con.ClientId, out var secret);
-            if(valid && secret != info.UserSecret) valid = false;
-            if(valid) valid = Server_AuthenticateCheckPassword(info.UserId, secret, info.HashedPassword);
-            var result = new AuthenticationResultBroadcast() {
-                Passed = valid,
-                ServerIdentifier = Server_GetServerIdentifier(),
-                UserId = info.UserId
-            };
-            //send the authentication response
-            NetworkManager.ServerManager.Broadcast(con,result,false);
-            //trigger authentication result event
-            OnAuthenticationResult?.Invoke(con,valid);
-        }
+        protected abstract bool Server_AuthenticateCheckPassword(int infoUserId, string hashedPassword);
 
-        protected abstract bool Server_AuthenticateCheckPassword(int infoUserId, string secret, string hashedPassword);
-
-        protected abstract string Server_GenerateSecret(int userId);
-
-        protected abstract bool Server_AuthenticateGetUserId(AuthenticationStep1Broadcast authenticationInfo, 
-            out int userId);
+        protected abstract bool Server_AuthenticateGetUserId(AuthenticationBroadcast authenticationInfo, 
+            out int userId,out bool newUser);
         protected abstract string Server_GetServerIdentifier();
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,28 +124,18 @@ namespace Amilious.Core.FishNet.Authentication {
             //listen for connection as client
             networkManager.ClientManager.OnClientConnectionState += Client_OnConnectionState;
             //listen for broadcast from server on client
-            networkManager.ClientManager.RegisterBroadcast<AuthenticationStep2Broadcast>(Client_OnAuthenticationBroadCast);
             networkManager.ClientManager.RegisterBroadcast<AuthenticationResultBroadcast>(
                 Client_OnAuthenticationResultBroadcast);
         }
 
         private void Client_OnConnectionState(ClientConnectionStateArgs args) {
             if(args.ConnectionState != LocalConnectionState.Started) return;
-            var authenticationInfo = new AuthenticationStep1Broadcast() {
+            var authenticationInfo = new AuthenticationBroadcast() {
                 UserId = userId,
-                UserName = userName
+                UserName = userName,
+                HashedPassword = Client_GetHashedPassword(password)
             };
             NetworkManager.ClientManager.Broadcast(authenticationInfo);
-        }
-
-        private void Client_OnAuthenticationBroadCast(AuthenticationStep2Broadcast authenticationInfo) {
-            var pass = Client_GetHashedPassword(authenticationInfo);
-            var step3 = new AuthenticationStep3Broadcast() {
-                UserId = authenticationInfo.UserId,
-                HashedPassword = pass,
-                UserSecret = authenticationInfo.UserSecret
-            };
-            NetworkManager.ClientManager.Broadcast(step3);
         }
 
         private void Client_OnAuthenticationResultBroadcast(AuthenticationResultBroadcast authenticationResult) {
@@ -176,7 +148,7 @@ namespace Amilious.Core.FishNet.Authentication {
             Client_OnAuthenticationResult(authenticationResult);
         }
 
-        protected abstract string Client_GetHashedPassword(AuthenticationStep2Broadcast authenticationInfo);
+        protected abstract string Client_GetHashedPassword(string password);
 
         protected abstract void Client_OnAuthenticationResult(AuthenticationResultBroadcast authenticationResult);
 
