@@ -25,12 +25,12 @@ using FishNet.Object.Synchronizing;
 
 namespace Amilious.Core.FishNet.Users {
     
-    [RequireComponent(typeof(AbstractDataManager))]
+    [RequireComponent(typeof(AbstractIdentityDataManager))]
     public class FishNetIdentityManager : NetworkBehaviour, IIdentityManager {
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        private AbstractDataManager _dataManager;
+        private AbstractIdentityDataManager _identityDataManager;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -58,15 +58,15 @@ namespace Amilious.Core.FishNet.Users {
         
         private void Awake() {
             if(!IsServer) return; //load on server only
-            _dataManager = GetComponent<AbstractDataManager>();
-            _serverIdentifier = _dataManager.Server_GetServerIdentifier();
+            _identityDataManager = GetComponent<AbstractIdentityDataManager>();
+            _serverIdentifier = _identityDataManager.Server_GetServerIdentifier();
         }
 
         private void Start() {
             if(!IsServer) return; //load on server only
             //load the users
-            foreach(var id in _dataManager.Server_GetStoredUserIds()) {
-                if(!_dataManager.Server_TryReadUserData(id, UserIdentity.USER_NAME_KEY, out string userName))
+            foreach(var id in _identityDataManager.Server_GetStoredUserIds()) {
+                if(!_identityDataManager.Server_TryReadUserData(id, UserIdentity.USER_NAME_KEY, out string userName))
                     continue;
                 _userLookup[id] = new UserIdentity(id, userName);
             }
@@ -90,8 +90,8 @@ namespace Amilious.Core.FishNet.Users {
 
         /// <inheritdoc />
         public virtual bool CanSendMessageTo(int sender, int recipient) {
-            return _dataManager.Server_HasBlocked(sender, recipient) || 
-                   _dataManager.Server_HasBlocked(recipient, sender);
+            return _identityDataManager.Server_HasBlocked(sender, recipient) || 
+                   _identityDataManager.Server_HasBlocked(recipient, sender);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

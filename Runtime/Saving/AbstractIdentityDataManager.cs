@@ -21,7 +21,7 @@ namespace Amilious.Core.Saving {
     /// <summary>
     /// This class is used to access, store, and edit information.
     /// </summary>
-    public abstract class AbstractDataManager : AmiliousBehavior {
+    public abstract class AbstractIdentityDataManager : AmiliousBehavior {
 
         #region Server & Users /////////////////////////////////////////////////////////////////////////////////////////
         
