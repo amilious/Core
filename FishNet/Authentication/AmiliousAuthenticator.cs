@@ -16,7 +16,6 @@
 
 using System;
 using UnityEngine;
-using FishNet.Object;
 using FishNet.Managing;
 using FishNet.Connection;
 using FishNet.Transporting;
@@ -42,9 +41,9 @@ namespace Amilious.Core.FishNet.Authentication {
         [SerializeField, AmiliousBool(true), HideIf(nameof(useUserId))]
         [Tooltip("If true a new user will be created when joining with an unused user id.")]
         private bool autoRegister;
-        [SerializeField, Tooltip("This optional field contains the user's id.")] 
+        [SerializeField, ShowIf(nameof(useUserId)), Tooltip("This optional field contains the user's id.")] 
         private int userId;
-        [SerializeField, Tooltip("This optional field contains the user's user name.")] 
+        [SerializeField, HideIf(nameof(useUserId)), Tooltip("This optional field contains the user's user name.")] 
         private string userName;
         [SerializeField, PasswordPropertyText, ShowIf(nameof(usePassword))] 
         [Tooltip("The user's password!")]
@@ -254,7 +253,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// </summary>
         /// <param name="userId">The user's id.</param>
         /// <returns>The user's password salt.</returns>
-        [Server]
         protected abstract string Server_GetUserPasswordSalt(int userId);
 
         /// <summary>
@@ -265,7 +263,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="response">A response that will be given upon failure.</param>
         /// <returns>True if the password is correct, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        [Server]
         protected abstract bool Server_AuthenticateCheckPassword(int infoUserId, string hashedPassword, 
             out string response);
 
@@ -276,7 +273,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="hashedPassword">The user's new hashed password.</param>
         /// <param name="response">A response to the new password.</param>
         /// <returns>True if the new password is accepted, otherwise false.</returns>
-        [Server]
         protected abstract bool Server_SetNewPassword(int userId, string hashedPassword, out string response);
 
         /// <summary>
@@ -290,7 +286,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="response">A message that will be sent if the authentication failed.</param>
         /// <returns>True if the authentication was valid, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        [Server]
         protected abstract bool Server_AuthenticateGetUserId(AuthenticationBroadcast authenticationInfo, 
             bool usingUserId, out int userId, out bool newUser, out string response);
         
@@ -299,7 +294,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// </summary>
         /// <returns>The server's identifier.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        [Server]
         protected abstract string Server_GetServerIdentifier();
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -382,7 +376,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="passRequestBroadcast">The password request.</param>
         /// <param name="generateNewPassword">A method to return the newly generated password.</param>
         /// <remarks>This method should only be called from a client.</remarks>
-        [Client]
         protected abstract void Client_GenerateNewPassword(PasswordRequestBroadcast passRequestBroadcast,
             GenerateNewPassword generateNewPassword);
         
@@ -393,7 +386,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="salt">The user's salt value.</param>
         /// <returns>The hashed password.</returns>
         /// <remarks>This method should only be called from a client.</remarks>
-        [Client]
         protected abstract string Client_GetHashedPassword(string password, string salt);
 
         /// <summary>
@@ -401,7 +393,6 @@ namespace Amilious.Core.FishNet.Authentication {
         /// </summary>
         /// <param name="authenticationResult">The authentication result.</param>
         /// <remarks>This method should only be called from a client.</remarks>
-        [Client]
         protected abstract void Client_OnAuthenticationResult(AuthenticationResultBroadcast authenticationResult);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
