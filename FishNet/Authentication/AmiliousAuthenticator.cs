@@ -32,6 +32,10 @@ namespace Amilious.Core.FishNet.Authentication {
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
+        [Header("Amilious Authenticator")]
+        [SerializeField, AmiliousBool(true)]
+        [Tooltip("If true the authenticator will log broadcasts.")]
+        private bool logBroadcasts;
         [SerializeField, AmiliousBool(true)] 
         [Tooltip("If true a user id will be used for authentication, otherwise a user name will be used.")] 
         private bool useUserId = false;
@@ -76,9 +80,9 @@ namespace Amilious.Core.FishNet.Authentication {
         
         /// <inheritdoc />
         public override void InitializeOnce(NetworkManager networkManager) {
+            InitializeServer(networkManager);
+            InitializeClient(networkManager);
             base.InitializeOnce(networkManager);
-            if(networkManager.IsServer) InitializeServer(networkManager);
-            if(networkManager.IsClient) InitializeClient(networkManager);
         }
 
         /// <summary>
@@ -125,6 +129,7 @@ namespace Amilious.Core.FishNet.Authentication {
 
         private void Server_OnAuthenticationBroadcast(NetworkConnection con, 
             AuthenticationBroadcast authenticationInfo) {
+            if(logBroadcasts)Debug.Log("[Server] Authentication Broadcast Received!");
             //check if user is already logged in
             if(con.Authenticated) { con.Disconnect(true); return; }
             //authenticate the connection
@@ -140,6 +145,7 @@ namespace Amilious.Core.FishNet.Authentication {
                         Response = response
                     };
                     //send the authentication response
+                    if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
                     NetworkManager.ServerManager.Broadcast(con,result3,false);
                     //trigger authentication result event
                     OnAuthenticationResult?.Invoke(con,false);
@@ -156,6 +162,7 @@ namespace Amilious.Core.FishNet.Authentication {
                         Salt = Server_GetUserPasswordSalt(id)
                     };
                     //send password request
+                    if(logBroadcasts)Debug.Log("[Server] Password Request Broadcast Sent!");
                     NetworkManager.ServerManager.Broadcast(con,passwordRequest,false);
                     return;
                 }
@@ -165,9 +172,12 @@ namespace Amilious.Core.FishNet.Authentication {
                     NewUser = newUser,
                     ServerIdentifier = Server_GetServerIdentifier(),
                     UserId = id,
+                    UserName = authenticationInfo.UserName,
                     Response = response
                 };
                 //send the authentication response
+                con.AssignUserId(id);
+                if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
                 NetworkManager.ServerManager.Broadcast(con,result,false);
                 //trigger authentication result event
                 OnAuthenticationResult?.Invoke(con,true);
@@ -182,6 +192,7 @@ namespace Amilious.Core.FishNet.Authentication {
                 Response = response
             };
             //send the authentication response
+            if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
             NetworkManager.ServerManager.Broadcast(con,result2,false);
             //trigger authentication result event
             OnAuthenticationResult?.Invoke(con,false);
@@ -193,6 +204,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="con">The clients connection.</param>
         /// <param name="passBroadcast">The broadcast.</param>
         private void Server_OnPasswordBroadcast(NetworkConnection con, PasswordBroadcast passBroadcast) {
+            if(logBroadcasts)Debug.Log("[Server] Password Broadcast Received!");
             if(!_authenticationRequests.TryGetValueFix(passBroadcast.UserId, out var request) ||
                request.RequestId != passBroadcast.RequestId) {
                 //invalid request
@@ -200,10 +212,11 @@ namespace Amilious.Core.FishNet.Authentication {
                     Passed = false,
                     NewUser = false,
                     ServerIdentifier = Server_GetServerIdentifier(),
-                    UserId = userId,
+                    UserId = passBroadcast.UserId,
                     Response = "Invalid request!"
                 };
                 //send the authentication response
+                if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
                 NetworkManager.ServerManager.Broadcast(con,result2,false);
                 //trigger authentication result event
                 OnAuthenticationResult?.Invoke(con,false);
@@ -223,11 +236,13 @@ namespace Amilious.Core.FishNet.Authentication {
             var result = new AuthenticationResultBroadcast() {
                 Passed = valid,
                 ServerIdentifier = Server_GetServerIdentifier(),
-                UserId = userId,
+                UserId = passBroadcast.UserId,
                 NewUser = newUser,
                 Response = response
             };
             //send the authentication response
+            con.AssignUserId(passBroadcast.UserId);
+            if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
             NetworkManager.ServerManager.Broadcast(con,result,false);
             //trigger authentication result event
             OnAuthenticationResult?.Invoke(con,valid);
@@ -326,6 +341,7 @@ namespace Amilious.Core.FishNet.Authentication {
                 UserId = userId,
                 UserName = userName,
             };
+            if(logBroadcasts)Debug.Log("[Client] Authentication Broadcast Sent!");
             NetworkManager.ClientManager.Broadcast(authenticationInfo);
         }
 
@@ -335,6 +351,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="passRequestBroadcast">The broadcast requesting the password.</param>
         /// <remarks>This method should only be called from a client.</remarks>
         private void Client_OnPasswordRequestBroadcast(PasswordRequestBroadcast passRequestBroadcast) {
+            if(logBroadcasts)Debug.Log("[Client] Password Request Broadcast Received!");
             if(passRequestBroadcast.NewUser) {
                 Client_GenerateNewPassword(passRequestBroadcast, (pass)=> {
                     var passwordBroadcast = new PasswordBroadcast() {
@@ -342,6 +359,7 @@ namespace Amilious.Core.FishNet.Authentication {
                         RequestId = passRequestBroadcast.RequestId,
                         HashedPassword = pass
                     };
+                    if(logBroadcasts)Debug.Log("[Client] Password Broadcast Sent!");
                     NetworkManager.ClientManager.Broadcast(passwordBroadcast);
                 });
                 return;
@@ -351,6 +369,7 @@ namespace Amilious.Core.FishNet.Authentication {
                 RequestId = passRequestBroadcast.RequestId,
                 HashedPassword = Client_GetHashedPassword(password, passRequestBroadcast.Salt)
             };
+            if(logBroadcasts)Debug.Log("[Client] Password Broadcast Sent!");
             NetworkManager.ClientManager.Broadcast(passwordBroadcast);
         }
 
@@ -360,12 +379,13 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="authenticationResult">The authentication result.</param>
         /// <remarks>This method should only be called from a client.</remarks>
         private void Client_OnAuthenticationResultBroadcast(AuthenticationResultBroadcast authenticationResult) {
+            if(logBroadcasts)Debug.Log("[Client] Authentication Result Broadcast Received!");
             if(authenticationResult.Passed) {
                 //assign the user id to the client side as well.
                 NetworkManager.ClientManager.Connection.AssignUserId(authenticationResult.UserId);
                 userId = authenticationResult.UserId;
             }
-            string result = authenticationResult.Passed ? "Authentication complete." : "Authentication failed.";
+            string result = authenticationResult.Passed ? $"Authentication complete for {authenticationResult.UserName}." : "Authentication failed.";
             if (NetworkManager.CanLog(LoggingType.Common)) Debug.Log(result);
             Client_OnAuthenticationResult(authenticationResult);
         }

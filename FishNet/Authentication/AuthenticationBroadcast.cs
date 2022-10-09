@@ -20,7 +20,6 @@ namespace Amilious.Core.FishNet.Authentication {
     
     public struct AuthenticationBroadcast : IBroadcast {
         public string UserName;
-        public string HashedPassword;
         public int UserId;
     }
 

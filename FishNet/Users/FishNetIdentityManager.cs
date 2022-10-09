@@ -36,11 +36,11 @@ namespace Amilious.Core.FishNet.Users {
         
         #region Sync Variables /////////////////////////////////////////////////////////////////////////////////////////
 
-        [SyncObject(ReadPermissions = ReadPermission.Observers)] 
+        [SyncObject] 
         private readonly SyncDictionary<int, UserIdentity> _userLookup = 
             new SyncDictionary<int, UserIdentity>();
 
-        [SyncVar(Channel = Channel.Reliable, ReadPermissions = ReadPermission.Observers)] 
+        [SyncVar(Channel = Channel.Reliable)] 
         private string _serverIdentifier;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,16 +62,6 @@ namespace Amilious.Core.FishNet.Users {
             _serverIdentifier = _identityDataManager.Server_GetServerIdentifier();
         }
 
-        private void Start() {
-            if(!IsServer) return; //load on server only
-            //load the users
-            foreach(var id in _identityDataManager.Server_GetStoredUserIds()) {
-                if(!_identityDataManager.Server_TryReadUserData(id, UserIdentity.USER_NAME_KEY, out string userName))
-                    continue;
-                _userLookup[id] = new UserIdentity(id, userName);
-            }
-        }
-        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Interface Methods //////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +87,32 @@ namespace Amilious.Core.FishNet.Users {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region FishNet Only Methods ///////////////////////////////////////////////////////////////////////////////////
-
+        
+        public override void OnStartServer() {
+            base.OnStartServer();
+            //register authenticator
+            if(_identityDataManager == null) _identityDataManager = GetComponent<AbstractIdentityDataManager>();
+            NetworkManager.ServerManager.OnAuthenticationResult += OnAuthenticationResult;
+            //load the users
+            foreach(var id in _identityDataManager.Server_GetStoredUserIds()) {
+                if(!_identityDataManager.Server_TryReadUserData(id, UserIdentity.USER_NAME_KEY, out string userName))
+                    continue;
+                _userLookup[id] = new UserIdentity(id, userName);
+            }
+        }
+        
+        private void OnAuthenticationResult(NetworkConnection con, bool authenticated) {
+            if(!authenticated) return;
+            if(!con.TryGetUserId(out var id)) {
+                Debug.Log("no user id");
+                return;
+            }
+            if(_userLookup.ContainsKey(id)) return;
+            if(!_identityDataManager.Server_TryReadUserData(id,UserIdentity.USER_NAME_KEY, out string userName)) 
+                return;
+            _userLookup.Add(id,new UserIdentity(id,userName));
+        }
+        
         /// <summary>
         /// This method is used to get a <see cref="NetworkConnection"/> from a <see cref="UserIdentity"/>.
         /// </summary>
