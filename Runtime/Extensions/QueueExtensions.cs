@@ -25,6 +25,24 @@ namespace Amilious.Core.Extensions {
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
         
+        /// <summary>
+        /// This method is used to add an item to the top of the queue.
+        /// </summary>
+        /// <param name="queue">The queue.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="replaceTop">If true the top item will be replaced, otherwise the new item will be put on
+        /// top of the top item.</param>
+        /// <typeparam name="T">The type of item.</typeparam>
+        public static void EnqueueOnTop<T>(this Queue<T> queue, T item, bool replaceTop = false) {
+            var length = queue.Count;
+            if(replaceTop) {
+                queue.Dequeue();
+                length--;
+            }
+            queue.Enqueue(item);
+            for(var i = 0; i < length; i++) queue.Enqueue(queue.Dequeue());
+        }
+        
         #if UNITY_2019 || UNITY_2020
         
         /// <summary>

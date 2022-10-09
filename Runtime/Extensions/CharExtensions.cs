@@ -28,7 +28,12 @@ namespace Amilious.Core.Extensions {
         private static readonly HashSet<char> Vowels = new HashSet<char>{ 'a', 'e', 'i', 'o', 'u' };
         private static readonly HashSet<char> Consonants = new HashSet<char>
             { 'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z' };
-        
+
+        private static readonly HashSet<char> SpecialCharacters = new HashSet<char> {
+            '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '-', '=','[',']','{','}','|',
+            '\\','/','?','<','>', '\'','\"','.','`','~'
+        };
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
@@ -47,8 +52,15 @@ namespace Amilious.Core.Extensions {
         /// <returns>True if the character is a consonant, otherwise false.</returns>
         public static bool IsConsonant(this char c) => Consonants.Contains(char.ToLowerInvariant(c));
 
+        /// <summary>
+        /// This method is used to check if the character is a special character.
+        /// </summary>
+        /// <param name="c">The character that you want to check.</param>
+        /// <returns>True if the given character is a special character, otherwise false.</returns>
+        public static bool IsSpecialCharacter(this char c) => SpecialCharacters.Contains(c);
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
     }
     
 }
