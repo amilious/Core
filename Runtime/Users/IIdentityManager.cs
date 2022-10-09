@@ -28,6 +28,15 @@ namespace Amilious.Core.Users {
         bool TryGetIdentity(int id, out UserIdentity identity);
 
         /// <summary>
+        /// This method is used to try get the <see cref="UserIdentity"/> for the given user name.
+        /// </summary>
+        /// <param name="userName">The user name that you want to get the user identity for.</param>
+        /// <param name="identity">The identity for the given user name.</param>
+        /// <returns>True if an <see cref="UserIdentity"/> was found with the given user name, otherwise false.</returns>
+        /// <remarks>This can be called from the client or server!</remarks>
+        bool TryGetIdentity(string userName, out UserIdentity identity);
+
+        /// <summary>
         /// This method is used to get the current user's identity.
         /// </summary>
         /// <returns>The identity associated with the current user.</returns>

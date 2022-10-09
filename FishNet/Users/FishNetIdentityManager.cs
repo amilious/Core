@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using UnityEngine;
 using FishNet.Object;
 using FishNet.Connection;
@@ -69,6 +70,17 @@ namespace Amilious.Core.FishNet.Users {
         /// <inheritdoc />
         public virtual bool TryGetIdentity(int id, out UserIdentity identity) {
             return _userLookup.TryGetValueFix(id, out identity);
+        }
+
+        /// <inheritdoc />
+        public bool TryGetIdentity(string userName, out UserIdentity identity) {
+            foreach(var ident in _userLookup.Values) {
+                if(!ident.DisplayName.Equals(userName,StringComparison.InvariantCultureIgnoreCase)) continue;
+                identity = ident;
+                return true;
+            }
+            identity = default;
+            return false;
         }
 
         /// <inheritdoc />
