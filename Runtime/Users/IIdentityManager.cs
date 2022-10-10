@@ -51,7 +51,7 @@ namespace Amilious.Core.Users {
         /// <returns>True if the sender is able to send a message to the recipient, otherwise false.</returns>
         /// <remarks>This method should only be called from the server!</remarks>
         bool CanSendMessageTo(int sender, int recipient);
-        
+
     }
     
 }

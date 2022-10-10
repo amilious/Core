@@ -75,7 +75,7 @@ namespace Amilious.Core.FishNet.Users {
         /// <inheritdoc />
         public bool TryGetIdentity(string userName, out UserIdentity identity) {
             foreach(var ident in _userLookup.Values) {
-                if(!ident.DisplayName.Equals(userName,StringComparison.InvariantCultureIgnoreCase)) continue;
+                if(!ident.UserName.Equals(userName,StringComparison.InvariantCultureIgnoreCase)) continue;
                 identity = ident;
                 return true;
             }
@@ -106,11 +106,21 @@ namespace Amilious.Core.FishNet.Users {
             if(_identityDataManager == null) _identityDataManager = GetComponent<AbstractIdentityDataManager>();
             NetworkManager.ServerManager.OnAuthenticationResult += OnAuthenticationResult;
             //load the users
-            foreach(var id in _identityDataManager.Server_GetStoredUserIds()) {
-                if(!_identityDataManager.Server_TryReadUserData(id, UserIdentity.USER_NAME_KEY, out string userName))
-                    continue;
-                _userLookup[id] = new UserIdentity(id, userName);
+            foreach(var id in _identityDataManager.Server_GetStoredUserIds()) UpdateIdentity(id);
+        }
+
+        /// <summary>
+        /// This method should be called when the user identity information is updated.
+        /// </summary>
+        /// <param name="id">The updated identity id.</param>
+        [Server]
+        public void UpdateIdentity(int id) {
+            if(!_identityDataManager.Server_TryGetUserIdentity(id, out var identity)) {
+                _userLookup.Remove(id); //remove the user if updated
+                return;
             }
+            _userLookup[id] = identity;
+            _userLookup.Dirty(id);
         }
         
         private void OnAuthenticationResult(NetworkConnection con, bool authenticated) {

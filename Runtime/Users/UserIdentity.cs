@@ -14,6 +14,8 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using TMPro;
+
 namespace Amilious.Core.Users {
     
     /// <summary>
@@ -21,12 +23,20 @@ namespace Amilious.Core.Users {
     /// </summary>
     public readonly struct UserIdentity {
 
-        public const string USER_NAME_KEY = "userName";
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        public const string USER_NAME_KEY = "_userName_";
+        public const string AUTHORITY_KEY = "_authority_";
+        public const string PASSWORD_SALT_KEY = "_salt_";
+        public const string PASSWORD_KEY = "_password_";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
         private readonly int? _id;
-        private readonly string _displayName;
+        private readonly string _userName;
+        private readonly int? _authority;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -37,32 +47,72 @@ namespace Amilious.Core.Users {
         /// </summary>
         public static UserIdentity Server = new UserIdentity(-2, "Server");
         
+        /// <summary>
+        /// This is the default user.
+        /// </summary>
+        public static UserIdentity Default = default(UserIdentity);
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
-        /// The user's identification number.
+        /// This property contains the user's identification number.
         /// </summary>
         public int Id => _id ?? -1;
 
         /// <summary>
-        /// This user's display name.
+        /// This property contains the user's user name.
         /// </summary>
-        public string DisplayName => _displayName ?? "User";
+        public string UserName => _userName ?? "User";
+
+        /// <summary>
+        /// This property contains a TMP link for the user.
+        /// </summary>
+        public string UserLink { get; }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This constructor is used to create a new UserId.
+        /// This constructor is used to create a new user identity.
         /// </summary>
         /// <param name="id">The id of the user.</param>
-        /// <param name="displayName">The display name of the user.</param>
-        public UserIdentity(int id, string displayName) {
+        /// <param name="userName">The display name of the user.</param>
+        public UserIdentity(int id, string userName) {
             _id = id;
-            _displayName = displayName;
+            _userName = userName;
+            _authority = null;
+            UserLink = id >= 0 ? $"<link=user|{id}>{userName}</link>" : userName;
+        }
+
+        /// <summary>
+        /// This constructor is used to create a new user identity with the given authority.
+        /// </summary>
+        /// <param name="id">The id of the user.</param>
+        /// <param name="userName">The display name of the user.</param>
+        /// <param name="authority">The user's server authority.</param>
+        public UserIdentity(int id, string userName, int authority) {
+            _id = id;
+            _userName = userName;
+            _authority = authority;
+            UserLink = id >= 0 ? $"<link=user|{id}>{userName}</link>" : userName;
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This method is used to check if the user has required authority.
+        /// </summary>
+        /// <param name="required">The required authority.</param>
+        /// <param name="orGreater">If true greater authority will also be accepted.</param>
+        /// <returns>True if the user has authority, otherwise false.</returns>
+        public bool HasAuthority(int required,bool orGreater = true) {
+            if(!_authority.HasValue) return false;
+            return orGreater? _authority.Value<=required : _authority.Value==required;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

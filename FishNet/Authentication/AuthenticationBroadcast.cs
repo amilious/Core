@@ -23,11 +23,6 @@ namespace Amilious.Core.FishNet.Authentication {
         public int UserId;
     }
 
-    public struct UserNameTakenBroadcast : IBroadcast {
-        public string UserName;
-        public string ServerIdentifier;
-    }
-
     public struct PasswordRequestBroadcast : IBroadcast {
         public int UserId;
         public bool NewUser;

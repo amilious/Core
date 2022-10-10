@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using Amilious.Core.Users;
 using System.Collections.Generic;
 
 namespace Amilious.Core.Saving {
@@ -39,13 +40,29 @@ namespace Amilious.Core.Saving {
         public abstract bool Server_IsUserIdValid(int userId);
 
         /// <summary>
+        /// This method is used to try get a user identity from the user's user id.
+        /// </summary>
+        /// <param name="userId">The user's id.</param>
+        /// <param name="identity">The user's identity.</param>
+        /// <returns>True if the user exists, otherwise false.</returns>
+        public abstract bool Server_TryGetUserIdentity(int userId, out UserIdentity identity);
+
+        /// <summary>
+        /// This method is used to get a user identity from the user's user name.
+        /// </summary>
+        /// <param name="userName">The user's user name.</param>
+        /// <param name="identity">The user's identity.</param>
+        /// <returns>True if the user exists, otherwise false.</returns>
+        public abstract bool Server_TryGetUserIdentity(string userName, out UserIdentity identity);
+
+        /// <summary>
         /// This method is used to try get a user id from the given user name.
         /// </summary>
         /// <param name="userName">The user name.</param>
         /// <param name="userId">The user id associated with the user id.</param>
         /// <param name="caseSensitive">True if the user name is case sensitive, otherwise false.</param>
         /// <returns>True if able to find a user with the given user name, otherwise false.</returns>
-        public abstract bool Server_TryGetIdFromUserName(string userName, out int userId, bool caseSensitive = true);
+        public abstract bool Server_TryGetIdFromUserName(string userName, out int userId, bool caseSensitive = false);
 
         /// <summary>
         /// This method is used to try read data for the given user.
