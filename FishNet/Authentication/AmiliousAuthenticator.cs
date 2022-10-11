@@ -25,6 +25,9 @@ using FishNet.Managing.Logging;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
+using Amilious.Core.FishNet.Users;
+using Amilious.Core.Saving;
+using Amilious.Core.Users;
 
 namespace Amilious.Core.FishNet.Authentication {
     
@@ -57,6 +60,7 @@ namespace Amilious.Core.FishNet.Authentication {
             new Dictionary<int, AuthenticationRequest>();
 
         private int _nextRequest = int.MinValue;
+        private FishNetIdentityManager _identityManager;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -68,6 +72,12 @@ namespace Amilious.Core.FishNet.Authentication {
         protected delegate void GenerateNewPassword(string newPassword);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Properties
+
+        public abstract AbstractIdentityDataManager DataManager { get; }
+
+        #endregion
         
         #region Authenticator Events ///////////////////////////////////////////////////////////////////////////////////
 
@@ -127,75 +137,77 @@ namespace Amilious.Core.FishNet.Authentication {
                 Server_OnPasswordBroadcast, false);
         }
 
+        private bool IsUserCurrentlyActive(int id, string userName) {
+            foreach(var tmpCon in NetworkManager.ClientManager.Clients.Values) {
+                //get the user id
+                if(!tmpCon.TryGetUserId(out var tmpId)) continue;
+                //check the user id
+                switch(useUserId) {
+                    case true when tmpId == id: return true;
+                    case true: continue;
+                }
+                //get user name
+                if(!DataManager.Server_TryReadUserData(tmpId,UserIdentity.USER_NAME_KEY,
+                       out string tmpUserName)) continue;
+                //check user name
+                if(tmpUserName.Equals(userName, StringComparison.InvariantCultureIgnoreCase)) return true;
+            }
+            return false;
+        }
+
+        private void Server_SendAuthorizationResponse(NetworkConnection con, bool passed, int id, string userName, 
+            bool newUser, string reason) {
+            var result = new AuthenticationResultBroadcast() {
+                Passed = passed, UserName = userName,
+                ServerIdentifier = Server_GetServerIdentifier(),
+                UserId = id, NewUser = newUser, Response = reason
+            };
+            //set id
+            if(passed) con.AssignUserId(id);
+            //send the authentication response
+            if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
+            NetworkManager.ServerManager.Broadcast(con,result,false);
+            //trigger authentication result event
+            OnAuthenticationResult?.Invoke(con,passed);
+        }
+
         private void Server_OnAuthenticationBroadcast(NetworkConnection con, 
             AuthenticationBroadcast authenticationInfo) {
             if(logBroadcasts)Debug.Log("[Server] Authentication Broadcast Received!");
             //check if user is already logged in
             if(con.Authenticated) { con.Disconnect(true); return; }
             //authenticate the connection
-            if(Server_AuthenticateGetUserId(authenticationInfo, useUserId, out var id,out var newUser, 
-                   out var response)){
-                if(newUser && !autoRegister) {
-                    //invalid connection request
-                    var result3 = new AuthenticationResultBroadcast() {
-                        Passed = false,
-                        NewUser = true,
-                        ServerIdentifier = Server_GetServerIdentifier(),
-                        UserId = id,
-                        Response = response
-                    };
-                    //send the authentication response
-                    if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
-                    NetworkManager.ServerManager.Broadcast(con,result3,false);
-                    //trigger authentication result event
-                    OnAuthenticationResult?.Invoke(con,false);
-                    return;
-                }
-                //request password if using password
-                if(usePassword) {
-                    var passwordRequest = new PasswordRequestBroadcast() {
-                        UserId = userId,
-                        RequestId = Server_SetAuthenticationRequest(id,
-                            newUser ? AuthenticationRequestType.NewPassword : AuthenticationRequestType.Password),
-                        ServerIdentifier = Server_GetServerIdentifier(),
-                        NewUser = newUser,
-                        Salt = Server_GetUserPasswordSalt(id)
-                    };
-                    //send password request
-                    if(logBroadcasts)Debug.Log("[Server] Password Request Broadcast Sent!");
-                    NetworkManager.ServerManager.Broadcast(con,passwordRequest,false);
-                    return;
-                }
-                //no password required
-                var result = new AuthenticationResultBroadcast() {
-                    Passed = true,
-                    NewUser = newUser,
-                    ServerIdentifier = Server_GetServerIdentifier(),
-                    UserId = id,
-                    UserName = authenticationInfo.UserName,
-                    Response = response
-                };
-                //send the authentication response
-                con.AssignUserId(id);
-                if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
-                NetworkManager.ServerManager.Broadcast(con,result,false);
-                //trigger authentication result event
-                OnAuthenticationResult?.Invoke(con,true);
+            if(!Server_AuthenticateGetUserId(authenticationInfo, useUserId, autoRegister, out var id, 
+                   // ReSharper disable once LocalVariableHidesMember
+                   out var userName, out var newUser, out var response)) {
+                Server_SendAuthorizationResponse(con,false,id,userName,newUser,response);
                 return;
             }
-            //invalid connection request
-            var result2 = new AuthenticationResultBroadcast() {
-                Passed = false,
-                NewUser = false,
-                ServerIdentifier = Server_GetServerIdentifier(),
-                UserId = id,
-                Response = response
-            };
-            //send the authentication response
-            if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
-            NetworkManager.ServerManager.Broadcast(con,result2,false);
-            //trigger authentication result event
-            OnAuthenticationResult?.Invoke(con,false);
+            //check if user is currently active
+            if(IsUserCurrentlyActive(id, userName)) {
+                response = "That user is already logged into the server!";
+                Server_SendAuthorizationResponse(con,false,id,userName,newUser,response);
+                return;
+            }
+            //if using password send a password request
+            if(usePassword) {
+                //request password if one is not set
+                var newPassword = newUser || !DataManager.Server_HasUserSetPassword(id);
+                var passwordRequest = new PasswordRequestBroadcast() {
+                    UserId = userId,
+                    RequestId = Server_SetAuthenticationRequest(id, userName, newUser,
+                        newPassword ? AuthenticationRequestType.NewPassword : AuthenticationRequestType.Password),
+                    ServerIdentifier = Server_GetServerIdentifier(),
+                    NewPassword = newPassword,
+                    Salt = Server_GetUserPasswordSalt(id)
+                };
+                //send password request
+                if(logBroadcasts)Debug.Log("[Server] Password Request Broadcast Sent!");
+                NetworkManager.ServerManager.Broadcast(con,passwordRequest,false);
+                return;
+            }
+            //if no password required log in.
+            Server_SendAuthorizationResponse(con,true,id,userName,true,null);
         }
 
         /// <summary>
@@ -205,47 +217,25 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="passBroadcast">The broadcast.</param>
         private void Server_OnPasswordBroadcast(NetworkConnection con, PasswordBroadcast passBroadcast) {
             if(logBroadcasts)Debug.Log("[Server] Password Broadcast Received!");
+            var id = passBroadcast.UserId;
+            //make sure the request type matches
             if(!_authenticationRequests.TryGetValueFix(passBroadcast.UserId, out var request) ||
                request.RequestId != passBroadcast.RequestId) {
-                //invalid request
-                var result2 = new AuthenticationResultBroadcast() {
-                    Passed = false,
-                    NewUser = false,
-                    ServerIdentifier = Server_GetServerIdentifier(),
-                    UserId = passBroadcast.UserId,
-                    Response = "Invalid request!"
-                };
-                //send the authentication response
-                if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
-                NetworkManager.ServerManager.Broadcast(con,result2,false);
-                //trigger authentication result event
-                OnAuthenticationResult?.Invoke(con,false);
+                Server_SendAuthorizationResponse(con,false,id,null,false,"Invalid request!");
                 return;
             }
-            var newUser = request.RequestType == AuthenticationRequestType.NewPassword;
+            var newPassword = request.RequestType == AuthenticationRequestType.NewPassword;
             string response;
             bool valid;
-            if(newUser) {
+            if(newPassword) {
                 valid = Server_SetNewPassword(passBroadcast.UserId, 
                     passBroadcast.HashedPassword, out response);
             }else {
                 valid = Server_AuthenticateCheckPassword(passBroadcast.UserId,
                     passBroadcast.HashedPassword, out response);
             }
-            //create result
-            var result = new AuthenticationResultBroadcast() {
-                Passed = valid,
-                ServerIdentifier = Server_GetServerIdentifier(),
-                UserId = passBroadcast.UserId,
-                NewUser = newUser,
-                Response = response
-            };
-            //send the authentication response
-            con.AssignUserId(passBroadcast.UserId);
-            if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
-            NetworkManager.ServerManager.Broadcast(con,result,false);
-            //trigger authentication result event
-            OnAuthenticationResult?.Invoke(con,valid);
+            //login success
+            Server_SendAuthorizationResponse(con,valid,userId,request.UserName,request.NewUser,response);
         }
 
         /// <summary>
@@ -254,14 +244,19 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="userId">The id of the user the request is for.</param>
         /// <param name="type">The type of request.</param>
         /// <returns>The request id.</returns>
-        private int Server_SetAuthenticationRequest(int userId, AuthenticationRequestType type) {
+        // ReSharper disable InvalidXmlDocComment
+        private int Server_SetAuthenticationRequest(int userId, string userName, bool newUser, 
+            AuthenticationRequestType type) {
             var request = new AuthenticationRequest() {
+                UserName = userName,
+                NewUser = newUser,
                 RequestId = _nextRequest++,
                 RequestType = type
             };
             _authenticationRequests[userId] = request;
             return request.RequestId;
         }
+        // ReSharper enable InvalidXmlDocComment
         
         /// <summary>
         /// This method is used to get the salt used for the given user's password. 
@@ -296,13 +291,17 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="authenticationInfo">The authentication info sent from the client.</param>
         /// <param name="usingUserId">If true the authenticator is using user ids to authenticate, otherwise
         /// it is using user names.</param>
+        /// <param name="autoRegister">If true new user's should be auto registered, otherwise this method should
+        /// return false if the user does not exist.</param>
         /// <param name="userId">The client's user id.</param>
+        /// <param name="userName">The client's user name.</param>
         /// <param name="newUser">True if the user was just created, otherwise false.</param>
         /// <param name="response">A message that will be sent if the authentication failed.</param>
         /// <returns>True if the authentication was valid, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
         protected abstract bool Server_AuthenticateGetUserId(AuthenticationBroadcast authenticationInfo, 
-            bool usingUserId, out int userId, out bool newUser, out string response);
+            bool usingUserId, bool autoRegister, out int userId, out string userName, out bool newUser, 
+            out string response);
         
         /// <summary>
         /// This method is used to get the server's identifier.
@@ -352,7 +351,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <remarks>This method should only be called from a client.</remarks>
         private void Client_OnPasswordRequestBroadcast(PasswordRequestBroadcast passRequestBroadcast) {
             if(logBroadcasts)Debug.Log("[Client] Password Request Broadcast Received!");
-            if(passRequestBroadcast.NewUser) {
+            if(passRequestBroadcast.NewPassword) {
                 Client_GenerateNewPassword(passRequestBroadcast, (pass)=> {
                     var passwordBroadcast = new PasswordBroadcast() {
                         UserId = passRequestBroadcast.UserId,

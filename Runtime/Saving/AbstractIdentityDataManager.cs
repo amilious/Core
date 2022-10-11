@@ -88,7 +88,7 @@ namespace Amilious.Core.Saving {
         /// </summary>
         /// <param name="userName">The user name for the user.</param>
         /// <returns>The id for the new user.</returns>
-        public abstract int Server_AddUser(string userName=null);
+        public abstract UserIdentity Server_AddUser(string userName=null);
 
         /// <summary>
         /// This method is used to get the id's for all of the registered users.
@@ -112,8 +112,15 @@ namespace Amilious.Core.Saving {
         /// </returns>
         public abstract bool Server_HasBlocked(int blocker, int blocked);
 
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// This method is used to check if the user with the given id has set their password.
+        /// </summary>
+        /// <param name="userId">The user id of the user you want to check.</param>
+        /// <returns>True if the user has set their password, otherwise false.</returns>
+        public abstract bool Server_HasUserSetPassword(int userId);
         
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
     }
     
 }

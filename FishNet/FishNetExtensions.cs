@@ -61,7 +61,7 @@ namespace Amilious.Core.FishNet {
         public static bool TryGetUserId(this NetworkConnection con, out int userId) {
             return ConnectionToUserId.TryGetValueFix(con.ClientId, out userId);
         }
-
+        
         /// <summary>
         /// This method is used to try get the connection associated with the <see cref="UserIdentity"/>.
         /// </summary>
