@@ -18,6 +18,8 @@ using System;
 using UnityEngine;
 using FishNet.Managing;
 using FishNet.Connection;
+using Amilious.Core.Users;
+using Amilious.Core.Saving;
 using FishNet.Transporting;
 using System.ComponentModel;
 using FishNet.Authenticating;
@@ -26,8 +28,6 @@ using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using Amilious.Core.FishNet.Users;
-using Amilious.Core.Saving;
-using Amilious.Core.Users;
 
 namespace Amilious.Core.FishNet.Authentication {
     
@@ -48,6 +48,8 @@ namespace Amilious.Core.FishNet.Authentication {
         [SerializeField, AmiliousBool(true), HideIf(nameof(useUserId))]
         [Tooltip("If true a new user will be created when joining with an unused user id.")]
         private bool autoRegister;
+        [SerializeField, AmiliousBool(true)] [Tooltip("If true the failure reason will be reported.")]
+        private bool reportFailReason;
         [SerializeField, ShowIf(nameof(useUserId)), Tooltip("This optional field contains the user's id.")] 
         private int userId;
         [SerializeField, HideIf(nameof(useUserId)), Tooltip("This optional field contains the user's user name.")] 
@@ -56,8 +58,8 @@ namespace Amilious.Core.FishNet.Authentication {
         [Tooltip("The user's password!")]
         private string password;
 
-        private readonly Dictionary<int, AuthenticationRequest> _authenticationRequests =
-            new Dictionary<int, AuthenticationRequest>();
+        private readonly Dictionary<NetworkConnection, AuthenticationRequest> _authenticationRequests =
+            new Dictionary<NetworkConnection, AuthenticationRequest>();
 
         private int _nextRequest = int.MinValue;
         private FishNetIdentityManager _identityManager;
@@ -75,7 +77,10 @@ namespace Amilious.Core.FishNet.Authentication {
         
         #region Properties
 
-        public abstract AbstractIdentityDataManager DataManager { get; }
+        /// <summary>
+        /// This property is used to get the authenticator's data manager.
+        /// </summary>
+        protected abstract AbstractIdentityDataManager DataManager { get; }
 
         #endregion
         
@@ -160,7 +165,7 @@ namespace Amilious.Core.FishNet.Authentication {
             var result = new AuthenticationResultBroadcast() {
                 Passed = passed, UserName = userName,
                 ServerIdentifier = Server_GetServerIdentifier(),
-                UserId = id, NewUser = newUser, Response = reason
+                UserId = id, NewUser = newUser, Response = reportFailReason? reason : "Unable to complete request!"
             };
             //set id
             if(passed) con.AssignUserId(id);
@@ -194,8 +199,7 @@ namespace Amilious.Core.FishNet.Authentication {
                 //request password if one is not set
                 var newPassword = newUser || !DataManager.Server_HasUserSetPassword(id);
                 var passwordRequest = new PasswordRequestBroadcast() {
-                    UserId = userId,
-                    RequestId = Server_SetAuthenticationRequest(id, userName, newUser,
+                    RequestId = Server_SetAuthenticationRequest(con,id, userName, newUser,
                         newPassword ? AuthenticationRequestType.NewPassword : AuthenticationRequestType.Password),
                     ServerIdentifier = Server_GetServerIdentifier(),
                     NewPassword = newPassword,
@@ -217,25 +221,20 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="passBroadcast">The broadcast.</param>
         private void Server_OnPasswordBroadcast(NetworkConnection con, PasswordBroadcast passBroadcast) {
             if(logBroadcasts)Debug.Log("[Server] Password Broadcast Received!");
-            var id = passBroadcast.UserId;
             //make sure the request type matches
-            if(!_authenticationRequests.TryGetValueFix(passBroadcast.UserId, out var request) ||
+            if(!_authenticationRequests.TryGetValueFix(con, out var request) ||
                request.RequestId != passBroadcast.RequestId) {
-                Server_SendAuthorizationResponse(con,false,id,null,false,"Invalid request!");
-                return;
+                //someone is possibly trying to do something malicious
+                con.Disconnect(true); return;
             }
             var newPassword = request.RequestType == AuthenticationRequestType.NewPassword;
             string response;
-            bool valid;
-            if(newPassword) {
-                valid = Server_SetNewPassword(passBroadcast.UserId, 
-                    passBroadcast.HashedPassword, out response);
-            }else {
-                valid = Server_AuthenticateCheckPassword(passBroadcast.UserId,
-                    passBroadcast.HashedPassword, out response);
-            }
+            //validate password
+            var valid = newPassword ? 
+                Server_SetNewPassword(request.UserId, passBroadcast.HashedPassword, out response) : 
+                Server_AuthenticateCheckPassword(request.UserId, passBroadcast.HashedPassword, out response);
             //login success
-            Server_SendAuthorizationResponse(con,valid,userId,request.UserName,request.NewUser,response);
+            Server_SendAuthorizationResponse(con,valid,request.UserId,request.UserName,request.NewUser,response);
         }
 
         /// <summary>
@@ -245,15 +244,16 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="type">The type of request.</param>
         /// <returns>The request id.</returns>
         // ReSharper disable InvalidXmlDocComment
-        private int Server_SetAuthenticationRequest(int userId, string userName, bool newUser, 
+        private int Server_SetAuthenticationRequest(NetworkConnection con, int userId, string userName, bool newUser, 
             AuthenticationRequestType type) {
             var request = new AuthenticationRequest() {
+                UserId = userId,
                 UserName = userName,
                 NewUser = newUser,
                 RequestId = _nextRequest++,
                 RequestType = type
             };
-            _authenticationRequests[userId] = request;
+            _authenticationRequests[con] = request;
             return request.RequestId;
         }
         // ReSharper enable InvalidXmlDocComment
@@ -354,7 +354,6 @@ namespace Amilious.Core.FishNet.Authentication {
             if(passRequestBroadcast.NewPassword) {
                 Client_GenerateNewPassword(passRequestBroadcast, (pass)=> {
                     var passwordBroadcast = new PasswordBroadcast() {
-                        UserId = passRequestBroadcast.UserId,
                         RequestId = passRequestBroadcast.RequestId,
                         HashedPassword = pass
                     };
@@ -364,7 +363,6 @@ namespace Amilious.Core.FishNet.Authentication {
                 return;
             }
             var passwordBroadcast = new PasswordBroadcast() {
-                UserId = passRequestBroadcast.UserId,
                 RequestId = passRequestBroadcast.RequestId,
                 HashedPassword = Client_GetHashedPassword(password, passRequestBroadcast.Salt)
             };
@@ -384,7 +382,9 @@ namespace Amilious.Core.FishNet.Authentication {
                 NetworkManager.ClientManager.Connection.AssignUserId(authenticationResult.UserId);
                 userId = authenticationResult.UserId;
             }
-            string result = authenticationResult.Passed ? $"Authentication complete for {authenticationResult.UserName}." : "Authentication failed.";
+            var result = authenticationResult.Passed ? 
+                $"Authentication complete for {authenticationResult.UserName}." : 
+                $"Authentication failed! {authenticationResult.Response}";
             if (NetworkManager.CanLog(LoggingType.Common)) Debug.Log(result);
             Client_OnAuthenticationResult(authenticationResult);
         }

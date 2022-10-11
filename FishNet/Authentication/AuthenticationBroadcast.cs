@@ -24,7 +24,6 @@ namespace Amilious.Core.FishNet.Authentication {
     }
 
     public struct PasswordRequestBroadcast : IBroadcast {
-        public int UserId;
         public int RequestId;
         public bool NewPassword;
         public string Salt;
@@ -32,7 +31,6 @@ namespace Amilious.Core.FishNet.Authentication {
     }
     
     public struct PasswordBroadcast : IBroadcast {
-        public int UserId;
         public int RequestId;
         public string HashedPassword;
     }
