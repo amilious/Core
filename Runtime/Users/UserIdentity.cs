@@ -14,11 +14,14 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
+
 namespace Amilious.Core.Users {
     
     /// <summary>
     /// This struct is used to represent a user identity.
     /// </summary>
+    [Serializable]
     public readonly struct UserIdentity {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +30,7 @@ namespace Amilious.Core.Users {
         public const string AUTHORITY_KEY = "_authority_";
         public const string PASSWORD_SALT_KEY = "_salt_";
         public const string PASSWORD_KEY = "_password_";
-        private const int RESERVED_ID = int.MinValue;
+        public const int RESERVED_ID = int.MinValue;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -37,19 +40,20 @@ namespace Amilious.Core.Users {
         private readonly string _userName;
         private readonly string _link;
         private readonly int? _authority;
+        private readonly bool? _defaultUser;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Public Fields //////////////////////////////////////////////////////////////////////////////////////////
         
-        public static UserIdentity Console = new UserIdentity("Amilious Console");
+        public static UserIdentity Console = new UserIdentity("Amilious Console",false,true);
         
         /// <summary>
         /// This is the server's identity.
         /// </summary>
-        public static UserIdentity DefaultUser = new UserIdentity("User");
+        public static UserIdentity DefaultUser = new UserIdentity("User",false,false);
 
-        public static UserIdentity Server = new UserIdentity("Server");
+        public static UserIdentity Server = new UserIdentity("Server",true,false);
         
         /// <summary>
         /// This is the default user.
@@ -79,6 +83,21 @@ namespace Amilious.Core.Users {
         /// This property is true if the identity is a network user.
         /// </summary>
         public bool IsNetworkUser { get; }
+        
+        /// <summary>
+        /// This property is true if the identity belongs to the server.
+        /// </summary>
+        public bool IsServer { get; }
+        
+        /// <summary>
+        /// This property is true if the identity belongs to the console.
+        /// </summary>
+        public bool IsConsole { get; }
+
+        /// <summary>
+        /// This property is true if the identity is the default user.
+        /// </summary>
+        public bool IsDefaultUser => _defaultUser ?? true;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -95,6 +114,9 @@ namespace Amilious.Core.Users {
             _authority = null;
             _link = $"<link=user|{id}>{userName}</link>";
             IsNetworkUser = true;
+            IsServer = false;
+            IsConsole = false;
+            _defaultUser = false;
         }
 
         /// <summary>
@@ -109,14 +131,20 @@ namespace Amilious.Core.Users {
             _authority = authority;
             _link = $"<link=user|{id}>{userName}</link>";
             IsNetworkUser = true;
+            IsServer = false;
+            IsConsole = false;
+            _defaultUser = false;
         }
 
-        private UserIdentity(string displayName) {
+        private UserIdentity(string displayName, bool isServer, bool isConsole) {
             _id = RESERVED_ID;
             _userName = displayName;
             _authority = null;
             _link = displayName;
             IsNetworkUser = false;
+            IsServer = isServer;
+            IsConsole = isConsole;
+            _defaultUser = !isServer && !isConsole;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

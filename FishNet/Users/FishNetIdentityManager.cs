@@ -79,15 +79,14 @@ namespace Amilious.Core.FishNet.Users {
                 identity = ident;
                 return true;
             }
-            identity = default;
+            identity = UserIdentity.DefaultUser;
             return false;
         }
 
         /// <inheritdoc />
         public virtual UserIdentity GetIdentity() {
-            NetworkManager.ClientManager.Connection.TryGetUserId(out int id);
-            TryGetIdentity(id, out var identity);
-            return identity;
+            if(!NetworkManager.ClientManager.Connection.TryGetUserId(out int id)) return UserIdentity.DefaultUser;
+            return TryGetIdentity(id, out var identity) ? identity : UserIdentity.DefaultUser;
         }
 
         /// <inheritdoc />
