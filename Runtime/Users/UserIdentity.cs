@@ -14,8 +14,6 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using TMPro;
-
 namespace Amilious.Core.Users {
     
     /// <summary>
@@ -29,6 +27,7 @@ namespace Amilious.Core.Users {
         public const string AUTHORITY_KEY = "_authority_";
         public const string PASSWORD_SALT_KEY = "_salt_";
         public const string PASSWORD_KEY = "_password_";
+        private const int RESERVED_ID = int.MinValue;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -36,6 +35,7 @@ namespace Amilious.Core.Users {
         
         private readonly int? _id;
         private readonly string _userName;
+        private readonly string _link;
         private readonly int? _authority;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,8 +73,8 @@ namespace Amilious.Core.Users {
         /// <summary>
         /// This property contains a TMP link for the user.
         /// </summary>
-        public string Link { get; }
-        
+        public string Link => _link ?? UserName;
+
         /// <summary>
         /// This property is true if the identity is a network user.
         /// </summary>
@@ -93,7 +93,7 @@ namespace Amilious.Core.Users {
             _id = id;
             _userName = userName;
             _authority = null;
-            Link = $"<link=user|{id}>{userName}</link>";
+            _link = $"<link=user|{id}>{userName}</link>";
             IsNetworkUser = true;
         }
 
@@ -107,15 +107,15 @@ namespace Amilious.Core.Users {
             _id = id;
             _userName = userName;
             _authority = authority;
-            Link = $"<link=user|{id}>{userName}</link>";
+            _link = $"<link=user|{id}>{userName}</link>";
             IsNetworkUser = true;
         }
 
         private UserIdentity(string displayName) {
-            _id = null;
+            _id = RESERVED_ID;
             _userName = displayName;
             _authority = null;
-            Link = displayName;
+            _link = displayName;
             IsNetworkUser = false;
         }
         
