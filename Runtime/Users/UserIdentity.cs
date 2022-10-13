@@ -41,11 +41,15 @@ namespace Amilious.Core.Users {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Public Fields //////////////////////////////////////////////////////////////////////////////////////////
-                              
+        
+        public static UserIdentity Console = new UserIdentity("Amilious Console");
+        
         /// <summary>
         /// This is the server's identity.
         /// </summary>
-        public static UserIdentity Server = new UserIdentity(-2, "Server");
+        public static UserIdentity DefaultUser = new UserIdentity("User");
+
+        public static UserIdentity Server = new UserIdentity("Server");
         
         /// <summary>
         /// This is the default user.
@@ -59,17 +63,22 @@ namespace Amilious.Core.Users {
         /// <summary>
         /// This property contains the user's identification number.
         /// </summary>
-        public int Id => _id ?? -1;
+        public int Id => _id ?? int.MinValue;
 
         /// <summary>
         /// This property contains the user's user name.
         /// </summary>
-        public string UserName => _userName ?? "User";
+        public string UserName => _userName ?? "Amilious Console";
 
         /// <summary>
         /// This property contains a TMP link for the user.
         /// </summary>
-        public string UserLink { get; }
+        public string Link { get; }
+        
+        /// <summary>
+        /// This property is true if the identity is a network user.
+        /// </summary>
+        public bool IsNetworkUser { get; }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -84,7 +93,8 @@ namespace Amilious.Core.Users {
             _id = id;
             _userName = userName;
             _authority = null;
-            UserLink = id >= 0 ? $"<link=user|{id}>{userName}</link>" : userName;
+            Link = $"<link=user|{id}>{userName}</link>";
+            IsNetworkUser = true;
         }
 
         /// <summary>
@@ -97,7 +107,16 @@ namespace Amilious.Core.Users {
             _id = id;
             _userName = userName;
             _authority = authority;
-            UserLink = id >= 0 ? $"<link=user|{id}>{userName}</link>" : userName;
+            Link = $"<link=user|{id}>{userName}</link>";
+            IsNetworkUser = true;
+        }
+
+        private UserIdentity(string displayName) {
+            _id = null;
+            _userName = displayName;
+            _authority = null;
+            Link = displayName;
+            IsNetworkUser = false;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

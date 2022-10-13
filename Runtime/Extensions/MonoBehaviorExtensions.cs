@@ -21,6 +21,20 @@ namespace Amilious.Core.Extensions {
     public static class MonoBehaviorExtensions {
 
         /// <summary>
+        /// This method is used to get an cache a component.
+        /// </summary>
+        /// <param name="behavior">The MonoBehavior.</param>
+        /// <param name="cache">The cache for the component.</param>
+        /// <typeparam name="T">The type of component that you want to get.</typeparam>
+        /// <returns>The found or created component.</returns>
+        public static T GetCacheComponent<T>(this MonoBehaviour behavior, ref T cache) where T : Component {
+            if(behavior == null) return null;
+            if(cache != null) return cache;
+            cache = behavior.GetComponent<T>();
+            return cache;
+        } 
+        
+        /// <summary>
         /// This method is used to get a component from the game object or create it if it does not exist.
         /// </summary>
         /// <param name="behavior">The MonoBehavior.</param>
