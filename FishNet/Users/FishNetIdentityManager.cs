@@ -38,8 +38,7 @@ namespace Amilious.Core.FishNet.Users {
         #region Sync Variables /////////////////////////////////////////////////////////////////////////////////////////
 
         [SyncObject] 
-        private readonly SyncDictionary<int, UserIdentity> _userLookup = 
-            new SyncDictionary<int, UserIdentity>();
+        private readonly SyncDictionary<int, UserIdentity> _userLookup = new SyncDictionary<int, UserIdentity>();
 
         [SyncVar(Channel = Channel.Reliable)] 
         private string _serverIdentifier;
@@ -69,7 +68,9 @@ namespace Amilious.Core.FishNet.Users {
 
         /// <inheritdoc />
         public virtual bool TryGetIdentity(int id, out UserIdentity identity) {
-            return _userLookup.TryGetValueFix(id, out identity);
+            var found = _userLookup.TryGetValueFix(id, out identity);
+            if(!found) identity = UserIdentity.DefaultUser;
+            return found;
         }
 
         /// <inheritdoc />
@@ -106,6 +107,16 @@ namespace Amilious.Core.FishNet.Users {
             NetworkManager.ServerManager.OnAuthenticationResult += OnAuthenticationResult;
             //load the users
             foreach(var id in _identityDataManager.Server_GetStoredUserIds()) UpdateIdentity(id);
+        }
+
+        public override void OnStartClient() {
+            base.OnStartClient();
+            _userLookup.OnChange += OnServerLookupChanged;
+        }
+
+        private void OnServerLookupChanged(SyncDictionaryOperation op, int key, UserIdentity value, bool asserver) {
+            if(asserver) return;
+            Debug.LogFormat("Lookup {0} {1}: {2}!",key,op.ToString(),value.UserName);
         }
 
         /// <summary>

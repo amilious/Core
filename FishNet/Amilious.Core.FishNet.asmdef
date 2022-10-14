@@ -3,7 +3,8 @@
     "rootNamespace": "Amilious.Core.FishNet",
     "references": [
         "FishNet.Runtime",
-        "Amilious.Core"
+        "Amilious.Core",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
