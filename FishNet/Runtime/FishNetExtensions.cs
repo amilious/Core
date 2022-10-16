@@ -14,8 +14,12 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using UnityEngine;
+using FishNet.Managing;
 using FishNet.Connection;
 using Amilious.Core.Users;
+using Amilious.Core.Saving;
+using FishNet.Managing.Server;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using Amilious.Core.FishNet.Authentication;
@@ -31,6 +35,8 @@ namespace Amilious.Core.FishNet {
         /// This dictionary is used to look up a user id based on the connection.
         /// </summary>
         private static readonly Dictionary<int, int> ConnectionToUserId = new Dictionary<int, int>();
+
+        private static readonly Dictionary<NetworkManager, int> LocalIdStorage = new Dictionary<NetworkManager, int>();
 
         /// <summary>
         /// This dictionary is used to look up the connection based on the user's id.
@@ -61,20 +67,63 @@ namespace Amilious.Core.FishNet {
         public static bool TryGetUserId(this NetworkConnection con, out int userId) {
             return ConnectionToUserId.TryGetValueFix(con.ClientId, out userId);
         }
-        
+
         /// <summary>
         /// This method is used to try get the connection associated with the <see cref="UserIdentity"/>.
         /// </summary>
         /// <param name="identity">The identity that you want to get the connection for.</param>
+        /// <param name="manager">The network manager.</param>
         /// <param name="connection">The connection for the <see cref="UserIdentity"/>.</param>
         /// <returns>True if the <see cref="UserIdentity"/> has a connection assigned to it,
         /// otherwise false.</returns>
         /// <remarks>This method should only be used on the server and only when using the
         /// <see cref="AmiliousAuthenticator"/>.</remarks>
-        public static bool TryGetConnection(this UserIdentity identity, out NetworkConnection connection) {
-            return UserIdToConnection.TryGetValueFix(identity.Id, out connection) && connection.IsActive && 
-                   connection.Authenticated;
+        public static bool TryGetConnection(this UserIdentity identity, NetworkManager manager, out NetworkConnection connection) {
+            var result = UserIdToConnection.TryGetValueFix(identity.Id, out connection);
+            if(result&&connection.NetworkManager == null&&manager.IsLocalUser(identity.Id)) {
+                connection = manager.ClientManager.Connection;
+                connection.AssignUserId(identity.Id);
+                return true;
+            }
+            return result;
         }
+
+        /// <summary>
+        /// This method is used to get the amilious authenticator if it exists.
+        /// </summary>
+        /// <param name="serverManager">The server manager.</param>
+        /// <returns>The authenticator for the server if it is an amilious authenticator, otherwise null. </returns>
+        public static AmiliousAuthenticator GetAmiliousAuthenticator(this ServerManager serverManager) {
+            var authenticator = serverManager.GetAuthenticator() as AmiliousAuthenticator;
+            if(authenticator==null) 
+                Debug.LogWarning("Unable to get the Amilious Authenticator from the Server Manager!");
+            return authenticator;
+        }
+
+        /// <summary>
+        /// This method is used to get the IdentityDataManager that is assigned to the amilious authenticator.
+        /// </summary>
+        /// <param name="serverManager">The server manager.</param>
+        /// <returns>The identity data manager for server if using an amilious authenticator, otherwise null.</returns>
+        public static AbstractIdentityDataManager GetIdentityDataManager(this ServerManager serverManager) {
+            var dataManager = serverManager.GetAmiliousAuthenticator()?.DataManager;
+            if(dataManager==null)
+                Debug.LogWarning("Unable to get the Identity Data Manager from the Server Manager!");
+            return dataManager;
+        }
+        
+        public static void AssignLocalUserId(this NetworkManager networkManager, int localId) {
+            LocalIdStorage[networkManager] = localId;
+        }
+
+        public static bool TryGetLocalUserId(this NetworkManager networkManager, out int localId) {
+            return LocalIdStorage.TryGetValueFix(networkManager, out localId);
+        }
+
+        public static bool IsLocalUser(this NetworkManager networkManager, int id) {
+            return LocalIdStorage.TryGetValueFix(networkManager, out var localId) && id==localId;
+        }
+        
         
     }
     

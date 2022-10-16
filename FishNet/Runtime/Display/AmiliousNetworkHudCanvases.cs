@@ -1,16 +1,19 @@
+using Amilious.Core.Attributes;
 using Amilious.Core.FishNet.Authentication;
+using Amilious.Core.Saving;
 using FishNet.Managing;
 using FishNet.Transporting;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Amilious.Core.FishNet.Display {
     
+    
     public class AmiliousNetworkHudCanvases : MonoBehaviour {
     
         #region Types.
+        
         /// <summary>
         /// Ways the HUD will automatically start a connection.
         /// </summary>
@@ -18,48 +21,33 @@ namespace Amilious.Core.FishNet.Display {
         #endregion
 
         #region Serialized.
-        
+
+        [SerializeField, AmiliousBool(true)] private bool rememberLastUserName = true;
+        [SerializeField, AmiliousBool(true)] private bool rememberLastPassword = true;
+        [SerializeField] private AmiliousAuthenticator authenticator;
         [Tooltip("What connections to automatically start on play.")]
-        [SerializeField]
-        private AutoStartType autoStartType = AutoStartType.Disabled;
+        [SerializeField] private AutoStartType autoStartType = AutoStartType.Disabled;
+        [SerializeField] private AbstractIdentityDataManager dataManager;
         
-        [Tooltip("Color when socket is stopped.")]
-        [SerializeField]
-        private Color stoppedColor;
+        [Header("Colors")]
+        [Tooltip("Color when socket is stopped.")] [SerializeField] private Color stoppedColor;        
+        [Tooltip("Color when socket is changing.")] [SerializeField] private Color changingColor;
+        [Tooltip("Color when socket is started.")] [SerializeField] private Color startedColor;
         
-        [Tooltip("Color when socket is changing.")]
-        [SerializeField]
-        private Color changingColor;
-        
-        [Tooltip("Color when socket is started.")]
-        [SerializeField]
-        private Color startedColor;
         [Header("Indicators")]
-        
-        [Tooltip("Indicator for server state.")]
-        [SerializeField]
-        private Image serverIndicator;
-        /// <summary>
-        /// Indicator for client state.
-        /// </summary>
-        [Tooltip("Indicator for client state.")]
-        [SerializeField]
-        private Image clientIndicator;
+        [Tooltip("Indicator for server state.")] [SerializeField] private Image serverIndicator;
+        [Tooltip("Indicator for client state.")] [SerializeField] private Image clientIndicator;
 
-        [SerializeField]
-        private Button serverButton;
-
+        [Header("Buttons")]
+        [SerializeField] private Button serverButton;
         [SerializeField] private Button clientButton;
         
-        [Tooltip("The user name field.")]
-        [SerializeField]
+        [Header("Inputs")]
+        [Tooltip("The user name field.")] [SerializeField]
         private TMP_InputField userName;
 
-        [Tooltip("The password field.")]
-        [SerializeField]
+        [Tooltip("The password field.")] [SerializeField]
         private TMP_InputField password;
-        [SerializeField]
-        private AmiliousAuthenticator authenticator;
         
         #endregion
 
@@ -82,8 +70,6 @@ namespace Amilious.Core.FishNet.Display {
         
         #endregion
 
-        
-
         private void Start() {
 
             _networkManager = FindObjectOfType<NetworkManager>();
@@ -91,6 +77,19 @@ namespace Amilious.Core.FishNet.Display {
                 Debug.LogError("NetworkManager not found, HUD will not function.");
                 return;
             }
+
+            if(dataManager != null) {
+                //load last username and password
+                if(rememberLastUserName) {
+                    dataManager.Client_TryGetLastUserName(out string usrName);
+                    userName.text = usrName;
+                }
+                if(rememberLastPassword) {
+                    dataManager.Client_TryGetLastPassword(out string pass);
+                    password.text = pass;
+                }
+            }
+            
             UpdateColor(LocalConnectionState.Stopped, ref serverIndicator);
             UpdateColor(LocalConnectionState.Stopped, ref clientIndicator);
             _networkManager.ServerManager.OnServerConnectionState += ServerManager_OnServerConnectionState;
@@ -163,6 +162,10 @@ namespace Amilious.Core.FishNet.Display {
             else {
                 authenticator.SetCredentials(userName.text,password.text);
                 _networkManager.ClientManager.StartConnection();
+                if(dataManager != null) {
+                    if(rememberLastUserName) dataManager.Client_StoreLastUserName(userName.text);
+                    if(rememberLastPassword) dataManager.Client_StoreLastPassword(password.text);
+                }
             }
             DeselectButtons();
         }

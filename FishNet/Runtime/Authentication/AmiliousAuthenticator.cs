@@ -80,7 +80,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <summary>
         /// This property is used to get the authenticator's data manager.
         /// </summary>
-        protected abstract AbstractIdentityDataManager DataManager { get; }
+        public abstract AbstractIdentityDataManager DataManager { get; }
 
         #endregion
         
@@ -128,6 +128,7 @@ namespace Amilious.Core.FishNet.Authentication {
             this.userName = userName;
             this.password = password;
         }
+        
         // ReSharper enable ParameterHidesMember
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +169,9 @@ namespace Amilious.Core.FishNet.Authentication {
                 UserId = id, NewUser = newUser, Response = reportFailReason? reason : "Unable to complete request!"
             };
             //set id
-            if(passed) con.AssignUserId(id);
+            if(passed) {
+                con.AssignUserId(id);
+            }
             //send the authentication response
             if(logBroadcasts)Debug.Log("[Server] Authentication Result Broadcast Sent!");
             NetworkManager.ServerManager.Broadcast(con,result,false);
@@ -380,6 +383,7 @@ namespace Amilious.Core.FishNet.Authentication {
             if(authenticationResult.Passed) {
                 //assign the user id to the client side as well.
                 NetworkManager.ClientManager.Connection.AssignUserId(authenticationResult.UserId);
+                NetworkManager.AssignLocalUserId(authenticationResult.UserId);
                 userId = authenticationResult.UserId;
             }
             var result = authenticationResult.Passed ? 

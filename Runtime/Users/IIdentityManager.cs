@@ -14,9 +14,89 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System.Collections.Generic;
+
 namespace Amilious.Core.Users {
     
     public interface IIdentityManager {
+        
+        public delegate void UserConnectionChangedDelegate(UserIdentity identity, bool connected);
+        
+        /// <summary>
+        /// This event is called when a connection changes.
+        /// </summary>
+        public event UserConnectionChangedDelegate OnUserConnectionChanged;
+
+        /// <summary>
+        /// This property is used to get a collection of identities.
+        /// </summary>
+        IEnumerable<UserIdentity> Identities { get; }
+
+        /// <summary>
+        /// This property is used to get a collection of friend identities.
+        /// </summary>
+        IEnumerable<UserIdentity> Friends { get;}
+        
+        /// <summary>
+        /// This property is used to a collection of blocked users.
+        /// </summary>
+        IEnumerable<UserIdentity> BlockedUsers { get; }
+
+        /*
+        
+        /// <summary>
+        /// This method is used to remove a friend.
+        /// </summary>
+        /// <param name="friendId">The friend's identity id.</param>
+        /// <remarks>This method should be called from the client.</remarks>
+        void RemoveFriend(int friendId);
+
+        /// <summary>
+        /// This method is used to remove a friend.
+        /// </summary>
+        /// <param name="friend">The friend's identity.</param>
+        /// <remarks>This method should be called from the client.</remarks>
+        void RemoveFriend(UserIdentity friend);
+
+        /// <summary>
+        /// This method is used to add a friend.
+        /// </summary>
+        /// <param name="friendId">The friend's identity id.</param>
+        /// <remarks>This method should be called from the client.</remarks>
+        void AddFriend(int friendId);
+
+        /// <summary>
+        /// This method is used to add a friend.
+        /// </summary>
+        /// <param name="friend">The friend's identity.</param>
+        /// <remarks>This method should be called from the client.</remarks>
+        void AddFriend(UserIdentity friend);
+
+        /// <summary>
+        /// This method is used to block a user.
+        /// </summary>
+        /// <param name="user">The user that you want to block.</param>
+        void BlockUser(UserIdentity user);
+
+        /// <summary>
+        /// This method is used to block a user.
+        /// </summary>
+        /// <param name="userId">The user id of the user that you want to block.</param>
+        void BlockUser(int userId);
+
+        /// <summary>
+        /// This method is used to block a user.
+        /// </summary>
+        /// <param name="user">The user that you want to unblock.</param>
+        void UnblockUser(UserIdentity user);
+
+        /// <summary>
+        /// This method is used to unblock a user.
+        /// </summary>
+        /// <param name="userId">The user id of the user that you want to unblock.</param>
+        void UnblockUser(int userId);
+
+        */
 
         /// <summary>
         /// This method is used to try get the <see cref="UserIdentity"/> for the given id.
@@ -51,7 +131,43 @@ namespace Amilious.Core.Users {
         /// <returns>True if the sender is able to send a message to the recipient, otherwise false.</returns>
         /// <remarks>This method should only be called from the server!</remarks>
         bool CanSendMessageTo(int sender, int recipient);
+        
+        /// <summary>
+        /// This method is used to change an identity's authority.
+        /// </summary>
+        /// <param name="identity">The identity that you want to update.</param>
+        /// <param name="authority">The identity's authority (bigger is less authority)</param>
+        /// <returns>True if the user exists and was updated, otherwise false.</returns>
+        /// <remarks>This method should only be called on the server!</remarks>
+        bool TrySetAuthority(UserIdentity identity, int authority = int.MaxValue);
 
+        /// <summary>
+        /// This method is used to change an identity's authority.
+        /// </summary>
+        /// <param name="userId">The id of the identity that you want to update.</param>
+        /// <param name="authority">The identity's authority (bigger is less authority)</param>
+        /// <returns>True if the user exists and was updated, otherwise false.</returns>
+        /// <remarks>This method should only be called on the server!</remarks>
+        bool TrySetAuthority(int userId, int authority = int.MaxValue);
+
+        /// <summary>
+        /// This method is used to change an identity's user name.
+        /// </summary>
+        /// <param name="identity">The identity that you want to update.</param>
+        /// <param name="userName">The identity's new user name.</param>
+        /// <returns>True if the user exists, the user name is available, and was updated, otherwise false.</returns>
+        /// <remarks>This method should only be called on the server!</remarks>
+        bool TryUpdateUserName(UserIdentity identity, string userName);
+
+        /// <summary>
+        /// This method is used to change an identity's user name.
+        /// </summary>
+        /// <param name="userId">The id of the identity that you want to update.</param>
+        /// <param name="userName">The identity's new user name.</param>
+        /// <returns>True if the user exists, the user name is available, and was updated, otherwise false.</returns>
+        /// <remarks>This method should only be called on the server!</remarks>
+        bool TryUpdateUserName(int userId, string userName);
+        
     }
     
 }

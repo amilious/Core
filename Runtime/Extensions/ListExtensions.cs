@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Amilious.Core.Extensions {
     
@@ -88,6 +89,23 @@ namespace Amilious.Core.Extensions {
                 var index = startIndex + i;
                 list[index] = modifier(list[index]);
             }
+        }
+
+        /// <summary>
+        /// This method is used to add an item to a list if it does not already exist in the list and it meets the
+        /// criteria.
+        /// </summary>
+        /// <param name="list">This list you want to add an item to.</param>
+        /// <param name="value">The value that you want to test and add.</param>
+        /// <param name="startsWith">The starting text that must match.</param>
+        /// <param name="caseSensitive">If true the starts will will be case sensitive.</param>
+        public static void AddIfMissingAndMatch(this List<string> list, string value, string startsWith,
+            bool caseSensitive = false) {
+            //the item already exists
+            if(list.Contains(value)) return;
+            if(!string.IsNullOrWhiteSpace(startsWith)) {
+                if(value.StartsWith(startsWith, !caseSensitive, CultureInfo.InvariantCulture)) list.Add(value);
+            } else list.Add(value);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

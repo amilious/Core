@@ -121,6 +121,14 @@ namespace Amilious.Core.Saving {
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        public abstract void Client_StoreLastUserName(string userNameText);
+
+        public abstract void Client_StoreLastPassword(string password);
+
+        public abstract bool Client_TryGetLastUserName(out string userName);
+
+        public abstract bool Client_TryGetLastPassword(out string password);
+
     }
     
 }

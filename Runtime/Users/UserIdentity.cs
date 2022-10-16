@@ -21,7 +21,6 @@ namespace Amilious.Core.Users {
     /// <summary>
     /// This struct is used to represent a user identity.
     /// </summary>
-    [Serializable]
     public readonly struct UserIdentity {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +29,8 @@ namespace Amilious.Core.Users {
         public const string AUTHORITY_KEY = "_authority_";
         public const string PASSWORD_SALT_KEY = "_salt_";
         public const string PASSWORD_KEY = "_password_";
+        public const string LAST_DISCONNECTED_KEY = "_last_disconnected_";
+        public const string LAST_CONNECTED_KEY = "_last_connected_";
         public const int RESERVED_ID = int.MinValue;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,26 +41,27 @@ namespace Amilious.Core.Users {
         private readonly string _userName;
         private readonly string _link;
         private readonly int? _authority;
-        private readonly bool? _defaultUser;
+        private readonly IdentityType? _identityType;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Public Fields //////////////////////////////////////////////////////////////////////////////////////////
         
-        public static UserIdentity Console = new UserIdentity("Amilious Console",false,true);
+        /// <summary>
+        /// This is the console's user identity.
+        /// </summary>
+        public static UserIdentity Console = new UserIdentity("Amilious Console",IdentityType.AmiliousConsole);
         
+        /// <summary>
+        /// This is the default user identity that is used when offline.
+        /// </summary>
+        public static UserIdentity DefaultUser = new UserIdentity("User",IdentityType.DefaultUser);
+
         /// <summary>
         /// This is the server's identity.
         /// </summary>
-        public static UserIdentity DefaultUser = new UserIdentity("User",false,false);
+        public static UserIdentity Server = new UserIdentity("Server",IdentityType.Server);
 
-        public static UserIdentity Server = new UserIdentity("Server",true,false);
-        
-        /// <summary>
-        /// This is the default user.
-        /// </summary>
-        public static UserIdentity Default = default(UserIdentity);
-        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,24 +82,9 @@ namespace Amilious.Core.Users {
         public string Link => _link ?? UserName;
 
         /// <summary>
-        /// This property is true if the identity is a network user.
+        /// This property contains the type of the identity.
         /// </summary>
-        public bool IsNetworkUser { get; }
-        
-        /// <summary>
-        /// This property is true if the identity belongs to the server.
-        /// </summary>
-        public bool IsServer { get; }
-        
-        /// <summary>
-        /// This property is true if the identity belongs to the console.
-        /// </summary>
-        public bool IsConsole { get; }
-
-        /// <summary>
-        /// This property is true if the identity is the default user.
-        /// </summary>
-        public bool IsDefaultUser => _defaultUser ?? true;
+        public IdentityType IdentityType => _identityType ?? Users.IdentityType.AmiliousConsole;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -113,10 +100,7 @@ namespace Amilious.Core.Users {
             _userName = userName;
             _authority = null;
             _link = $"<link=user|{id}>{userName}</link>";
-            IsNetworkUser = true;
-            IsServer = false;
-            IsConsole = false;
-            _defaultUser = false;
+            _identityType = IdentityType.User;
         }
 
         /// <summary>
@@ -130,21 +114,20 @@ namespace Amilious.Core.Users {
             _userName = userName;
             _authority = authority;
             _link = $"<link=user|{id}>{userName}</link>";
-            IsNetworkUser = true;
-            IsServer = false;
-            IsConsole = false;
-            _defaultUser = false;
+            _identityType = IdentityType.User;
         }
 
-        private UserIdentity(string displayName, bool isServer, bool isConsole) {
+        /// <summary>
+        /// This constructor is used to create static instances of user identities.
+        /// </summary>
+        /// <param name="displayName">The display name.</param>
+        /// <param name="identityType">The identity type.</param>
+        private UserIdentity(string displayName, IdentityType identityType) {
             _id = RESERVED_ID;
             _userName = displayName;
             _authority = null;
             _link = displayName;
-            IsNetworkUser = false;
-            IsServer = isServer;
-            IsConsole = isConsole;
-            _defaultUser = !isServer && !isConsole;
+            _identityType = identityType;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,9 +144,57 @@ namespace Amilious.Core.Users {
             if(!_authority.HasValue) return false;
             return orGreater? _authority.Value<=required : _authority.Value==required;
         }
+
+        public static bool operator ==(UserIdentity identity, UserIdentity identity2) => identity.Id == identity2.Id && 
+            identity.UserName.Equals(identity2.UserName,StringComparison.InvariantCultureIgnoreCase) && 
+            identity.IdentityType==identity2.IdentityType&&identity._authority==identity2._authority;
         
+        public static bool operator !=(UserIdentity identity, UserIdentity identity2) => identity.Id != identity2.Id || 
+            !identity.UserName.Equals(identity2.UserName,StringComparison.InvariantCultureIgnoreCase) || 
+            identity.IdentityType!=identity2.IdentityType||identity._authority!=identity2._authority;
+        
+        public static bool operator ==(UserIdentity identity, int id) => identity.Id == id;
+        
+        public static bool operator !=(UserIdentity identity, int id) => identity.Id != id;
+
+        public static bool operator ==(UserIdentity identity, string userName) =>
+            identity.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase);
+        
+        public static bool operator !=(UserIdentity identity, string userName) =>
+            identity.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase);
+
+        public static bool operator >(UserIdentity identity, UserIdentity identity2) {
+            if(!identity._authority.HasValue && identity2._authority.HasValue) return false;
+            if(!identity2._authority.HasValue) return true;
+            //higher value means less authority
+            return identity2._authority > identity._authority;
+        }
+        
+        public static bool operator <(UserIdentity identity, UserIdentity identity2) {
+            if(!identity._authority.HasValue && identity2._authority.HasValue) return true;
+            if(!identity2._authority.HasValue) return false;
+            //higher value means less authority
+            return identity2._authority < identity._authority;
+        }
+        
+        public static bool operator >=(UserIdentity identity, UserIdentity identity2) {
+            if(!identity._authority.HasValue && !identity2._authority.HasValue) return true;
+            if(identity._authority.HasValue&&!identity2._authority.HasValue) return true;
+            if(!identity._authority.HasValue) return false;
+            //higher value means less authority
+            return identity2._authority >= identity._authority;
+        }
+        
+        public static bool operator <=(UserIdentity identity, UserIdentity identity2) {
+            if(!identity._authority.HasValue && !identity2._authority.HasValue) return true;
+            if(!identity._authority.HasValue) return true;
+            if(!identity2._authority.HasValue) return false;
+            //higher value means less authority
+            return identity2._authority <= identity._authority;
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
     }
     
 }
