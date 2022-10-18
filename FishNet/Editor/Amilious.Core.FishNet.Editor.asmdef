@@ -1,0 +1,19 @@
+{
+    "name": "Amilious.Core.FishNet.Editor",
+    "rootNamespace": "Amilious.Core.FishNet.Editor",
+    "references": [
+        "Amilious.Core.FishNet",
+        "Amilious.Core.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
