@@ -27,12 +27,12 @@ using FishNet.Object.Synchronizing;
 
 namespace Amilious.Core.FishNet.Users {
     
-    [RequireComponent(typeof(AbstractIdentityDataManager))]
+    [RequireComponent(typeof(IdentityDataManager))]
     public class FishNetIdentityManager : NetworkBehaviour, IIdentityManager {
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        private AbstractIdentityDataManager _identityDataManager;
+        private IdentityDataManager _identityDataManager;
         private int localUserId;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ namespace Amilious.Core.FishNet.Users {
         private void Awake() {
             _online.OnChange += OnlineChanged;
             if(!IsServer) return; //load on server only
-            _identityDataManager = GetComponent<AbstractIdentityDataManager>();
+            _identityDataManager = GetComponent<IdentityDataManager>();
             _serverIdentifier = _identityDataManager.Server_GetServerIdentifier();
         }
 
@@ -147,7 +147,7 @@ namespace Amilious.Core.FishNet.Users {
         public override void OnStartServer() {
             base.OnStartServer();
             //register authenticator
-            if(_identityDataManager == null) _identityDataManager = GetComponent<AbstractIdentityDataManager>();
+            if(_identityDataManager == null) _identityDataManager = GetComponent<IdentityDataManager>();
             NetworkManager.ServerManager.OnAuthenticationResult += OnAuthenticationResult;
             NetworkManager.ServerManager.OnRemoteConnectionState += OnRemoteConnectionState;
             //load the users

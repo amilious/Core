@@ -27,7 +27,7 @@ namespace Amilious.Core.FishNet.Display {
         [SerializeField] private AmiliousAuthenticator authenticator;
         [Tooltip("What connections to automatically start on play.")]
         [SerializeField] private AutoStartType autoStartType = AutoStartType.Disabled;
-        [SerializeField] private AbstractIdentityDataManager dataManager;
+        [SerializeField] private IdentityDataManager dataManager;
         
         [Header("Colors")]
         [Tooltip("Color when socket is stopped.")] [SerializeField] private Color stoppedColor;        

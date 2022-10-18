@@ -105,7 +105,7 @@ namespace Amilious.Core.FishNet {
         /// </summary>
         /// <param name="serverManager">The server manager.</param>
         /// <returns>The identity data manager for server if using an amilious authenticator, otherwise null.</returns>
-        public static AbstractIdentityDataManager GetIdentityDataManager(this ServerManager serverManager) {
+        public static IdentityDataManager GetIdentityDataManager(this ServerManager serverManager) {
             var dataManager = serverManager.GetAmiliousAuthenticator()?.DataManager;
             if(dataManager==null)
                 Debug.LogWarning("Unable to get the Identity Data Manager from the Server Manager!");

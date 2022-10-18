@@ -27,29 +27,46 @@ using FishNet.Managing.Logging;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using Amilious.Core.Authentication;
 using Amilious.Core.FishNet.Users;
 
 namespace Amilious.Core.FishNet.Authentication {
     
-    public abstract class AmiliousAuthenticator : Authenticator {
+    [RequireComponent(typeof(IdentityDataManager))]
+    public class AmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
         
-        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        private const int SALT_SIZE = 16;
+        private const int HASH_SIZE = 20;
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////
 
-        [Header("Amilious Authenticator")]
+        [Header("Authenticator Options")]
         [SerializeField, AmiliousBool(true)]
         [Tooltip("If true the authenticator will log broadcasts.")]
         private bool logBroadcasts;
         [SerializeField, AmiliousBool(true)] 
         [Tooltip("If true a user id will be used for authentication, otherwise a user name will be used.")] 
         private bool useUserId = false;
-        [SerializeField, AmiliousBool(true)]
-        [Tooltip("If true the user will be required to use a password to join the game.")] 
-        private bool usePassword = true;
         [SerializeField, AmiliousBool(true), HideIf(nameof(useUserId))]
         [Tooltip("If true a new user will be created when joining with an unused user id.")]
         private bool autoRegister;
         [SerializeField, AmiliousBool(true)] [Tooltip("If true the failure reason will be reported.")]
         private bool reportFailReason;
+        [SerializeField, AmiliousBool(true)]
+        [Tooltip("If true the user will be required to use a password to join the game.")] 
+        private bool usePassword = true;
+        
+        [Header("Password Settings")]
+        [Tooltip("The total number of hash iterations for the password.")]
+        [SerializeField, Min(1)] private int hashIterations = 1000;
+        [SerializeField] private PasswordRequestProvider newPasswordProvider;
+     
+        [Header("Credentials")]
         [SerializeField, ShowIf(nameof(useUserId)), Tooltip("This optional field contains the user's id.")] 
         private int userId;
         [SerializeField, HideIf(nameof(useUserId)), Tooltip("This optional field contains the user's user name.")] 
@@ -58,21 +75,17 @@ namespace Amilious.Core.FishNet.Authentication {
         [Tooltip("The user's password!")]
         private string password;
 
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
+                               
         private readonly Dictionary<NetworkConnection, AuthenticationRequest> _authenticationRequests =
             new Dictionary<NetworkConnection, AuthenticationRequest>();
 
         private int _nextRequest = int.MinValue;
         private FishNetIdentityManager _identityManager;
+        private IdentityDataManager _identityDataManager;
 
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Delegates //////////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This delegate is used to request a new password.
-        /// </summary>
-        protected delegate void GenerateNewPassword(string newPassword);
-        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties
@@ -80,14 +93,25 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <summary>
         /// This property is used to get the authenticator's data manager.
         /// </summary>
-        public abstract AbstractIdentityDataManager DataManager { get; }
+        public IdentityDataManager DataManager => this.GetOrAddComponent(ref _identityDataManager);
 
+        /// <summary>
+        /// This property is used to get a new password when requested.
+        /// </summary>
+        public PasswordRequestProvider PasswordRequestProvider => newPasswordProvider;
+        
         #endregion
         
         #region Authenticator Events ///////////////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc />
         public override event Action<NetworkConnection, bool> OnAuthenticationResult;
+
+        /// <inheritdoc />
+        public event Action<string> OnConnectionRejected;
+        
+        /// <inheritdoc />
+        public event Action<string> OnSuccessfulConnection;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -260,13 +284,25 @@ namespace Amilious.Core.FishNet.Authentication {
             return request.RequestId;
         }
         // ReSharper enable InvalidXmlDocComment
-        
+
         /// <summary>
         /// This method is used to get the salt used for the given user's password. 
         /// </summary>
         /// <param name="userId">The user's id.</param>
         /// <returns>The user's password salt.</returns>
-        protected abstract string Server_GetUserPasswordSalt(int userId);
+        protected virtual string Server_GetUserPasswordSalt(int userId) {
+            //return the old salt if it exists
+            if(DataManager.Server_TryReadUserData(userId, UserIdentity.PASSWORD_SALT_KEY, out string salt)) 
+                return salt;
+            //generate new salt
+            using var rng = new RNGCryptoServiceProvider();
+            byte[] saltData;
+            rng.GetBytes(saltData = new byte[SALT_SIZE]);
+            salt = Convert.ToBase64String(saltData);
+            //store the newly generated salt
+            DataManager.Server_StoreUserData(userId,UserIdentity.PASSWORD_SALT_KEY,salt);
+            return salt;
+        }
 
         /// <summary>
         /// This method is used to check the password given from the client.
@@ -276,8 +312,29 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="response">A response that will be given upon failure.</param>
         /// <returns>True if the password is correct, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        protected abstract bool Server_AuthenticateCheckPassword(int infoUserId, string hashedPassword, 
-            out string response);
+        protected virtual bool Server_AuthenticateCheckPassword(int infoUserId, string hashedPassword, 
+            out string response) {
+            if(!DataManager.Server_TryReadUserData(infoUserId, UserIdentity.PASSWORD_KEY, 
+                   out string storedPassword)) {
+                response = "Invalid Request! No stored password!";
+                return false;
+            }
+            // Get hash bytes
+            var hashBytes = Convert.FromBase64String(hashedPassword);
+            var salt = new byte[SALT_SIZE];
+            Array.Copy(hashBytes, 0, salt, 0, SALT_SIZE);
+            // Create hash with given salt
+            using var pbkdf2 = new Rfc2898DeriveBytes(storedPassword, salt, hashIterations);
+            var hash = pbkdf2.GetBytes(HASH_SIZE);
+            // Get result
+            for(var i = 0; i < HASH_SIZE; i++) {
+                if(hashBytes[i + SALT_SIZE] == hash[i]) continue;
+                response = "Invalid Request! Incorrect password!";
+                return false;
+            }
+            response = "Successfully authenticated!";
+            return true;
+        }
 
         /// <summary>
         /// This method is used to try set the new password for the given user.
@@ -286,7 +343,11 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="hashedPassword">The user's new hashed password.</param>
         /// <param name="response">A response to the new password.</param>
         /// <returns>True if the new password is accepted, otherwise false.</returns>
-        protected abstract bool Server_SetNewPassword(int userId, string hashedPassword, out string response);
+        protected virtual bool Server_SetNewPassword(int userId, string hashedPassword, out string response) {
+            DataManager.Server_StoreUserData(userId,UserIdentity.PASSWORD_KEY,hashedPassword);
+            response = "The password has been updated!";
+            return true;
+        }
 
         /// <summary>
         /// This method is used to get the user's id associated with the authentication info.
@@ -302,16 +363,52 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="response">A message that will be sent if the authentication failed.</param>
         /// <returns>True if the authentication was valid, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        protected abstract bool Server_AuthenticateGetUserId(AuthenticationBroadcast authenticationInfo, 
-            bool usingUserId, bool autoRegister, out int userId, out string userName, out bool newUser, 
-            out string response);
-        
+        protected virtual bool Server_AuthenticateGetUserId(AuthenticationBroadcast authenticationInfo,
+            bool usingUserId, bool autoRegister, out int userId, out string userName, out bool newUser,
+            out string response) {
+            response = string.Empty;
+            if(usingUserId) { //authenticating with user id
+                newUser = false;
+                userId = authenticationInfo.UserId;
+                if(DataManager.Server_TryGetUserIdentity(authenticationInfo.UserId, out var identity)) {
+                    userName = identity.UserName;
+                    return true;
+                }
+                userName = null;
+                response = "Invalid Request! The provided user id is invalid!";
+                return false;
+            }
+            //authenticating with user name
+            if(DataManager.Server_TryGetUserIdentity(authenticationInfo.UserName, out var identity2)) {
+                userId = identity2.Id;
+                userName = identity2.UserName;
+                newUser = false;
+                return true;
+            }
+            //the user has not been registered check if auto register
+            if(!autoRegister) {
+                userId = default;
+                userName = default;
+                newUser = true;
+                response = "Invalid Request! The user does not exist!";
+                return false;
+            }
+            //the user is new and auto register is enabled
+            identity2 = DataManager.Server_AddUser(authenticationInfo.UserName);
+            //the user has not been registered so make a new user
+            userId = identity2.Id;
+            userName = identity2.UserName;
+            newUser = true;
+            response = "Auto-registering new user!";
+            return true;
+        }
+
         /// <summary>
         /// This method is used to get the server's identifier.
         /// </summary>
         /// <returns>The server's identifier.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        protected abstract string Server_GetServerIdentifier();
+        protected virtual string Server_GetServerIdentifier() => DataManager.Server_GetServerIdentifier();
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -355,11 +452,13 @@ namespace Amilious.Core.FishNet.Authentication {
         private void Client_OnPasswordRequestBroadcast(PasswordRequestBroadcast passRequestBroadcast) {
             if(logBroadcasts)Debug.Log("[Client] Password Request Broadcast Received!");
             if(passRequestBroadcast.NewPassword) {
-                Client_GenerateNewPassword(passRequestBroadcast, (pass)=> {
+                PasswordRequestProvider.RequestNewPassword( pass=> {
+                    pass = FirstLevelHash(pass, passRequestBroadcast.Salt);
                     var passwordBroadcast = new PasswordBroadcast() {
                         RequestId = passRequestBroadcast.RequestId,
                         HashedPassword = pass
                     };
+                    password = pass;
                     if(logBroadcasts)Debug.Log("[Client] Password Broadcast Sent!");
                     NetworkManager.ClientManager.Broadcast(passwordBroadcast);
                 });
@@ -390,18 +489,10 @@ namespace Amilious.Core.FishNet.Authentication {
                 $"Authentication complete for {authenticationResult.UserName}." : 
                 $"Authentication failed! {authenticationResult.Response}";
             if (NetworkManager.CanLog(LoggingType.Common)) Debug.Log(result);
-            Client_OnAuthenticationResult(authenticationResult);
+            if(authenticationResult.Passed) OnSuccessfulConnection?.Invoke(authenticationResult.Response);
+            else OnConnectionRejected?.Invoke(authenticationResult.Response);
         }
 
-        /// <summary>
-        /// This method is called when the server needs a password for a newly created user.
-        /// </summary>
-        /// <param name="passRequestBroadcast">The password request.</param>
-        /// <param name="generateNewPassword">A method to return the newly generated password.</param>
-        /// <remarks>This method should only be called from a client.</remarks>
-        protected abstract void Client_GenerateNewPassword(PasswordRequestBroadcast passRequestBroadcast,
-            GenerateNewPassword generateNewPassword);
-        
         /// <summary>
         /// This method is used to hash the clients password before sending it to the server.
         /// </summary>
@@ -409,15 +500,43 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="salt">The user's salt value.</param>
         /// <returns>The hashed password.</returns>
         /// <remarks>This method should only be called from a client.</remarks>
-        protected abstract string Client_GetHashedPassword(string password, string salt);
+        protected virtual string Client_GetHashedPassword(string password, string salt) {
+            password = FirstLevelHash(password, salt);
+            using var rng = new RNGCryptoServiceProvider();
+            byte[] newSalt;
+            rng.GetBytes(newSalt = new byte[SALT_SIZE]);
+            using var pbkdf2 = new Rfc2898DeriveBytes(password, newSalt, hashIterations);
+            var hash = pbkdf2.GetBytes(HASH_SIZE);
+            // Combine salt and hash
+            var hashBytes = new byte[SALT_SIZE + HASH_SIZE];
+            Array.Copy(newSalt, 0, hashBytes, 0, SALT_SIZE);
+            Array.Copy(hash, 0, hashBytes, SALT_SIZE, HASH_SIZE);
+            // Convert to base64
+            return Convert.ToBase64String(hashBytes);
+        }
 
         /// <summary>
-        /// This method is called after an authentication result has been received and processed.
+        /// This method is used to apply the first level of hashing. This will return the password that is stored on
+        /// the server.
         /// </summary>
-        /// <param name="authenticationResult">The authentication result.</param>
-        /// <remarks>This method should only be called from a client.</remarks>
-        protected abstract void Client_OnAuthenticationResult(AuthenticationResultBroadcast authenticationResult);
-
+        /// <param name="password">The raw password.</param>
+        /// <param name="salt">The user's salt.</param>
+        /// <returns>The raw salted password.</returns>
+        protected virtual string FirstLevelHash(string password, string salt) {
+            password = password.Trim();
+            salt = salt.Trim();
+            var bytes = System.Text.Encoding.UTF8.GetBytes($"{salt}{password}");
+            using var hash = SHA512.Create();
+            var hashedInputBytes = hash.ComputeHash(bytes);
+            // Convert to text
+            // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
+            var hashedInputStringBuilder = new System.Text.StringBuilder(128);
+            foreach (var b in hashedInputBytes)
+                hashedInputStringBuilder.Append(b.ToString("X2"));
+            var hashedPassword = hashedInputStringBuilder.ToString();
+            return hashedPassword;
+        }
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }
