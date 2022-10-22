@@ -30,8 +30,6 @@ namespace Amilious.Core.Extensions {
 
         #region Fields /////////////////////////////////////////////////////////////////////////////////////////////////
         
-        private static readonly Queue<StringBuilder> StringBuilders = new Queue<StringBuilder>(MAX_STRING_BUILDERS);
-        private const int MAX_STRING_BUILDERS = 20;
         public const string APPEND_C_FORMAT = "<color=#{0}>{1}</color>";
         public const string PADDING_FORMAT = "{0}{1} {2}";
         public const string LINK_FORMAT = "<link=\"{0}\">{1}</link>";
@@ -53,21 +51,6 @@ namespace Amilious.Core.Extensions {
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
         
-        /// <summary>
-        /// This method is used to rent out a string builder.
-        /// </summary>
-        /// <returns>A string builder.</returns>
-        private static StringBuilder RentStringBuilder() =>
-            StringBuilders.TryDequeue(out var builder) ? builder.Clear() : new StringBuilder();
-
-        /// <summary>
-        /// This method is used to return a string builder to the queue.
-        /// </summary>
-        /// <param name="builder">The string builder.</param>
-        private static void ReturnStringBuilder(StringBuilder builder) {
-            if(StringBuilders.Count > MAX_STRING_BUILDERS) return;
-            StringBuilders.Enqueue(builder.Clear());
-        }
         
         /// <summary>
         /// This method is used to add spaces to a string based on capital letters.
@@ -76,18 +59,16 @@ namespace Amilious.Core.Extensions {
         /// <param name="spitNumbers">If true numbers will be spit as well.</param>
         /// <returns>The newly formatted string split using camel case.</returns>
         public static string SplitCamelCase(this string value, bool spitNumbers = false) {
-            var sb = RentStringBuilder();
-            try{
-                var chars = value.ToCharArray();
-                for(var i = 0; i < chars.Length; i++) {
-                    var c = chars[i];
-                    if(char.IsDigit(c) && i != 0 && !char.IsDigit(chars[i - 1]) && spitNumbers) sb.Append(' ');
-                    else if(char.IsUpper(c) && i != 0 && !char.IsUpper(chars[i - 1])) sb.Append(' ');
-                    if(i == 0) c = char.ToUpper(c);
-                    sb.Append(c);
-                }
-                return sb.ToString();
-            }finally{ ReturnStringBuilder(sb); }
+            var sb = StringBuilderPool.Rent;
+            var chars = value.ToCharArray();
+            for(var i = 0; i < chars.Length; i++) {
+                var c = chars[i];
+                if(char.IsDigit(c) && i != 0 && !char.IsDigit(chars[i - 1]) && spitNumbers) sb.Append(' ');
+                else if(char.IsUpper(c) && i != 0 && !char.IsUpper(chars[i - 1])) sb.Append(' ');
+                if(i == 0) c = char.ToUpper(c);
+                sb.Append(c);
+            }
+            return sb.ToStringAndReturnToPool();
         }
 
         /// <summary>
@@ -120,14 +101,12 @@ namespace Amilious.Core.Extensions {
         public static string MakeLink(this string str, params string[] id) {
             if(id == null || id.Length == 0) return $"<link>{str}</link>";
             if(id.Length == 1) return string.Format(LINK_FORMAT, id, str);
-            var sb = RentStringBuilder().Clear();
+            var sb = StringBuilderPool.Rent;
             sb.Append("<link=\"");
             sb.Append(id[0]);
             for(var i = 1; i < id.Length; i++) sb.Append('|').Append(id[i]);
             sb.Append("\">").Append(str).Append("</link>");
-            var result = sb.ToString();
-            ReturnStringBuilder(sb);
-            return result;
+            return sb.ToStringAndReturnToPool();
         }
 
         /// <summary>
@@ -139,19 +118,16 @@ namespace Amilious.Core.Extensions {
         /// <param name="startLength">The start padding length.</param>
         /// <returns>The padded text.</returns>
         public static string PadText(this string text, char character, int length, int startLength = 0) {
-            var builder = RentStringBuilder();
-            try {
-                if(startLength > 0) {
-                    builder.Append(character, startLength);
-                    builder.Append(' ');
-                }
-                builder.Append(text.ToUpperInvariant());
-                if(builder.Length + 1 >= length) return builder.ToString();
+            var builder = StringBuilderPool.Rent;
+            if(startLength > 0) {
+                builder.Append(character, startLength);
                 builder.Append(' ');
-                builder.Append(character, length - builder.Length);
-                return builder.ToString();
             }
-            finally { ReturnStringBuilder(builder); }
+            builder.Append(text.ToUpperInvariant());
+            if(builder.Length + 1 >= length) return builder.ToString();
+            builder.Append(' ');
+            builder.Append(character, length - builder.Length);
+            return builder.ToStringAndReturnToPool();
         }
 
         /// <summary>

@@ -23,7 +23,7 @@ namespace Amilious.Core.Extensions {
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
-        private static readonly StringBuilder StringBuilder = new StringBuilder();
+        private static readonly StringBuilder StringBuilderExtensions = new StringBuilder();
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -38,26 +38,26 @@ namespace Amilious.Core.Extensions {
         /// <returns>An easy to read string for the give time span.</returns>
         public static string ToEasyReadString(this TimeSpan timeSpan, TimeLevel lowestLevel = TimeLevel.Millisecond,
             bool abbreviations = false) {
-            StringBuilder.Clear();
+            StringBuilderExtensions.Clear();
             var level = TimeLevel.Day;
             while(true) {
                 if(timeSpan.Get(level) != 0) {
                     //only add the value if it is not zero
-                    if(StringBuilder.Length != 0) {
-                        StringBuilder.Append(' ');
-                        if(level.NeedAndBefore(timeSpan, lowestLevel)) StringBuilder.Append("and ");
+                    if(StringBuilderExtensions.Length != 0) {
+                        StringBuilderExtensions.Append(' ');
+                        if(level.NeedAndBefore(timeSpan, lowestLevel)) StringBuilderExtensions.Append("and ");
                     }
                     var val = timeSpan.Get(level);
-                    StringBuilder.AppendFormat("{0} {1}",val, level.EasyStringLabel(val,abbreviations));
+                    StringBuilderExtensions.AppendFormat("{0} {1}",val, level.EasyStringLabel(val,abbreviations));
                 }
                 if(level == lowestLevel) {
-                    if(StringBuilder.Length == 0) 
-                        StringBuilder.AppendFormat("{0} {1}",0, level.EasyStringLabel(0,abbreviations));
+                    if(StringBuilderExtensions.Length == 0) 
+                        StringBuilderExtensions.AppendFormat("{0} {1}",0, level.EasyStringLabel(0,abbreviations));
                     break;
                 }
                 level--;
             }
-            return StringBuilder.ToString();
+            return StringBuilderExtensions.ToString();
         }
         
         /// <summary>
