@@ -144,6 +144,13 @@ namespace Amilious.Core.Users {
             if(!_authority.HasValue) return false;
             return orGreater? _authority.Value<=required : _authority.Value==required;
         }
+        
+        /// <summary>
+        /// This method is used to get the authority of the user.
+        /// </summary>
+        /// <returns>The authority of the user.</returns>
+        public int? GetAuthority() => _authority;
+        
 
         public static bool operator ==(UserIdentity identity, UserIdentity identity2) => identity.Id == identity2.Id && 
             identity.UserName.Equals(identity2.UserName,StringComparison.InvariantCultureIgnoreCase) && 
