@@ -15,9 +15,11 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Amilious.Core.Attributes;
 using Amilious.Core.Editor.Drawers;
 
@@ -72,7 +74,7 @@ namespace Amilious.Core.Editor.Modifiers {
         /// </summary>
         // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
         public AmiliousPropertyDrawer Drawer => _drawer;
-        
+
         /// <summary>
         /// This attribute is used to indicate if the modifier is called before drawing.
         /// </summary>
@@ -116,7 +118,7 @@ namespace Amilious.Core.Editor.Modifiers {
         /// <inheritdoc />
         public sealed override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             Initialize(property);
-            if(CalledBeforeDrawer) { Drawer.OnGUI(position,property,label); return; }
+            if (CalledBeforeDrawer) { Drawer.OnGUI(position,property,label); return; }
             if(Drawer != null) return;
             BeforeOnGUI(property,label,_hide);
             //check for range attribute

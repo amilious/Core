@@ -67,8 +67,11 @@ namespace Amilious.Core.Editor.Editors {
             var enterChildren = true;
             while (iterator.NextVisible(enterChildren)) {
                 enterChildren = false;
-                if (!_dontDraw.Contains<string>(iterator.name))
+                if (!_dontDraw.Contains<string>(iterator.name)) {
+                    if (iterator.hasChildren && iterator.GetAttributes<AmiliousModifierAttribute>()
+                            .Any(a => a.ShouldHide(iterator))) continue;
                     EditorGUILayout.PropertyField(iterator, true);
+                }
                 else {
                     //skipped drawing the property
                     DrawTabGroup(iterator.name);

@@ -19,7 +19,26 @@ namespace Amilious.Core.Attributes {
     /// <summary>
     /// This attribute is used to hide a property if a condition is met.
     /// </summary>
-    public class ShowIfAttribute : ShowHideIf {
+    public class ShowIfAttribute : AmiliousModifierAttribute {
+        
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// The property to use as the condition.
+        /// </summary>
+        public string PropertyName { get; protected set; }
+        
+        /// <summary>
+        /// If this value is true the comparison value was provided, otherwise it was not.
+        /// </summary>
+        private bool SetValue { get; set; }
+        
+        /// <summary>
+        /// This property contains the value that you want to compare to.
+        /// </summary>
+        private object Value { get; set; }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
@@ -44,6 +63,16 @@ namespace Amilious.Core.Attributes {
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <inheritdoc />
+        public override bool ShouldHide<T>(T property) {
+            return !CompareProperty(property, PropertyName, SetValue, Value);
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        
     }
     
 }
