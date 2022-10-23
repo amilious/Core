@@ -8,6 +8,7 @@ using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Runtime.Serialization.Formatters.Binary;
+using Amilious.Core.Security;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -232,22 +233,13 @@ namespace Amilious.Core.Saving {
         /// </summary>
         /// <returns>The servers identifier.</returns>
         public static string Server_GetServerIdentifier() {
-            //https://stackoverflow.com/questions/32932679/using-rngcryptoserviceprovider-to-generate-random-string
+            //try get existing identifier
             if(TryReadData(SERVER_IDENTIFIER, out string serverIdentifier)) return serverIdentifier;
-            const string charPool = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()";
-            var sb = new StringBuilder();
-            var length = SERVER_IDENTIFIER_LENGTH;
-            using (var rng = new RNGCryptoServiceProvider()) {
-                var uintBuffer = new byte[sizeof(uint)];
-                while (length-- > 0) {
-                    rng.GetBytes(uintBuffer);
-                    var num = BitConverter.ToUInt32(uintBuffer, 0);
-                    sb.Append(charPool[(int)(num % (uint)charPool.Length)]);
-                }
-            }
-            serverIdentifier = sb.ToString();
+            //generate new identifier
+            serverIdentifier = PasswordTools.GetRandomString(SERVER_IDENTIFIER_LENGTH);
             //store the identifier
             StoreData(SERVER_IDENTIFIER,serverIdentifier);
+            // return the new identifier
             return serverIdentifier;
         }
 

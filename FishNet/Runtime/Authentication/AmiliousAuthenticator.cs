@@ -30,18 +30,12 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using Amilious.Core.Authentication;
 using Amilious.Core.FishNet.Users;
+using Amilious.Core.Security;
 
 namespace Amilious.Core.FishNet.Authentication {
     
     [RequireComponent(typeof(IdentityDataManager))]
     public class AmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
-        
-        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
-        
-        private const int SALT_SIZE = 16;
-        private const int HASH_SIZE = 20;
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -297,7 +291,7 @@ namespace Amilious.Core.FishNet.Authentication {
             //generate new salt
             using var rng = new RNGCryptoServiceProvider();
             byte[] saltData;
-            rng.GetBytes(saltData = new byte[SALT_SIZE]);
+            rng.GetBytes(saltData = new byte[16]);
             salt = Convert.ToBase64String(saltData);
             //store the newly generated salt
             DataManager.Server_StoreUserData(userId,UserIdentity.PASSWORD_SALT_KEY,salt);
@@ -312,28 +306,23 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="response">A response that will be given upon failure.</param>
         /// <returns>True if the password is correct, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        protected virtual bool Server_AuthenticateCheckPassword(int infoUserId, string hashedPassword, 
+        protected virtual bool Server_AuthenticateCheckPassword(int infoUserId, string hashedPassword,
             out string response) {
-            if(!DataManager.Server_TryReadUserData(infoUserId, UserIdentity.PASSWORD_KEY, 
-                   out string storedPassword)) {
+            if (!DataManager.Server_TryReadUserData(infoUserId, UserIdentity.PASSWORD_KEY,
+                    out string storedPassword)) {
                 response = "Invalid Request! No stored password!";
                 return false;
             }
-            // Get hash bytes
-            var hashBytes = Convert.FromBase64String(hashedPassword);
-            var salt = new byte[SALT_SIZE];
-            Array.Copy(hashBytes, 0, salt, 0, SALT_SIZE);
-            // Create hash with given salt
-            using var pbkdf2 = new Rfc2898DeriveBytes(storedPassword, salt, hashIterations);
-            var hash = pbkdf2.GetBytes(HASH_SIZE);
-            // Get result
-            for(var i = 0; i < HASH_SIZE; i++) {
-                if(hashBytes[i + SALT_SIZE] == hash[i]) continue;
-                response = "Invalid Request! Incorrect password!";
-                return false;
+
+            //check the password
+            if (PasswordTools.ServerValidateClientSecurePasswordHash(storedPassword, hashedPassword,
+                    hashIterations)) {
+                response = "Successfully authenticated!";
+                return true;
             }
-            response = "Successfully authenticated!";
-            return true;
+            //the password is invalid
+            response = "Invalid Request! Incorrect password!";
+            return false;
         }
 
         /// <summary>
@@ -453,7 +442,7 @@ namespace Amilious.Core.FishNet.Authentication {
             if(logBroadcasts)Debug.Log("[Client] Password Request Broadcast Received!");
             if(passRequestBroadcast.NewPassword) {
                 PasswordRequestProvider.RequestNewPassword( pass=> {
-                    pass = FirstLevelHash(pass, passRequestBroadcast.Salt);
+                    pass = PasswordTools.HashPasswordSHA512(pass, passRequestBroadcast.Salt);
                     var passwordBroadcast = new PasswordBroadcast() {
                         RequestId = passRequestBroadcast.RequestId,
                         HashedPassword = pass
@@ -464,9 +453,10 @@ namespace Amilious.Core.FishNet.Authentication {
                 });
                 return;
             }
+            var firstHash = PasswordTools.HashPasswordSHA512(password, passRequestBroadcast.Salt);
             var passwordBroadcast = new PasswordBroadcast() {
                 RequestId = passRequestBroadcast.RequestId,
-                HashedPassword = Client_GetHashedPassword(password, passRequestBroadcast.Salt)
+                HashedPassword = PasswordTools.ClientSecurePasswordHash(firstHash,hashIterations)
             };
             if(logBroadcasts)Debug.Log("[Client] Password Broadcast Sent!");
             NetworkManager.ClientManager.Broadcast(passwordBroadcast);
@@ -493,50 +483,8 @@ namespace Amilious.Core.FishNet.Authentication {
             else OnConnectionRejected?.Invoke(authenticationResult.Response);
         }
 
-        /// <summary>
-        /// This method is used to hash the clients password before sending it to the server.
-        /// </summary>
-        /// <param name="password">The user's raw password.</param>
-        /// <param name="salt">The user's salt value.</param>
-        /// <returns>The hashed password.</returns>
-        /// <remarks>This method should only be called from a client.</remarks>
-        protected virtual string Client_GetHashedPassword(string password, string salt) {
-            password = FirstLevelHash(password, salt);
-            using var rng = new RNGCryptoServiceProvider();
-            byte[] newSalt;
-            rng.GetBytes(newSalt = new byte[SALT_SIZE]);
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, newSalt, hashIterations);
-            var hash = pbkdf2.GetBytes(HASH_SIZE);
-            // Combine salt and hash
-            var hashBytes = new byte[SALT_SIZE + HASH_SIZE];
-            Array.Copy(newSalt, 0, hashBytes, 0, SALT_SIZE);
-            Array.Copy(hash, 0, hashBytes, SALT_SIZE, HASH_SIZE);
-            // Convert to base64
-            return Convert.ToBase64String(hashBytes);
-        }
-
-        /// <summary>
-        /// This method is used to apply the first level of hashing. This will return the password that is stored on
-        /// the server.
-        /// </summary>
-        /// <param name="password">The raw password.</param>
-        /// <param name="salt">The user's salt.</param>
-        /// <returns>The raw salted password.</returns>
-        protected virtual string FirstLevelHash(string password, string salt) {
-            password = password.Trim();
-            salt = salt.Trim();
-            var bytes = System.Text.Encoding.UTF8.GetBytes($"{salt}{password}");
-            using var hash = SHA512.Create();
-            var hashedInputBytes = hash.ComputeHash(bytes);
-            // Convert to text
-            // StringBuilder Capacity is 128, because 512 bits / 8 bits in byte * 2 symbols for byte 
-            var hashedInputStringBuilder = new System.Text.StringBuilder(128);
-            foreach (var b in hashedInputBytes)
-                hashedInputStringBuilder.Append(b.ToString("X2"));
-            var hashedPassword = hashedInputStringBuilder.ToString();
-            return hashedPassword;
-        }
         
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }
