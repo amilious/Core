@@ -315,6 +315,9 @@ namespace Amilious.Core.Editor.Editors {
                 GetCustomAttributes(typeof(EditorLinkAttribute), true).Cast<EditorLinkAttribute>();
             foreach(var attribute in linkAttributes)
                 AddLinkButton(attribute.ToolTip, attribute.IconResourcePath, attribute.Link, attribute.LinkName);
+            //check hide property attributes
+            foreach(var hide in target.GetType().GetCustomAttributes<EditorHidePropertyAttribute>())
+                _dontDraw.Add(hide.PropertyName);
             //get tabs
             var iterator = serializedObject.GetIterator( );
             var enterChildren = true;

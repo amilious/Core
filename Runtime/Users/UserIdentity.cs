@@ -22,7 +22,7 @@ namespace Amilious.Core.Users {
     /// This struct is used to represent a user identity.
     /// </summary>
     public readonly struct UserIdentity {
-
+        
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
         public const string USER_NAME_KEY = "_userName_";
@@ -84,7 +84,7 @@ namespace Amilious.Core.Users {
         /// <summary>
         /// This property contains the type of the identity.
         /// </summary>
-        public IdentityType IdentityType => _identityType ?? Users.IdentityType.AmiliousConsole;
+        public IdentityType IdentityType => _identityType ?? IdentityType.AmiliousConsole;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -151,7 +151,45 @@ namespace Amilious.Core.Users {
         /// <returns>The authority of the user.</returns>
         public int? GetAuthority() => _authority;
         
+        /// <summary>
+        /// This method is used to check if two identities are equal.
+        /// </summary>
+        /// <param name="other">The other identity.</param>
+        /// <returns>True if the identities are equal, otherwise false.</returns>
+        public bool Equals(UserIdentity other) {
+            return _id == other._id && 
+                   string.Equals(_userName, other._userName, StringComparison.InvariantCulture) && 
+                   string.Equals(_link, other._link, StringComparison.InvariantCulture) && 
+                   _identityType == other._identityType;
+        }
 
+        /// <summary>
+        /// This method is used to check if two objects are equal.
+        /// </summary>
+        /// <param name="obj">The other object.</param>
+        /// <returns>True if the objects are equal, otherwise false.</returns>
+        public override bool Equals(object obj) {
+            return obj is UserIdentity other && Equals(other);
+        }
+
+        /// <summary>
+        /// This method is used to get the hash code of the object.
+        /// </summary>
+        /// <returns>The hashcode of the object.</returns>
+        public override int GetHashCode() {
+            unchecked {
+                var hashCode = _id.GetHashCode();
+                hashCode = (hashCode * 397) ^ (_userName != null ? StringComparer.InvariantCulture.GetHashCode(_userName) : 0);
+                hashCode = (hashCode * 397) ^ (_link != null ? StringComparer.InvariantCulture.GetHashCode(_link) : 0);
+                hashCode = (hashCode * 397) ^ _identityType.GetHashCode();
+                return hashCode;
+            }
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Operators //////////////////////////////////////////////////////////////////////////////////////////////
+        
         public static bool operator ==(UserIdentity identity, UserIdentity identity2) => identity.Id == identity2.Id && 
             identity.UserName.Equals(identity2.UserName,StringComparison.InvariantCultureIgnoreCase) && 
             identity.IdentityType==identity2.IdentityType&&identity._authority==identity2._authority;
