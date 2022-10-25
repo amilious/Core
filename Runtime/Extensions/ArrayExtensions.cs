@@ -22,7 +22,7 @@ namespace Amilious.Core.Extensions {
     /// This class is used to add methods to the <see cref="Array"/> class.
     /// </summary>
     public static class ArrayExtensions {
-        
+
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
@@ -87,7 +87,7 @@ namespace Amilious.Core.Extensions {
                 ary[index] = modifier(ary[index]);
             }
         }
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
