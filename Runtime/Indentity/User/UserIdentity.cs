@@ -16,12 +16,12 @@
 
 using System;
 
-namespace Amilious.Core.Users {
+namespace Amilious.Core.Indentity.User {
     
     /// <summary>
     /// This struct is used to represent a user identity.
     /// </summary>
-    public readonly struct UserIdentity {
+    public readonly struct UserIdentity : IIdentity {
         
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -41,7 +41,7 @@ namespace Amilious.Core.Users {
         private readonly string _userName;
         private readonly string _link;
         private readonly int? _authority;
-        private readonly IdentityType? _identityType;
+        private readonly UserType? _userType;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -50,17 +50,17 @@ namespace Amilious.Core.Users {
         /// <summary>
         /// This is the console's user identity.
         /// </summary>
-        public static UserIdentity Console = new UserIdentity("Amilious Console",IdentityType.AmiliousConsole);
+        public static UserIdentity Console = new UserIdentity("Amilious Console",UserType.AmiliousConsole);
         
         /// <summary>
         /// This is the default user identity that is used when offline.
         /// </summary>
-        public static UserIdentity DefaultUser = new UserIdentity("User",IdentityType.DefaultUser);
+        public static UserIdentity DefaultUser = new UserIdentity("User",UserType.DefaultUser);
 
         /// <summary>
         /// This is the server's identity.
         /// </summary>
-        public static UserIdentity Server = new UserIdentity("Server",IdentityType.Server);
+        public static UserIdentity Server = new UserIdentity("Server",UserType.Server);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -74,17 +74,19 @@ namespace Amilious.Core.Users {
         /// <summary>
         /// This property contains the user's user name.
         /// </summary>
-        public string UserName => _userName ?? "Amilious Console";
+        public string Name => _userName ?? "Amilious Console";
 
         /// <summary>
         /// This property contains a TMP link for the user.
         /// </summary>
-        public string Link => _link ?? UserName;
+        public string Link => _link ?? Name;
 
         /// <summary>
         /// This property contains the type of the identity.
         /// </summary>
-        public IdentityType IdentityType => _identityType ?? IdentityType.AmiliousConsole;
+        public UserType UserType => _userType ?? UserType.AmiliousConsole;
+
+        public IdentityType IdentityType => IdentityType.User; 
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +102,7 @@ namespace Amilious.Core.Users {
             _userName = userName;
             _authority = null;
             _link = $"<link=user|{id}>{userName}</link>";
-            _identityType = IdentityType.User;
+            _userType = UserType.User;
         }
 
         /// <summary>
@@ -114,20 +116,20 @@ namespace Amilious.Core.Users {
             _userName = userName;
             _authority = authority;
             _link = $"<link=user|{id}>{userName}</link>";
-            _identityType = IdentityType.User;
+            _userType = UserType.User;
         }
 
         /// <summary>
         /// This constructor is used to create static instances of user identities.
         /// </summary>
         /// <param name="displayName">The display name.</param>
-        /// <param name="identityType">The identity type.</param>
-        private UserIdentity(string displayName, IdentityType identityType) {
+        /// <param name="userType">The identity type.</param>
+        private UserIdentity(string displayName, UserType userType) {
             _id = RESERVED_ID;
             _userName = displayName;
             _authority = null;
             _link = displayName;
-            _identityType = identityType;
+            _userType = userType;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +162,7 @@ namespace Amilious.Core.Users {
             return _id == other._id && 
                    string.Equals(_userName, other._userName, StringComparison.InvariantCulture) && 
                    string.Equals(_link, other._link, StringComparison.InvariantCulture) && 
-                   _identityType == other._identityType;
+                   _userType == other._userType;
         }
 
         /// <summary>
@@ -181,7 +183,7 @@ namespace Amilious.Core.Users {
                 var hashCode = _id.GetHashCode();
                 hashCode = (hashCode * 397) ^ (_userName != null ? StringComparer.InvariantCulture.GetHashCode(_userName) : 0);
                 hashCode = (hashCode * 397) ^ (_link != null ? StringComparer.InvariantCulture.GetHashCode(_link) : 0);
-                hashCode = (hashCode * 397) ^ _identityType.GetHashCode();
+                hashCode = (hashCode * 397) ^ _userType.GetHashCode();
                 return hashCode;
             }
         }
@@ -191,22 +193,22 @@ namespace Amilious.Core.Users {
         #region Operators //////////////////////////////////////////////////////////////////////////////////////////////
         
         public static bool operator ==(UserIdentity identity, UserIdentity identity2) => identity.Id == identity2.Id && 
-            identity.UserName.Equals(identity2.UserName,StringComparison.InvariantCultureIgnoreCase) && 
-            identity.IdentityType==identity2.IdentityType&&identity._authority==identity2._authority;
+            identity.Name.Equals(identity2.Name,StringComparison.InvariantCultureIgnoreCase) && 
+            identity.UserType==identity2.UserType&&identity._authority==identity2._authority;
         
         public static bool operator !=(UserIdentity identity, UserIdentity identity2) => identity.Id != identity2.Id || 
-            !identity.UserName.Equals(identity2.UserName,StringComparison.InvariantCultureIgnoreCase) || 
-            identity.IdentityType!=identity2.IdentityType||identity._authority!=identity2._authority;
+            !identity.Name.Equals(identity2.Name,StringComparison.InvariantCultureIgnoreCase) || 
+            identity.UserType!=identity2.UserType||identity._authority!=identity2._authority;
         
         public static bool operator ==(UserIdentity identity, int id) => identity.Id == id;
         
         public static bool operator !=(UserIdentity identity, int id) => identity.Id != id;
 
         public static bool operator ==(UserIdentity identity, string userName) =>
-            identity.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase);
+            identity.Name.Equals(userName, StringComparison.CurrentCultureIgnoreCase);
         
         public static bool operator !=(UserIdentity identity, string userName) =>
-            identity.UserName.Equals(userName, StringComparison.CurrentCultureIgnoreCase);
+            identity.Name.Equals(userName, StringComparison.CurrentCultureIgnoreCase);
 
         public static bool operator >(UserIdentity identity, UserIdentity identity2) {
             if(!identity._authority.HasValue && identity2._authority.HasValue) return false;

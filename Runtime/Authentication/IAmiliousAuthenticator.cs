@@ -1,4 +1,5 @@
 using System;
+using Amilious.Core.Indentity.User;
 using Amilious.Core.Saving;
 
 namespace Amilious.Core.Authentication {
@@ -18,7 +19,7 @@ namespace Amilious.Core.Authentication {
         /// <summary>
         /// This property is used to get the authenticator's data manager.
         /// </summary>
-        public IdentityDataManager DataManager { get; }
+        public UserIdentityDataManager DataManager { get; }
 
     }
     

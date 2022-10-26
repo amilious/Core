@@ -18,28 +18,28 @@ using System;
 using UnityEngine;
 using FishNet.Object;
 using FishNet.Connection;
-using Amilious.Core.Users;
 using Amilious.Core.Saving;
 using FishNet.Transporting;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
+using Amilious.Core.Indentity.User;
 using FishNet.Object.Synchronizing;
 
 namespace Amilious.Core.FishNet.Users {
     
-    [RequireComponent(typeof(IdentityDataManager))]
-    public class FishNetIdentityManager : NetworkBehaviour, IIdentityManager {
+    [RequireComponent(typeof(UserIdentityDataManager))]
+    public class FishNetUserIdentityManager : NetworkBehaviour, IUserIdentityManager {
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        private IdentityDataManager _identityDataManager;
+        private UserIdentityDataManager _userIdentityDataManager;
         private int localUserId;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
 
-        public event IIdentityManager.UserConnectionChangedDelegate OnUserConnectionChanged;
+        public event IUserIdentityManager.UserConnectionChangedDelegate OnUserConnectionChanged;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -94,8 +94,8 @@ namespace Amilious.Core.FishNet.Users {
         private void Awake() {
             _online.OnChange += OnlineChanged;
             if(!IsServer) return; //load on server only
-            _identityDataManager = GetComponent<IdentityDataManager>();
-            _serverIdentifier = _identityDataManager.Server_GetServerIdentifier();
+            _userIdentityDataManager = GetComponent<UserIdentityDataManager>();
+            _serverIdentifier = _userIdentityDataManager.Server_GetServerIdentifier();
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ namespace Amilious.Core.FishNet.Users {
         /// <inheritdoc />
         public bool TryGetIdentity(string userName, out UserIdentity identity) {
             foreach(var ident in _userLookup.Values) {
-                if(!ident.UserName.Equals(userName,StringComparison.InvariantCultureIgnoreCase)) continue;
+                if(!ident.Name.Equals(userName,StringComparison.InvariantCultureIgnoreCase)) continue;
                 identity = ident;
                 return true;
             }
@@ -127,9 +127,9 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         /// <inheritdoc />
-        public virtual bool CanSendMessageTo(int sender, int recipient) {
-            return !_identityDataManager.Server_HasBlocked(sender, recipient) && 
-                   !_identityDataManager.Server_HasBlocked(recipient, sender) && 
+        public virtual bool Server_CanSendMessage(int sender, int recipient) {
+            return !_userIdentityDataManager.Server_HasBlocked(sender, recipient) && 
+                   !_userIdentityDataManager.Server_HasBlocked(recipient, sender) && 
                    _online.Contains(recipient);
         }
         
@@ -147,18 +147,18 @@ namespace Amilious.Core.FishNet.Users {
         public override void OnStartServer() {
             base.OnStartServer();
             //register authenticator
-            if(_identityDataManager == null) _identityDataManager = GetComponent<IdentityDataManager>();
+            if(_userIdentityDataManager == null) _userIdentityDataManager = GetComponent<UserIdentityDataManager>();
             NetworkManager.ServerManager.OnAuthenticationResult += OnAuthenticationResult;
             NetworkManager.ServerManager.OnRemoteConnectionState += OnRemoteConnectionState;
             //load the users
-            foreach(var id in _identityDataManager.Server_GetStoredUserIds()) UpdateIdentity(id);
+            foreach(var id in _userIdentityDataManager.Server_GetStoredUserIds()) UpdateIdentity(id);
         }
 
         private void OnRemoteConnectionState(NetworkConnection con, RemoteConnectionStateArgs args) {
             if(!con.TryGetUserId(out var userId)) return;
             if(args.ConnectionState != RemoteConnectionState.Stopped) return;
             //update disconnect time
-            _identityDataManager.Server_StoreUserData(userId,UserIdentity.LAST_DISCONNECTED_KEY,DateTime.UtcNow);
+            _userIdentityDataManager.Server_StoreUserData(userId,UserIdentity.LAST_DISCONNECTED_KEY,DateTime.UtcNow);
             UpdateIdentity(userId);
             _online.Remove(userId);
         }
@@ -169,7 +169,7 @@ namespace Amilious.Core.FishNet.Users {
         /// <param name="id">The updated identity id.</param>
         [Server]
         public void UpdateIdentity(int id) {
-            if(!_identityDataManager.Server_TryGetUserIdentity(id, out var identity)) {
+            if(!_userIdentityDataManager.Server_TryGetUserIdentity(id, out var identity)) {
                 _userLookup.Remove(id); 
                 return;
             }
@@ -189,12 +189,12 @@ namespace Amilious.Core.FishNet.Users {
             if(!authenticated) return;
             if(!con.TryGetUserId(out var id)) return;
             if(!_online.Contains(id)) _online.Add(id);
-            _identityDataManager.Server_StoreUserData(id,UserIdentity.LAST_CONNECTED_KEY,DateTime.UtcNow);
+            _userIdentityDataManager.Server_StoreUserData(id,UserIdentity.LAST_CONNECTED_KEY,DateTime.UtcNow);
             if(_userLookup.ContainsKey(id)) {
                 UpdateIdentity(id);
                 return;
             }
-            if(!_identityDataManager.Server_TryGetUserIdentity(id,out var identity))return;
+            if(!_userIdentityDataManager.Server_TryGetUserIdentity(id,out var identity))return;
             _userLookup.Add(id,identity);
         }
         
@@ -242,29 +242,29 @@ namespace Amilious.Core.FishNet.Users {
 
         /// <inheritdoc />
         [Server]
-        public virtual bool TrySetAuthority(UserIdentity identity, int value) => TrySetAuthority(identity.Id, value);
+        public virtual bool Server_TrySetAuthority(UserIdentity identity, int value) => Server_TrySetAuthority(identity.Id, value);
 
         /// <inheritdoc />
         [Server]
-        public virtual bool TrySetAuthority(int userId, int value) {
-            if(!_identityDataManager.Server_IsUserIdValid(userId)) return false;
-            _identityDataManager.Server_StoreUserData(userId,UserIdentity.AUTHORITY_KEY,value);
+        public virtual bool Server_TrySetAuthority(int userId, int value) {
+            if(!_userIdentityDataManager.Server_IsUserIdValid(userId)) return false;
+            _userIdentityDataManager.Server_StoreUserData(userId,UserIdentity.AUTHORITY_KEY,value);
             UpdateIdentity(userId);
             return true;
         }
 
         /// <inheritdoc />
         [Server]
-        public virtual bool TryUpdateUserName(UserIdentity identity, string userName) =>
-            TryUpdateUserName(identity.Id, userName);   
+        public virtual bool Server_TryUpdateUserName(UserIdentity identity, string userName) =>
+            Server_TryUpdateUserName(identity.Id, userName);   
         
         /// <inheritdoc />
         [Server]
-        public virtual bool TryUpdateUserName(int userId, string userName) {
-            if(!_identityDataManager.Server_IsUserIdValid(userId)) return false;
+        public virtual bool Server_TryUpdateUserName(int userId, string userName) {
+            if(!_userIdentityDataManager.Server_IsUserIdValid(userId)) return false;
             //make sure the user name is not being used
-            if(_identityDataManager.Server_TryGetIdFromUserName(userName, out _)) return false;
-            _identityDataManager.Server_StoreUserData(userId,UserIdentity.USER_NAME_KEY,userName);
+            if(_userIdentityDataManager.Server_TryGetIdFromUserName(userName, out _)) return false;
+            _userIdentityDataManager.Server_StoreUserData(userId,UserIdentity.USER_NAME_KEY,userName);
             UpdateIdentity(userId);
             return true;
         }

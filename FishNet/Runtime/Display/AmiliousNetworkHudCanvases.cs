@@ -1,5 +1,6 @@
 using Amilious.Core.Attributes;
 using Amilious.Core.FishNet.Authentication;
+using Amilious.Core.Indentity.User;
 using Amilious.Core.Saving;
 using FishNet.Managing;
 using FishNet.Transporting;
@@ -27,7 +28,7 @@ namespace Amilious.Core.FishNet.Display {
         [SerializeField] private AmiliousAuthenticator authenticator;
         [Tooltip("What connections to automatically start on play.")]
         [SerializeField] private AutoStartType autoStartType = AutoStartType.Disabled;
-        [SerializeField] private IdentityDataManager dataManager;
+        [SerializeField] private UserIdentityDataManager dataManager;
         
         [Header("Colors")]
         [Tooltip("Color when socket is stopped.")] [SerializeField] private Color stoppedColor;        

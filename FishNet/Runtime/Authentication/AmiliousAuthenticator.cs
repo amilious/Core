@@ -18,7 +18,6 @@ using System;
 using UnityEngine;
 using FishNet.Managing;
 using FishNet.Connection;
-using Amilious.Core.Users;
 using Amilious.Core.Saving;
 using FishNet.Transporting;
 using System.ComponentModel;
@@ -30,11 +29,12 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using Amilious.Core.Authentication;
 using Amilious.Core.FishNet.Users;
+using Amilious.Core.Indentity.User;
 using Amilious.Core.Security;
 
 namespace Amilious.Core.FishNet.Authentication {
     
-    [RequireComponent(typeof(IdentityDataManager))]
+    [RequireComponent(typeof(UserIdentityDataManager))]
     public class AmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
         
         #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////
@@ -77,8 +77,8 @@ namespace Amilious.Core.FishNet.Authentication {
             new Dictionary<NetworkConnection, AuthenticationRequest>();
 
         private int _nextRequest = int.MinValue;
-        private FishNetIdentityManager _identityManager;
-        private IdentityDataManager _identityDataManager;
+        private FishNetUserIdentityManager _userIdentityManager;
+        private UserIdentityDataManager _userIdentityDataManager;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -87,7 +87,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <summary>
         /// This property is used to get the authenticator's data manager.
         /// </summary>
-        public IdentityDataManager DataManager => this.GetOrAddComponent(ref _identityDataManager);
+        public UserIdentityDataManager DataManager => this.GetOrAddComponent(ref _userIdentityDataManager);
 
         /// <summary>
         /// This property is used to get a new password when requested.
@@ -360,7 +360,7 @@ namespace Amilious.Core.FishNet.Authentication {
                 newUser = false;
                 userId = authenticationInfo.UserId;
                 if(DataManager.Server_TryGetUserIdentity(authenticationInfo.UserId, out var identity)) {
-                    userName = identity.UserName;
+                    userName = identity.Name;
                     return true;
                 }
                 userName = null;
@@ -370,7 +370,7 @@ namespace Amilious.Core.FishNet.Authentication {
             //authenticating with user name
             if(DataManager.Server_TryGetUserIdentity(authenticationInfo.UserName, out var identity2)) {
                 userId = identity2.Id;
-                userName = identity2.UserName;
+                userName = identity2.Name;
                 newUser = false;
                 return true;
             }
@@ -386,7 +386,7 @@ namespace Amilious.Core.FishNet.Authentication {
             identity2 = DataManager.Server_AddUser(authenticationInfo.UserName);
             //the user has not been registered so make a new user
             userId = identity2.Id;
-            userName = identity2.UserName;
+            userName = identity2.Name;
             newUser = true;
             response = "Auto-registering new user!";
             return true;

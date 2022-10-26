@@ -16,9 +16,9 @@
 
 using System.Collections.Generic;
 
-namespace Amilious.Core.Users {
+namespace Amilious.Core.Indentity.User {
     
-    public interface IIdentityManager {
+    public interface IUserIdentityManager {
         
         public delegate void UserConnectionChangedDelegate(UserIdentity identity, bool connected);
         
@@ -130,7 +130,7 @@ namespace Amilious.Core.Users {
         /// <param name="recipient">The receiver of the message.</param>
         /// <returns>True if the sender is able to send a message to the recipient, otherwise false.</returns>
         /// <remarks>This method should only be called from the server!</remarks>
-        bool CanSendMessageTo(int sender, int recipient);
+        bool Server_CanSendMessage(int sender, int recipient);
         
         /// <summary>
         /// This method is used to change an identity's authority.
@@ -139,7 +139,7 @@ namespace Amilious.Core.Users {
         /// <param name="authority">The identity's authority (bigger is less authority)</param>
         /// <returns>True if the user exists and was updated, otherwise false.</returns>
         /// <remarks>This method should only be called on the server!</remarks>
-        bool TrySetAuthority(UserIdentity identity, int authority = int.MaxValue);
+        bool Server_TrySetAuthority(UserIdentity identity, int authority = int.MaxValue);
 
         /// <summary>
         /// This method is used to change an identity's authority.
@@ -148,7 +148,7 @@ namespace Amilious.Core.Users {
         /// <param name="authority">The identity's authority (bigger is less authority)</param>
         /// <returns>True if the user exists and was updated, otherwise false.</returns>
         /// <remarks>This method should only be called on the server!</remarks>
-        bool TrySetAuthority(int userId, int authority = int.MaxValue);
+        bool Server_TrySetAuthority(int userId, int authority = int.MaxValue);
 
         /// <summary>
         /// This method is used to change an identity's user name.
@@ -157,7 +157,7 @@ namespace Amilious.Core.Users {
         /// <param name="userName">The identity's new user name.</param>
         /// <returns>True if the user exists, the user name is available, and was updated, otherwise false.</returns>
         /// <remarks>This method should only be called on the server!</remarks>
-        bool TryUpdateUserName(UserIdentity identity, string userName);
+        bool Server_TryUpdateUserName(UserIdentity identity, string userName);
 
         /// <summary>
         /// This method is used to change an identity's user name.
@@ -166,7 +166,7 @@ namespace Amilious.Core.Users {
         /// <param name="userName">The identity's new user name.</param>
         /// <returns>True if the user exists, the user name is available, and was updated, otherwise false.</returns>
         /// <remarks>This method should only be called on the server!</remarks>
-        bool TryUpdateUserName(int userId, string userName);
+        bool Server_TryUpdateUserName(int userId, string userName);
         
     }
     

@@ -17,12 +17,12 @@
 using UnityEngine;
 using FishNet.Managing;
 using FishNet.Connection;
-using Amilious.Core.Users;
 using Amilious.Core.Saving;
 using FishNet.Managing.Server;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using Amilious.Core.FishNet.Authentication;
+using Amilious.Core.Indentity.User;
 
 namespace Amilious.Core.FishNet {
     
@@ -105,7 +105,7 @@ namespace Amilious.Core.FishNet {
         /// </summary>
         /// <param name="serverManager">The server manager.</param>
         /// <returns>The identity data manager for server if using an amilious authenticator, otherwise null.</returns>
-        public static IdentityDataManager GetIdentityDataManager(this ServerManager serverManager) {
+        public static UserIdentityDataManager GetIdentityDataManager(this ServerManager serverManager) {
             var dataManager = serverManager.GetAmiliousAuthenticator()?.DataManager;
             if(dataManager==null)
                 Debug.LogWarning("Unable to get the Identity Data Manager from the Server Manager!");

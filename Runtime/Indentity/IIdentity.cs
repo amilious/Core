@@ -14,50 +14,28 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
-using Amilious.Core.Users;
-using FishNet.Serializing;
-
-namespace Amilious.Core.FishNet.Users {
+namespace Amilious.Core.Indentity {
     
     /// <summary>
-    /// This class is used by the <see cref="FishNet"/> serializerMethods when sending user id's to the client.
+    /// This is a base interface for identities.
     /// </summary>
-    public static class FishNetUserIdentitySerializer {
-        
-        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
+    public interface IIdentity {
         
         /// <summary>
-        /// This method is used to write a user identity's values.
+        /// This property contains the name of the entity.
         /// </summary>
-        /// <param name="writer">The writer.</param>
-        /// <param name="identity">The identity that you want to write.</param>
-        public static void WriteUserIdentity(this Writer writer, UserIdentity identity) {
-            writer.WriteByte((byte)identity.IdentityType);
-            if(identity.IdentityType != IdentityType.User) return;
-            writer.WriteInt32(identity.Id);
-            writer.WriteString(identity.UserName);
-        }
-
-        /// <summary>
-        /// This method is used to read a user identity's values.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <returns>User Identity build from the reader's values.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if invalid identity type.</exception>
-        public static UserIdentity ReadUserIdentity(this Reader reader) {
-            var type = (IdentityType)reader.ReadByte();
-            switch(type) {
-                case IdentityType.Server: return UserIdentity.Server;
-                case IdentityType.AmiliousConsole: return UserIdentity.Console;
-                case IdentityType.DefaultUser: return  UserIdentity.DefaultUser;
-                case IdentityType.User: return new UserIdentity(reader.ReadInt32(),reader.ReadString());
-                default: throw new ArgumentOutOfRangeException();
-            }
-        }
+        public string Name { get; }
         
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        /// <summary>
+        /// This property contains the unique id for the identity type.
+        /// </summary>
+        public int Id { get; }
+        
+        /// <summary>
+        /// This property contains the identity type.
+        /// </summary>
+        public IdentityType IdentityType { get; }
+        
     }
     
 }

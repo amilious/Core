@@ -3,11 +3,12 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using UnityEngine;
-using Amilious.Core.Users;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Runtime.Serialization.Formatters.Binary;
+using Amilious.Core.Indentity.Group;
+using Amilious.Core.Indentity.User;
 using Amilious.Core.Security;
 
 #if UNITY_EDITOR
@@ -30,6 +31,9 @@ namespace Amilious.Core.Saving {
         private const string SERVER_USER_BLOCKED = "**server_user_blocked**";
         private const string SERVER_USER_FRIENDS = "**server_user_friends**";
         private const string SERVER_NEXT_IDENTITY_ID = "**server_next_identity_id**";
+        private const string SERVER_NEXT_GROUP_ID = "**server_next_channel_id**";
+        private const string SERVER_GROUP_DATA = "**server_group_data**";
+        private const string SERVER_GROUP_MEMBERS = "**server_group_members**";
         private const int SERVER_IDENTIFIER_LENGTH = 24;
         private const string CLIENT_USER_NAME = "**client_user_name**";
         private const string CLIENT_PASSWORD = "**client_password**";
@@ -57,7 +61,10 @@ namespace Amilious.Core.Saving {
         /// </summary>
         private static Dictionary<int, List<int>> _serverUserFriends = new Dictionary<int, List<int>>();
 
-        private static readonly List<int> EmptyList = new List<int>(0);
+        private static Dictionary<int, List<int>> _serverGroupMembers = new Dictionary<int, List<int>>();
+
+        private static Dictionary<int, Dictionary<string, object>> _serverGroupData = 
+            new Dictionary<int, Dictionary<string, object>>();
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -132,6 +139,10 @@ namespace Amilious.Core.Saving {
                 _serverUserBlocked = new Dictionary<int, List<int>>();
             if(!_data.TryGetCastValue(SERVER_USER_FRIENDS, out _serverUserFriends))
                 _serverUserFriends = new Dictionary<int, List<int>>();
+            if(!_data.TryGetCastValue(SERVER_GROUP_DATA, out _serverGroupData))
+                _serverGroupData = new Dictionary<int, Dictionary<string, object>>();
+            if(!_data.TryGetCastValue(SERVER_GROUP_MEMBERS, out _serverGroupMembers))
+                _serverGroupMembers = new Dictionary<int, List<int>>();
             if(ShowSaveAndLoadLogs)
                 Debug.Log("<b><color=#FFA500>IdentitySave:</color></b> <color=#00FF00>Loaded the save data!</color>");
         }
@@ -156,11 +167,15 @@ namespace Amilious.Core.Saving {
             _serverUserData.Clear();
             _serverUserBlocked.Clear();
             _serverUserFriends.Clear();
+            _serverGroupData.Clear();
+            _serverGroupMembers.Clear();
             _data.Clear();
             //data containers
             _data[SERVER_USER_DATA] = _serverUserData;
             _data[SERVER_USER_BLOCKED] = _serverUserBlocked;
             _data[SERVER_USER_FRIENDS] = _serverUserFriends;
+            _data[SERVER_GROUP_DATA] = _serverGroupData;
+            _data[SERVER_GROUP_MEMBERS] = _serverGroupMembers;
             DataChanged = true;
             Debug.Log("<b><color=#FFA500>IdentitySave:</color></b> <color=#FF0000>Reset the save data!</color>");
             Save();
@@ -530,6 +545,168 @@ namespace Amilious.Core.Saving {
         /// <returns>True if there is a saved password, otherwise false.</returns>
         public static bool Client_TryGetLastPassword(out string password) {
             return TryReadData(CLIENT_PASSWORD, out password);
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Group Server Methods ///////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// This method is used to get data for the group with the given id.
+        /// </summary>
+        /// <param name="id">The group's id.</param>
+        /// <param name="key">The key for the data.</param>
+        /// <param name="value">The value for the given key.</param>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <returns>True if able to read the data, otherwise false.</returns>
+        public static bool Server_TryReadGroupData<T>(int id, string key, out T value) {
+            if(_serverGroupData.TryGetValueFix(id, out var channelInfo))
+                return channelInfo.TryGetCastValue(key, out value);
+            value = default;
+            return false;
+        }
+
+        /// <summary>
+        /// This method is used to store data for the group with the given id.
+        /// </summary>
+        /// <param name="id">The group's id.</param>
+        /// <param name="key">The key for the data.</param>
+        /// <param name="value">The value for the given key.</param>
+        /// <param name="save">If true the data will be written to a file after updating the value.</param>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        public static void Server_StoreGroupData<T>(int id, string key, T value, bool save = true) {
+            if(!_serverGroupData.TryGetValueFix(id, out var groupIdentity)) {
+                groupIdentity = new Dictionary<string, object>();
+            }
+            groupIdentity[key] = value;
+            if(save) Save();
+        }
+
+        /// <summary>
+        /// This method is used to add a user to a group.
+        /// </summary>
+        /// <param name="groupId">The id of the group that you want to add a user to.</param>
+        /// <param name="userId">The id of the user that you want to add to the group.</param>
+        /// <param name="save">If true the data will be written to a file after updating the value.</param>
+        /// <returns>True if the user was added to the group, otherwise false if the user
+        /// was already in the channel.</returns>
+        public static bool Server_AddUserToGroup(int groupId, int userId, bool save = true) {
+            if(!_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) {
+                groupMembers = new List<int>();
+            }
+            if(groupMembers.Contains(userId)) return false;
+            groupMembers.Add(userId);
+            if(save) Save();
+            return true;
+        }
+
+        /// <summary>
+        /// This method is used to remove a user from a group.
+        /// </summary>
+        /// <param name="groupId">The id of the group that you want to remove a user from.</param>
+        /// <param name="userId">The id of the user that you want to remove from the group.</param>
+        /// <param name="save">If true the data will be written to a file after updating the value.</param>
+        /// <returns>True if the user was removed from the group, otherwise false if the user was not
+        /// part of the group.</returns>
+        public static bool Server_RemoveUserFromGroup(int groupId, int userId, bool save = true) {
+            if(!_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) return false;
+            groupMembers.Remove(userId);
+            if(save) Save();
+            return true;
+        }
+
+        /// <summary>
+        /// This method is used to get all of the group ids.
+        /// </summary>
+        /// <returns>The group ids.</returns>
+        public static IEnumerable<int> Server_GetGroupIds() {
+            return _serverGroupMembers.Keys;
+        }
+
+        /// <summary>
+        /// This method is used to try get the groups for a given user.
+        /// </summary>
+        /// <param name="userId">The id of the user that you want to get the groups for.</param>
+        /// <param name="channels">The groups that the user is a member of.</param>
+        /// <returns>True if the user is a member of a group, otherwise false.</returns>
+        public static bool Server_TryGetUsersGroups(int userId, out IEnumerable<int> channels) {
+            var results = new List<int>();
+            foreach(var group in _serverGroupMembers) {
+                if(group.Value.Contains(userId))results.Add(group.Key);
+            }
+            channels = results;
+            return results.Count > 0;
+        }
+
+        /// <summary>
+        /// This method is used to get the members of the given group.
+        /// </summary>
+        /// <param name="groupId">The id of the group that you want to get the members of.</param>
+        /// <param name="members">The members of the group with the given id.</param>
+        /// <returns>True if the group contains members, otherwise false.</returns>
+        public static bool Server_TryGetGroupMembers(int groupId, out IEnumerable<int> members) {
+            if(_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) {
+                members = groupMembers;
+                return true;
+            }
+            members = null;
+            return false;
+        }
+
+        /// <summary>
+        /// This method is used to get the number of members for a given group.
+        /// </summary>
+        /// <param name="groupId">The id of the group.</param>
+        /// <param name="count">The number of members in the group.</param>
+        /// <returns>True if the group exists, otherwise false.</returns>
+        public static bool Server_TryGetGroupMemberCount(int groupId, out int count) {
+            if(_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) {
+                count = groupMembers.Count;
+                return true;
+            }
+            count = 0;
+            return false;
+        }
+
+        /// <summary>
+        /// This method is used to remove a group.
+        /// </summary>
+        /// <param name="gorupId">The id of the group that you want to remove.</param>
+        /// <param name="save">If true the data will be written to a file after updating the value.</param>
+        /// <returns>True if the group was removed, otherwise false if the group did not exist.</returns>
+        public static bool Server_RemoveGroup(int gorupId, bool save = true) {
+            if(!_serverGroupData.ContainsKey(gorupId)) return false;
+            _serverGroupData.Remove(gorupId);
+            if(save) Save();
+            return true;
+        }
+
+        /// <summary>
+        /// This method is used to add a new group to the server.
+        /// </summary>
+        /// <param name="groupName">The name for the group.</param>
+        /// <param name="groupType">The type of group that you want to create.</param>
+        /// <param name="save">If true the data will be written to a file after updating the value.</param>
+        /// <returns>The id for the new group.</returns>
+        public static int Server_AddGroup(string groupName = null, GroupType groupType = GroupType.Chat, 
+            bool save = true) {
+            var id = Server_TakeNextGroupId();
+            if(string.IsNullOrWhiteSpace(groupName)) groupName = $"Group{id}";
+            Server_StoreGroupData(id, GroupIdentity.GROUP_NAME_KEY ,groupName);
+            Server_StoreGroupData(id,GroupIdentity.GROUP_TYPE_KEY, (byte)groupType);
+            if(save) Save();
+            return id;
+        }
+        
+        /// <summary>
+        /// This method is used to get the next available group id.
+        /// </summary>
+        /// <returns>The next available group id.</returns>
+        public static int Server_TakeNextGroupId() {
+            TryReadData(SERVER_NEXT_GROUP_ID, out int id);
+            id++;
+            StoreData(SERVER_NEXT_GROUP_ID,id);
+            return id;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

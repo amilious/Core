@@ -14,15 +14,15 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using Amilious.Core.Users;
+using Amilious.Core.Saving;
 using System.Collections.Generic;
 
-namespace Amilious.Core.Saving {
+namespace Amilious.Core.Indentity.User {
     
     /// <summary>
     /// This class is used to access, store, and edit information.
     /// </summary>
-    public class IdentityDataManager : AmiliousBehavior {
+    public class UserIdentityDataManager : AmiliousBehavior {
 
         #region Server Data ////////////////////////////////////////////////////////////////////////////////////////////
 
