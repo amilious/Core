@@ -16,7 +16,10 @@
 
 namespace Amilious.Core.Indentity.Group {
     
-    public struct GroupIdentity : IIdentity {
+    /// <summary>
+    /// This stuct is used to represent the identity of a group.
+    /// </summary>
+    public readonly struct GroupIdentity : IIdentity {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -26,26 +29,45 @@ namespace Amilious.Core.Indentity.Group {
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
-        
-        public int Id { get; }
+        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        public string Name { get; }
+        private readonly int? _id;
+        private readonly string _name;
+        private readonly GroupType? _groupType;
+        public readonly string _link;
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        public GroupType GroupType { get; }
+        #region Static Instances ///////////////////////////////////////////////////////////////////////////////////////
+
+        public static readonly GroupIdentity Default = default;
         
-        public string Link { get; }
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+
+        public int Id => _id ?? int.MinValue;
+
+        public string Name => _name ?? "Default Group";
+
+        public GroupType GroupType => _groupType ?? GroupType.Global;
+
+        public string Link => _link ?? Name;
 
         public IdentityType IdentityType => IdentityType.Group;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
+        
         public GroupIdentity(int id, string name, GroupType groupType) {
-            Id = id;
-            Name = name;
-            GroupType = groupType;
-            Link = $"<link=group|{id}>{name}</link>";
+            _id = id;
+            _name = name;
+            _groupType = groupType;
+            _link = $"<link=group|{id}>{name}</link>";
         }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
     
