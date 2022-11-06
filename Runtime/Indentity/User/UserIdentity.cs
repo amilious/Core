@@ -25,7 +25,7 @@ namespace Amilious.Core.Indentity.User {
         
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
-        public const string USER_NAME_KEY = "_userName_";
+        public const string USER_NAME_KEY = "_user_name_";
         public const string AUTHORITY_KEY = "_authority_";
         public const string PASSWORD_SALT_KEY = "_salt_";
         public const string PASSWORD_KEY = "_password_";
@@ -143,15 +143,15 @@ namespace Amilious.Core.Indentity.User {
         /// <param name="orGreater">If true greater authority will also be accepted.</param>
         /// <returns>True if the user has authority, otherwise false.</returns>
         public bool HasAuthority(int required,bool orGreater = true) {
-            if(!_authority.HasValue) return false;
-            return orGreater? _authority.Value<=required : _authority.Value==required;
+            if(_authority==-1) return false;
+            return orGreater? _authority<=required : _authority==required;
         }
         
         /// <summary>
         /// This method is used to get the authority of the user.
         /// </summary>
-        /// <returns>The authority of the user.</returns>
-        public int? GetAuthority() => _authority;
+        /// <returns>The authority of the user, or -1 if the user does not have authority.</returns>
+        public int GetAuthority() => _authority??-1;
         
         /// <summary>
         /// This method is used to check if two identities are equal.

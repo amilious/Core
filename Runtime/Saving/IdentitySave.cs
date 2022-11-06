@@ -208,7 +208,7 @@ namespace Amilious.Core.Saving {
         /// </summary>
         /// <param name="oldVersion">The version that was loaded.</param>
         /// <param name="data">The loaded data that needs to be modified.</param>
-        private static void UpgradeData(Version oldVersion, Dictionary<string, object> data) { }
+        private static void UpgradeData(Version oldVersion, Dictionary<string, object> data) {}
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
                    
@@ -491,12 +491,45 @@ namespace Amilious.Core.Saving {
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's friends excluding unaccepted friends.</returns>
         public static List<int> Server_GetApprovedFriends(int userId) {
-            _serverUserFriends.TryGetValueFix(userId, out var friends);
+            if(!_serverUserFriends.TryGetValueFix(userId, out var friends)) 
+                return new List<int>();
             var friendList = new List<int>();
             foreach(var friend in friends) 
                 if(Server_HasFriended(friend,userId))
                     friendList.Add(friend);
             return friendList;
+        }
+        
+        /// <summary>
+        /// This method is used to get a list of the friend requests that have not been approved yet.
+        /// </summary>
+        /// <param name="userId">The id of the user.</param>
+        /// <returns>A list of the user's friend requests that have not yet been approved.</returns>
+        public static List<int> Server_GetNotApprovedFriends(int userId) {
+            if(!_serverUserFriends.TryGetValueFix(userId, out var friends))
+                return new List<int>();
+            var notApproved = new List<int>();
+            foreach(var friend in friends) 
+                if(!Server_HasFriended(friend,userId))
+                    notApproved.Add(friend);
+            return notApproved;
+        }
+
+        /// <summary>
+        /// This method is used to get a list of user's that are requesting friendship with the given user id.
+        /// </summary>
+        /// <param name="userId">The id of the user.</param>
+        /// <returns>A list of user ids that are requesting friendship.</returns>
+        public static List<int> Server_GetRequestingFriends(int userId) {
+            if(!_serverUserFriends.TryGetValueFix(userId, out var friends)) 
+                return new List<int>();
+            var requestList = new List<int>();
+            foreach(var item in _serverUserFriends) {
+                if(friends.Contains(item.Key)) continue; //already accepted
+                if(!item.Value.Contains(userId)) continue; //not requesting
+                requestList.Add(item.Key);
+            }
+            return requestList;
         }
         
         /// <summary>

@@ -18,6 +18,7 @@ using System;
 using UnityEngine;
 
 #if UNITY_EDITOR
+using TMPro;
 using UnityEditor;
 #endif
 
@@ -28,7 +29,6 @@ namespace Amilious.Core.Attributes {
     /// </summary>
     public abstract class AmiliousModifierAttribute : PropertyAttribute {
 
-        #if UNITY_EDITOR
         
         /// <summary>
         /// This method is used to check if the property should be hidden.
@@ -37,7 +37,11 @@ namespace Amilious.Core.Attributes {
         /// <returns>True if the property should be hidden, otherwise false.</returns>
         public abstract bool ShouldHide<T>(T property);
 
+        #if UNITY_EDITOR
+        
         private SerializedProperty _comparisonProperty;
+        
+        #endif
         
         /// <summary>
         /// This method is used to check if the property should be hidden.
@@ -48,13 +52,23 @@ namespace Amilious.Core.Attributes {
         /// <param name="value">The set value.</param>
         /// <returns>True if the property should be hidden, otherwise false.</returns>
         protected bool CompareProperty<T>(T property,string propertyName, bool setValue, object value) {
-            if (!(property is SerializedProperty serializedProperty)) return false;
-            if(_comparisonProperty == null) {
-                _comparisonProperty = 
-                    FindSiblingProperty(serializedProperty,propertyName) ??
-                    serializedProperty.serializedObject.FindProperty(propertyName) ??
-                    serializedProperty.FindPropertyRelative(propertyName);
-            }
+            #if !UNITY_EDITOR
+            return true;
+            #else
+            SerializedObject serializedObject;
+            if(property is SerializedObject so) {
+                serializedObject = so;
+                _comparisonProperty ??= serializedObject.FindProperty(propertyName);
+            } else if(property is SerializedProperty serializedProperty) {
+                serializedObject = serializedProperty.serializedObject;
+                if(_comparisonProperty == null) {
+                    _comparisonProperty = 
+                        FindSiblingProperty(serializedProperty,propertyName) ??
+                        serializedProperty.serializedObject.FindProperty(propertyName) ??
+                        serializedProperty.FindPropertyRelative(propertyName);
+                }
+            } else return false;
+
             if(_comparisonProperty != null) {
                 switch(_comparisonProperty.propertyType) {
                     case SerializedPropertyType.Generic: return false;
@@ -114,15 +128,18 @@ namespace Amilious.Core.Attributes {
                 }
             }
 
-            var field = serializedProperty.serializedObject?.GetType().GetField(propertyName);
-            if(field != null) { return Validate(field.GetValue(serializedProperty.serializedObject.context),setValue,value); }
-            var prop = serializedProperty.serializedObject?.GetType().GetProperty(propertyName);
-            if(prop != null) { return Validate(prop.GetValue(serializedProperty.serializedObject.context),setValue,value); }
-            var method = serializedProperty.serializedObject?.GetType().GetMethod(propertyName);
+            var field = serializedObject?.GetType().GetField(propertyName);
+            if(field != null) { return Validate(field.GetValue(serializedObject.context),setValue,value); }
+            var prop = serializedObject?.GetType().GetProperty(propertyName);
+            if(prop != null) { return Validate(prop.GetValue(serializedObject.context),setValue,value); }
+            var method = serializedObject?.GetType().GetMethod(propertyName);
             if(method == null || method.GetParameters().Length >= 1 || method.ReturnParameter == null) return false;
-            var result = method.Invoke(serializedProperty.serializedObject.context, null);
+            var result = method.Invoke(serializedObject.context, null);
             return Validate(result,setValue,value);
+            #endif
         }
+        
+        #if UNITY_EDITOR
         
         /// <summary>
         /// This method is used to validate a value.

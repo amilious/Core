@@ -23,9 +23,9 @@ namespace Amilious.Core.Indentity.Group {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
-        public const string GROUP_NAME_KEY = "**group_name**";
-        public const string GROUP_TYPE_KEY = "**group_type**";
-        public const string GROUP_PASSWORD_KEY = "**group_password**";
+        public const string GROUP_NAME_KEY = "_group_name_";
+        public const string GROUP_TYPE_KEY = "_group_type_";
+        public const string GROUP_PASSWORD_KEY = "_group_password_";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

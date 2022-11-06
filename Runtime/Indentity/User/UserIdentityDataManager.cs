@@ -14,7 +14,9 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using UnityEngine;
 using Amilious.Core.Saving;
+using Amilious.Core.Attributes;
 using System.Collections.Generic;
 
 namespace Amilious.Core.Indentity.User {
@@ -22,8 +24,54 @@ namespace Amilious.Core.Indentity.User {
     /// <summary>
     /// This class is used to access, store, and edit information.
     /// </summary>
+    [AmiliousHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
     public class UserIdentityDataManager : AmiliousBehavior {
 
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        private const string HELP_BOX_TEXT =
+            "This singleton data manager is used for saving and loading user information.";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
+
+        private static UserIdentityDataManager _instance;
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This property contains the singleton instance of the class.
+        /// </summary>
+        public static UserIdentityDataManager Instance {
+            get {
+                if(_instance != null) return _instance;
+                _instance = FindObjectOfType<UserIdentityDataManager>();
+                _instance ??= new GameObject("User Identity Data Manager").AddComponent<UserIdentityDataManager>();
+                return _instance;
+            }
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region MonoBehavior Methods ///////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// This method is called when the script is being loaded.
+        /// </summary>
+        private void Awake() {
+            //make singleton
+            if(_instance != null && _instance != this) {
+                Destroy(this);
+                return;
+            }
+            _instance = this;
+        }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         #region Server Data ////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
@@ -184,7 +232,23 @@ namespace Amilious.Core.Indentity.User {
         /// <returns>A list of the user's friends excluding unaccepted friends.</returns>
         public virtual List<int> Server_GetApprovedFriends(int userId) =>
             IdentitySave.Server_GetApprovedFriends(userId);
-
+        
+        /// <summary>
+        /// This method is used to get a list of the friend requests that have not been approved yet.
+        /// </summary>
+        /// <param name="userId">The id of the user.</param>
+        /// <returns>A list of the user's friend requests that have not yet been approved.</returns>
+        public virtual List<int> Server_GetNotApprovedFriends(int userId) =>
+            IdentitySave.Server_GetNotApprovedFriends(userId);
+        
+        /// <summary>
+        /// This method is used to get a list of the user's that are requesting friendship.
+        /// </summary>
+        /// <param name="userId">The id of the user.</param>
+        /// <returns>A list of the user's requesting friendship.</returns>
+        public virtual List<int> Server_GetRequestingFriends(int userId) =>
+            IdentitySave.Server_GetRequestingFriends(userId);
+        
         /// <summary>
         /// This method is used to check if the user with the given id has set their password.
         /// </summary>

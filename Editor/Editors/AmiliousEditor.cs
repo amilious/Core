@@ -49,16 +49,18 @@ namespace Amilious.Core.Editor.Editors {
         private readonly List<string> _dontDraw = new List<string>();
         private readonly List<LinkInfo> _links = new List<LinkInfo>();
         private readonly List<string> _drawnTabs = new List<string>();
+        private List<AmiliousHelpBoxAttribute> _helpBoxAttributes = new List<AmiliousHelpBoxAttribute>();
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <inheritdoc />
         public override void OnInspectorGUI() {
             InitializeAmiliousEditor();
             _drawnTabs.Clear();
             DrawLinks();
+            DrawHelpBoxes();
             serializedObject.Update();
             EditorGUI.BeginChangeCheck();
             BeforeDefaultDraw();
@@ -253,6 +255,13 @@ namespace Amilious.Core.Editor.Editors {
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
+
+        private void DrawHelpBoxes() {
+            foreach(var att in _helpBoxAttributes) {
+                if(!att.ShouldShowHelp(serializedObject))continue;
+                EditorGUILayout.HelpBox(att.Message,att.MessageType);
+            }
+        }
         
         /// <summary>
         /// This method is used to get a type based on the passed string.
@@ -311,8 +320,9 @@ namespace Amilious.Core.Editor.Editors {
                 fontSize = 10, fontStyle = FontStyle.Bold,
             };*/
             //check link attributes
-            var linkAttributes = target.GetType().
-                GetCustomAttributes(typeof(EditorLinkAttribute), true).Cast<EditorLinkAttribute>();
+            var linkAttributes = 
+                target.GetType().GetCustomAttributes<EditorLinkAttribute>(true);
+            _helpBoxAttributes = target.GetType().GetCustomAttributes<AmiliousHelpBoxAttribute>(true).ToList();
             foreach(var attribute in linkAttributes)
                 AddLinkButton(attribute.ToolTip, attribute.IconResourcePath, attribute.Link, attribute.LinkName);
             //check hide property attributes

@@ -14,13 +14,66 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System.Collections.Generic;
+using UnityEngine;
 using Amilious.Core.Saving;
+using Amilious.Core.Attributes;
+using System.Collections.Generic;
 
 namespace Amilious.Core.Indentity.Group {
-    
-    public class GroupIdentityDataManager : AmiliousBehavior {
 
+    /// <summary>
+    /// This class is used to access, store, and edit information.
+    /// </summary>
+    [AmiliousHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
+    public class GroupIdentityDataManager : AmiliousBehavior {
+        
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        private const string HELP_BOX_TEXT =
+            "This singleton data manager is used for saving and loading group information.";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
+
+        private static GroupIdentityDataManager _instance;
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This property contains the singleton instance of the class.
+        /// </summary>
+        public static GroupIdentityDataManager Instance {
+            get {
+                if(_instance != null) return _instance;
+                _instance = FindObjectOfType<GroupIdentityDataManager>();
+                _instance ??= new GameObject("Group Identity Data Manager").AddComponent<GroupIdentityDataManager>();
+                return _instance;
+            }
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region MonoBehavior Methods ///////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// This method is called when the script is being loaded.
+        /// </summary>
+        private void Awake() {
+            //make singleton
+            if(_instance != null && _instance != this) {
+                Destroy(this);
+                return;
+            }
+            _instance = this;
+        }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Server Methods /////////////////////////////////////////////////////////////////////////////////////////
+        
         /// <summary>
         /// This method is used to get data for the group with the given id.
         /// </summary>
@@ -122,6 +175,8 @@ namespace Amilious.Core.Indentity.Group {
         public virtual int Server_AddGroup(string channelName = null, GroupType groupType = GroupType.Chat) {
             return IdentitySave.Server_AddGroup(channelName, groupType);
         }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
     

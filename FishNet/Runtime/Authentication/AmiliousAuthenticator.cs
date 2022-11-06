@@ -34,7 +34,6 @@ using Amilious.Core.Security;
 
 namespace Amilious.Core.FishNet.Authentication {
     
-    [RequireComponent(typeof(UserIdentityDataManager))]
     public class AmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
         
         #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////
@@ -77,8 +76,7 @@ namespace Amilious.Core.FishNet.Authentication {
             new Dictionary<NetworkConnection, AuthenticationRequest>();
 
         private int _nextRequest = int.MinValue;
-        private FishNetUserIdentityManager _userIdentityManager;
-        private UserIdentityDataManager _userIdentityDataManager;
+        private UserIdentityManager _userIdentityManager;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -87,7 +85,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <summary>
         /// This property is used to get the authenticator's data manager.
         /// </summary>
-        public UserIdentityDataManager DataManager => this.GetOrAddComponent(ref _userIdentityDataManager);
+        public UserIdentityDataManager DataManager => UserIdentityDataManager.Instance;
 
         /// <summary>
         /// This property is used to get a new password when requested.

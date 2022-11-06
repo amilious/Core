@@ -16,43 +16,48 @@
 
 using System;
 using System.Reflection;
-using UnityEngine;
-using Object = System.Object;
 
 namespace Amilious.Core.Extensions {
     
     /// <summary>
-    /// This class is used to add methods to the <see cref="Type"/> class.
+    /// This class is used to add methods to objects.
     /// </summary>
-    public static class TypeExtensions {
-        
-        #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
+    public static class ObjectExtensions {
         
         /// <summary>
-        /// This method is used to split a types name using camel case.
+        /// This method is used to try get the value of a field or property by name.
         /// </summary>
-        /// <param name="type">The type you want to get a name for.</param>
-        /// <returns>The name of the type split based on camel case.</returns>
-        public static string SplitCamelCase(this Type type) => type.Name.SplitCamelCase();
-
-        /// <summary>
-        /// This method is used to see if a type implements another type.
-        /// </summary>
-        /// <param name="type">The type that you want to check if it implements <typeparamref name="T"/>.</param>
-        /// <typeparam name="T">The type that you want to check if is inherited from.</typeparam>
-        /// <returns>True if <paramref name="type"/> inherits <typeparamref name="T"/>.</returns>
-        public static bool Implements<T>(this Type type) => typeof(T).IsAssignableFrom(type);
-
-        /// <summary>
-        /// This method is used to see if a type implements another type.
-        /// </summary>
-        /// <param name="type">The type that you want to check if it implements <paramref name="implements"/>.</param>
-        /// <param name="implements">The type that you want to check if is inherited from.</param>
-        /// <returns>True if <paramref name="type"/> inherits <paramref name="implements"/>.</returns>
-        public static bool Implements(this Type type, Type implements) => implements.IsAssignableFrom(type);
-
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        /// <param name="obj">The object that contains the field or property.</param>
+        /// <param name="name">The name of the field or property.</param>
+        /// <param name="value">The value of the found field or property.</param>
+        /// <typeparam name="T">The type of value of the field or property.</typeparam>
+        /// <returns>True if the field or property exists and is of the given type.</returns>
+        public static bool TryGetFieldOrPropertyValue<T>(this Object obj, string name, out T value) {
+            //try load field value
+            var field = obj.GetType().GetField(name,
+                BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            if(field != null) {
+                if(field.FieldType != typeof(T)) {
+                    value = default;
+                    return false;
+                }
+                value = (T)field.GetValue(obj);
+                return true;
+            }
+            //try load property value
+            var prop = obj.GetType().GetProperty(name,
+                BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            if(prop != null) {
+                if(prop.PropertyType != typeof(T)) {
+                    value = default;
+                    return false;
+                }
+                value = (T)prop.GetValue(obj);
+                return true;
+            }
+            value = default;
+            return false;
+        }
         
     }
-    
 }

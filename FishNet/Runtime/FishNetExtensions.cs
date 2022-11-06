@@ -99,19 +99,6 @@ namespace Amilious.Core.FishNet {
                 Debug.LogWarning("Unable to get the Amilious Authenticator from the Server Manager!");
             return authenticator;
         }
-
-        /// <summary>
-        /// This method is used to get the IdentityDataManager that is assigned to the amilious authenticator.
-        /// </summary>
-        /// <param name="serverManager">The server manager.</param>
-        /// <returns>The identity data manager for server if using an amilious authenticator, otherwise null.</returns>
-        public static UserIdentityDataManager GetIdentityDataManager(this ServerManager serverManager) {
-            var dataManager = serverManager.GetAmiliousAuthenticator()?.DataManager;
-            if(dataManager==null)
-                Debug.LogWarning("Unable to get the Identity Data Manager from the Server Manager!");
-            return dataManager;
-        }
-        
         public static void AssignLocalUserId(this NetworkManager networkManager, int localId) {
             LocalIdStorage[networkManager] = localId;
         }
