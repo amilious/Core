@@ -83,62 +83,58 @@ namespace Amilious.Core.Indentity.User {
         /// If this property is true, friends require acceptance, otherwise only one side needs to add.
         /// </summary>
         public bool FriendsNeedAcceptance { get; }
-
-        /*
         
         /// <summary>
         /// This method is used to remove a friend.
         /// </summary>
         /// <param name="friendId">The friend's identity id.</param>
         /// <remarks>This method should be called from the client.</remarks>
-        void RemoveFriend(int friendId);
+        void Client_RemoveFriend(int friendId);
 
         /// <summary>
         /// This method is used to remove a friend.
         /// </summary>
         /// <param name="friend">The friend's identity.</param>
         /// <remarks>This method should be called from the client.</remarks>
-        void RemoveFriend(UserIdentity friend);
+        void Client_RemoveFriend(UserIdentity friend);
 
         /// <summary>
         /// This method is used to add a friend.
         /// </summary>
         /// <param name="friendId">The friend's identity id.</param>
         /// <remarks>This method should be called from the client.</remarks>
-        void AddFriend(int friendId);
+        void Client_AddFriend(int friendId);
 
         /// <summary>
         /// This method is used to add a friend.
         /// </summary>
         /// <param name="friend">The friend's identity.</param>
         /// <remarks>This method should be called from the client.</remarks>
-        void AddFriend(UserIdentity friend);
+        void Client_AddFriend(UserIdentity friend);
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="user">The user that you want to block.</param>
-        void BlockUser(UserIdentity user);
+        void Client_BlockUser(UserIdentity user);
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="userId">The user id of the user that you want to block.</param>
-        void BlockUser(int userId);
+        void Client_BlockUser(int userId);
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="user">The user that you want to unblock.</param>
-        void UnblockUser(UserIdentity user);
+        void Client_UnblockUser(UserIdentity user);
 
         /// <summary>
         /// This method is used to unblock a user.
         /// </summary>
         /// <param name="userId">The user id of the user that you want to unblock.</param>
-        void UnblockUser(int userId);
-
-        */
+        void Client_UnblockUser(int userId);
 
         /// <summary>
         /// This method is used to try get the <see cref="UserIdentity"/> for the given id.
