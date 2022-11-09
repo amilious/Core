@@ -1,5 +1,5 @@
 using System;
-using Amilious.Core.Indentity.User;
+using Amilious.Core.Identity.User;
 using Amilious.Core.Saving;
 
 namespace Amilious.Core.Authentication {

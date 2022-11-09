@@ -15,8 +15,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using Amilious.Core.Indentity;
-using Amilious.Core.Indentity.User;
+using Amilious.Core.Identity;
+using Amilious.Core.Identity.User;
 
 namespace Amilious.Core.Identity.User {
     

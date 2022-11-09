@@ -20,7 +20,7 @@ using Amilious.Core.Attributes;
 
 namespace Amilious.Core.Editor.Modifiers {
     
-    [CustomPropertyDrawer(typeof(HideIfAttribute))]
+    [CustomPropertyDrawer(typeof(AmiliousHelpBoxAttribute))]
     public class HelpBoxModifier : AmiliousPropertyModifier<AmiliousHelpBoxAttribute> {
         
         public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden) {

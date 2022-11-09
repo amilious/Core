@@ -14,13 +14,13 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using UnityEngine;
 using Amilious.Core.Saving;
 using Amilious.Core.Attributes;
 using System.Collections.Generic;
-using Amilious.Core.Identity.User;
 
-namespace Amilious.Core.Indentity.User {
+namespace Amilious.Core.Identity.User {
     
     /// <summary>
     /// This class is used to access, store, and edit information.
@@ -38,6 +38,13 @@ namespace Amilious.Core.Indentity.User {
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
         private static UserIdentityDataManager _instance;
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        // ReSharper disable once InconsistentNaming
+        public event Action Client_OnStoredCredentialsUpdated;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -260,20 +267,28 @@ namespace Amilious.Core.Indentity.User {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Client Data ////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>
         /// This method is used to remember the last entered user name.
         /// </summary>
         /// <param name="userName">The user name that you want to remember.</param>
-        public virtual void Client_StoreLastUserName(string userName) =>
+        /// <param name="triggerEvent">If true the <see cref="Client_OnStoredCredentialsUpdated"/> will be
+        /// triggered!</param>
+        public virtual void Client_StoreLastUserName(string userName, bool triggerEvent = true) {
             IdentitySave.Client_StoreLastUserName(userName);
+            if(triggerEvent) Client_OnStoredCredentialsUpdated?.Invoke();
+        }
 
         /// <summary>
         /// This method is used to remember the last entered password.
         /// </summary>
         /// <param name="password">The password that you want to remember.</param>
-        public virtual void Client_StoreLastPassword(string password) =>
+        /// <param name="triggerEvent">If true the <see cref="Client_OnStoredCredentialsUpdated"/> will be
+        /// triggered!</param>
+        public virtual void Client_StoreLastPassword(string password, bool triggerEvent = true) {
             IdentitySave.Client_StoreLastPassword(password);
+            if(triggerEvent) Client_OnStoredCredentialsUpdated?.Invoke();
+        }
 
         /// <summary>
         /// This method is used to get the saved user name.

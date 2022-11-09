@@ -18,20 +18,18 @@ using System;
 using UnityEngine;
 using FishNet.Managing;
 using FishNet.Connection;
-using Amilious.Core.Saving;
 using FishNet.Transporting;
 using System.ComponentModel;
+using Amilious.Core.Security;
 using FishNet.Authenticating;
 using FishNet.Managing.Logging;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using Amilious.Core.Authentication;
 using Amilious.Core.FishNet.Users;
 using Amilious.Core.Identity.User;
-using Amilious.Core.Indentity.User;
-using Amilious.Core.Security;
+using System.Security.Cryptography;
+using Amilious.Core.Authentication;
 
 namespace Amilious.Core.FishNet.Authentication {
     
@@ -45,7 +43,7 @@ namespace Amilious.Core.FishNet.Authentication {
         private bool logBroadcasts;
         [SerializeField, AmiliousBool(true)] 
         [Tooltip("If true a user id will be used for authentication, otherwise a user name will be used.")] 
-        private bool useUserId = false;
+        private bool useUserId;
         [SerializeField, AmiliousBool(true), HideIf(nameof(useUserId))]
         [Tooltip("If true a new user will be created when joining with an unused user id.")]
         private bool autoRegister;
@@ -61,6 +59,8 @@ namespace Amilious.Core.FishNet.Authentication {
         [SerializeField] private PasswordRequestProvider newPasswordProvider;
      
         [Header("Credentials")]
+        [Tooltip("If true the last entered credentials will be saved!")]
+        [SerializeField,AmiliousBool(true)] private bool rememberLast = true;
         [SerializeField, ShowIf(nameof(useUserId)), Tooltip("This optional field contains the user's id.")] 
         private int userId;
         [SerializeField, HideIf(nameof(useUserId)), Tooltip("This optional field contains the user's user name.")] 
@@ -92,6 +92,11 @@ namespace Amilious.Core.FishNet.Authentication {
         /// This property is used to get a new password when requested.
         /// </summary>
         public PasswordRequestProvider PasswordRequestProvider => newPasswordProvider;
+
+        /// <summary>
+        /// If this property is true, the authenticator will remember the last used credentials.
+        /// </summary>
+        public bool RememberLastCredentials => rememberLast;
         
         #endregion
         
@@ -478,7 +483,13 @@ namespace Amilious.Core.FishNet.Authentication {
                 $"Authentication complete for {authenticationResult.UserName}." : 
                 $"Authentication failed! {authenticationResult.Response}";
             if (NetworkManager.CanLog(LoggingType.Common)) Debug.Log(result);
-            if(authenticationResult.Passed) OnSuccessfulConnection?.Invoke(authenticationResult.Response);
+            if(authenticationResult.Passed) {
+                if(rememberLast) {
+                    DataManager.Client_StoreLastUserName(userName,false);
+                    DataManager.Client_StoreLastPassword(password);
+                }
+                OnSuccessfulConnection?.Invoke(authenticationResult.Response);
+            }
             else OnConnectionRejected?.Invoke(authenticationResult.Response);
         }
 

@@ -23,7 +23,6 @@ using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using Amilious.Core.Identity.User;
-using Amilious.Core.Indentity.User;
 using FishNet.Object.Synchronizing;
 
 namespace Amilious.Core.FishNet.Users {
@@ -45,22 +44,22 @@ namespace Amilious.Core.FishNet.Users {
         /// <summary>
         /// This list is used to store all of the user's friends on the client.
         /// </summary>
-        private List<int> _friends = new List<int>();
+        private readonly List<int> _friends = new List<int>();
 
         /// <summary>
-        /// This list is used to store all of the user's frendships that are currently pending.
+        /// This list is used to store all of the user's friendships that are currently pending.
         /// </summary>
-        private List<int> _pendingFriends = new List<int>();
+        private readonly List<int> _pendingFriends = new List<int>();
         
         /// <summary>
         /// This list is used to store all of the user's friendship requests.
         /// </summary>
-        private List<int> _requestingFriends = new List<int>();
+        private readonly List<int> _requestingFriends = new List<int>();
         
         /// <summary>
         /// This list is used to store all of the user's blocked users on the client.
         /// </summary>
-        private static List<int> _blocked = new List<int>();
+        private readonly List<int> _blocked = new List<int>();
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -112,39 +111,51 @@ namespace Amilious.Core.FishNet.Users {
 
         public IEnumerable<UserIdentity> this[UserFilterFlags flags] {
             get {
-                foreach(var id in Identities) {
+                foreach(var identity in Identities) {
+                    //check if all including self
+                    if(flags.HasFlag(UserFilterFlags.AllIncludingSelf)) yield return identity;
                     //check if exclude self
-                    if(flags.HasFlag(UserFilterFlags.ExcludeSelf) && id.Id == GetIdentity().Id) continue;
-                    //check if all
-                    if(flags.HasFlag(UserFilterFlags.All)) yield return id;
+                    if(flags.HasFlag(UserFilterFlags.ExcludeSelf) && identity.Id == GetIdentity().Id) continue;
+                    //check if all excluding self
+                    if(flags.HasFlag(UserFilterFlags.AllExcludingSelf)) yield return identity;
                     //check online status
-                    var isOnline = _online.Contains(id.Id);
-                    if(isOnline && !flags.HasFlag(UserFilterFlags.Online)) continue;
-                    if(!isOnline && !flags.HasFlag(UserFilterFlags.Offline)) continue;
+                    var isOnline = _online.Contains(identity.Id);
+                    var hasOnlineFlag = flags.HasFlag(UserFilterFlags.Online);
+                    var hasOfflineFlag = flags.HasFlag(UserFilterFlags.Offline);
+                    if(hasOfflineFlag || hasOnlineFlag) { 
+                        //only filter if has online or offline flag
+                        if(isOnline && !hasOnlineFlag) continue;
+                        if(!isOnline && !hasOfflineFlag) continue;
+                    }
                     //check blocked status
-                    var isBlocked = _blocked.Contains(id.Id);
-                    if(isBlocked && !flags.HasFlag(UserFilterFlags.Blocked)) continue;
-                    if(!isBlocked && !flags.HasFlag(UserFilterFlags.NotBlocked)) continue;
+                    var isBlocked = _blocked.Contains(identity.Id);
+                    var hasBlockedFlag = flags.HasFlag(UserFilterFlags.Blocked);
+                    var hasNotBlockedFlag = flags.HasFlag(UserFilterFlags.NotBlocked);
+                    if(hasBlockedFlag || hasNotBlockedFlag) {
+                        //only filter if has blocked or NotBlocked flag
+                        if(isBlocked && !hasBlockedFlag) continue;
+                        if(!isBlocked && !hasNotBlockedFlag) continue;
+                    }
                     //check if friend
-                    var isFriend = _friends.Contains(id.Id);
+                    var isFriend = _friends.Contains(identity.Id);
                     if(isFriend && flags.HasFlag(UserFilterFlags.Friend)){
-                        yield return id;
+                        yield return identity;
                         continue;
                     }
                     //check if pending
-                    var isPending = _pendingFriends.Contains(id.Id);
+                    var isPending = _pendingFriends.Contains(identity.Id);
                     if(isPending && flags.HasFlag(UserFilterFlags.PendingFriend)){
-                        yield return id;
+                        yield return identity;
                         continue;
                     }
                     //check if request
-                    var isRequest = _requestingFriends.Contains(id.Id);
+                    var isRequest = _requestingFriends.Contains(identity.Id);
                     if(isRequest && flags.HasFlag(UserFilterFlags.RequestingFriendship)) {
-                        yield return id;
+                        yield return identity;
                         continue;
                     }
                     //return true if noFriendship flag otherwise false
-                    if(flags.HasFlag(UserFilterFlags.NoFriendship))  yield return id;
+                    if(flags.HasFlag(UserFilterFlags.NoFriendship))  yield return identity;
                 }
             }
         }
@@ -415,6 +426,7 @@ namespace Amilious.Core.FishNet.Users {
         #region RPCs ///////////////////////////////////////////////////////////////////////////////////////////////////
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendFriendsToClient(NetworkConnection con, int[] friendIds) {
             _friends.Clear();
             foreach(var id in friendIds)_friends.Add(id);
@@ -422,6 +434,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendPendingFriendsToClient(NetworkConnection con, int[] pendingFriends) {
             _pendingFriends.Clear();
             foreach(var id in pendingFriends) _pendingFriends.Add(id);
@@ -429,6 +442,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendRequestingFriendsToClient(NetworkConnection con, int[] requestingFriends) {
             _requestingFriends.Clear();
             foreach(var id in requestingFriends) _requestingFriends.Add(id);
@@ -436,6 +450,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendBlockedToClient(NetworkConnection con, int[] blockedIds) {
             _blocked.Clear();
             foreach(var id in blockedIds)_blocked.Add(id);
@@ -443,6 +458,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendBlockedUpdated(NetworkConnection con, int userId, bool isBlocked) {
             if(isBlocked && !_blocked.Contains(userId)) _blocked.Add(userId);
             if(!isBlocked && _blocked.Contains(userId)) _blocked.Remove(userId);
@@ -450,6 +466,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendFriendUpdated(NetworkConnection con, int userId, bool isFriend) {
             if(isFriend&&!_friends.Contains(userId)) _friends.Add(userId);
             if(!isFriend && _friends.Contains(userId)) _friends.Remove(userId);
@@ -457,6 +474,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendPendingFriendUpdated(NetworkConnection con, int userId, bool isPending) {
             if(isPending&&!_pendingFriends.Contains(userId)) _pendingFriends.Add(userId);
             if(!isPending && _pendingFriends.Contains(userId)) _pendingFriends.Remove(userId);
@@ -464,6 +482,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [TargetRpc]
+        // ReSharper disable once UnusedParameter.Local
         private void SendRequestingFriendUpdated(NetworkConnection con, int userId, bool isRequesting) {
             if(isRequesting&&!_requestingFriends.Contains(userId)) _requestingFriends.Add(userId);
             if(!isRequesting && _requestingFriends.Contains(userId)) _requestingFriends.Remove(userId);

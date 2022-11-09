@@ -20,26 +20,93 @@ namespace Amilious.Core.Identity.User {
     
     [Flags, Serializable]
     public enum UserFilterFlags {
+        
+        #region Base Flags /////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// If this flag is used, no user's will be valid.
+        /// </summary>
         None = 0,
+        
+        /// <summary>
+        /// If this flag is used, only online user's will be valid.
+        /// </summary>
         Online = 1 << 0,
+        
+        /// <summary>
+        /// If this flag is used, only offline user's will be valid.
+        /// </summary>
         Offline = 1 << 1,
+        
+        /// <summary>
+        /// If this flag is used, only friends will be valid.
+        /// </summary>
         Friend = 1 << 2,
         
         /// <summary>
-        /// This flag represents user's that have no friendship status to the player.
+        /// If this flag is used, only users with no friendship status (Friend, PendingFriend, or RequestingFriendship)
+        /// will be valid.
         /// </summary>
         NoFriendship = 1 << 3,
-        PendingFriend = 1 << 4,
-        RequestingFriendship = 1<< 5,
-        Blocked = 1 << 6,
-        NotBlocked = 1 <<7,
-        ExcludeSelf = 1 <<8,
-        All = Online | Offline | Friend | NoFriendship | PendingFriend | RequestingFriendship | NotBlocked | Blocked,
-        AllExcludeSelf = All | ExcludeSelf,
         
-        OnlineFriend = NotBlocked | Online | Friend | ExcludeSelf,
-        OfflineFriend = NotBlocked | Offline | Friend | ExcludeSelf,
-        NotBlockedNonFriend = NotBlocked | NoFriendship | ExcludeSelf
+        /// <summary>
+        /// If this flag is used, only users that you have added and are pending acceptance will be valid.
+        /// </summary>
+        PendingFriend = 1 << 4,
+        
+        /// <summary>
+        /// If this flag is used, only users that are requesting friendship will be valid.
+        /// </summary>
+        RequestingFriendship = 1<< 5,
+        
+        /// <summary>
+        /// If this flag is used, only blocked users will be valid.
+        /// </summary>
+        Blocked = 1 << 6,
+        
+        /// <summary>
+        /// If this flag is used, only non-blocked users will be valid.
+        /// </summary>
+        NotBlocked = 1 <<7,
+        
+        /// <summary>
+        /// If this flag is used, the current user will not be valid.
+        /// </summary>
+        ExcludeSelf = 1 <<8,
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Convenience Flags //////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// If this convenience flag is used, all users will be valid.
+        /// </summary>
+        AllIncludingSelf = Online | Offline | Friend | NoFriendship | PendingFriend | RequestingFriendship | 
+                           NotBlocked | Blocked,
+        
+        /// <summary>
+        /// If this convenience flag is used, all users excluding the current user will be valid.
+        /// </summary>
+        AllExcludingSelf = AllIncludingSelf | ExcludeSelf,
+        
+        /// <summary>
+        /// If this convenience flag is used, only online friends will be valid.
+        /// </summary>
+        OnlineFriend = Online | Friend | ExcludeSelf,
+        
+        /// <summary>
+        /// If this convenience flag is used, only offline friends will be valid.
+        /// </summary>
+        OfflineFriend = Offline | Friend | ExcludeSelf,
+        
+        /// <summary>
+        /// If this convenience flag is used, all users excluding the current user will be valid if they are not a
+        /// friend and you have not already requested friendship with them.
+        /// </summary>
+        NotBlockedNonFriend = NotBlocked | NoFriendship | ExcludeSelf | RequestingFriendship
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
 
 }

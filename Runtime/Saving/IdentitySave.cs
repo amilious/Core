@@ -9,7 +9,6 @@ using System.Security.Cryptography;
 using System.Runtime.Serialization.Formatters.Binary;
 using Amilious.Core.Identity.Group;
 using Amilious.Core.Identity.User;
-using Amilious.Core.Indentity.User;
 using Amilious.Core.Security;
 
 #if UNITY_EDITOR

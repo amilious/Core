@@ -16,7 +16,6 @@
 
 using System;
 using Amilious.Core.Identity.User;
-using Amilious.Core.Indentity.User;
 using FishNet.Serializing;
 
 namespace Amilious.Core.FishNet.Users {

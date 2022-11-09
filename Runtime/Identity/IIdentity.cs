@@ -14,7 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-namespace Amilious.Core.Indentity {
+namespace Amilious.Core.Identity {
     
     /// <summary>
     /// This is a base interface for identities.
