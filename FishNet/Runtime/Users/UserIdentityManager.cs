@@ -22,6 +22,7 @@ using FishNet.Transporting;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
+using Amilious.Core.Identity.User;
 using Amilious.Core.Indentity.User;
 using FishNet.Object.Synchronizing;
 
@@ -108,6 +109,45 @@ namespace Amilious.Core.FishNet.Users {
         /// This property is used to get the server identifier.
         /// </summary>
         public string ServerIdentifier => _serverIdentifier;
+
+        public IEnumerable<UserIdentity> this[UserFilterFlags flags] {
+            get {
+                foreach(var id in Identities) {
+                    //check if exclude self
+                    if(flags.HasFlag(UserFilterFlags.ExcludeSelf) && id.Id == GetIdentity().Id) continue;
+                    //check if all
+                    if(flags.HasFlag(UserFilterFlags.All)) yield return id;
+                    //check online status
+                    var isOnline = _online.Contains(id.Id);
+                    if(isOnline && !flags.HasFlag(UserFilterFlags.Online)) continue;
+                    if(!isOnline && !flags.HasFlag(UserFilterFlags.Offline)) continue;
+                    //check blocked status
+                    var isBlocked = _blocked.Contains(id.Id);
+                    if(isBlocked && !flags.HasFlag(UserFilterFlags.Blocked)) continue;
+                    if(!isBlocked && !flags.HasFlag(UserFilterFlags.NotBlocked)) continue;
+                    //check if friend
+                    var isFriend = _friends.Contains(id.Id);
+                    if(isFriend && flags.HasFlag(UserFilterFlags.Friend)){
+                        yield return id;
+                        continue;
+                    }
+                    //check if pending
+                    var isPending = _pendingFriends.Contains(id.Id);
+                    if(isPending && flags.HasFlag(UserFilterFlags.PendingFriend)){
+                        yield return id;
+                        continue;
+                    }
+                    //check if request
+                    var isRequest = _requestingFriends.Contains(id.Id);
+                    if(isRequest && flags.HasFlag(UserFilterFlags.RequestingFriendship)) {
+                        yield return id;
+                        continue;
+                    }
+                    //return true if noFriendship flag otherwise false
+                    if(flags.HasFlag(UserFilterFlags.NoFriendship))  yield return id;
+                }
+            }
+        }
 
         /// <inheritdoc />
         public IEnumerable<UserIdentity> Identities => _userLookup.Values;

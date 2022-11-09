@@ -14,10 +14,12 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-namespace Amilious.Core.Indentity.Group {
+using Amilious.Core.Indentity;
+
+namespace Amilious.Core.Identity.Group {
     
     /// <summary>
-    /// This stuct is used to represent the identity of a group.
+    /// This struct is used to represent the identity of a group.
     /// </summary>
     public readonly struct GroupIdentity : IIdentity {
 

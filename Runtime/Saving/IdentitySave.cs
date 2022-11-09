@@ -7,7 +7,8 @@ using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Runtime.Serialization.Formatters.Binary;
-using Amilious.Core.Indentity.Group;
+using Amilious.Core.Identity.Group;
+using Amilious.Core.Identity.User;
 using Amilious.Core.Indentity.User;
 using Amilious.Core.Security;
 

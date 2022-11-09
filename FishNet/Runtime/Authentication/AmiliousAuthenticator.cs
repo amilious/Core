@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using Amilious.Core.Authentication;
 using Amilious.Core.FishNet.Users;
+using Amilious.Core.Identity.User;
 using Amilious.Core.Indentity.User;
 using Amilious.Core.Security;
 

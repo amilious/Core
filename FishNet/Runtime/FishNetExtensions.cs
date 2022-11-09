@@ -22,6 +22,7 @@ using FishNet.Managing.Server;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using Amilious.Core.FishNet.Authentication;
+using Amilious.Core.Identity.User;
 using Amilious.Core.Indentity.User;
 
 namespace Amilious.Core.FishNet {

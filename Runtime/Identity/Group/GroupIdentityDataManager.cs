@@ -14,12 +14,12 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using UnityEngine;
-using Amilious.Core.Saving;
-using Amilious.Core.Attributes;
 using System.Collections.Generic;
+using Amilious.Core.Attributes;
+using Amilious.Core.Saving;
+using UnityEngine;
 
-namespace Amilious.Core.Indentity.Group {
+namespace Amilious.Core.Identity.Group {
 
     /// <summary>
     /// This class is used to access, store, and edit information.

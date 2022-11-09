@@ -18,6 +18,7 @@ using UnityEngine;
 using Amilious.Core.Saving;
 using Amilious.Core.Attributes;
 using System.Collections.Generic;
+using Amilious.Core.Identity.User;
 
 namespace Amilious.Core.Indentity.User {
     

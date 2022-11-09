@@ -16,8 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+using Amilious.Core.Indentity.User;
 
-namespace Amilious.Core.Indentity.User {
+namespace Amilious.Core.Identity.User {
     
     public interface IUserIdentityManager {
         
@@ -54,6 +55,12 @@ namespace Amilious.Core.Indentity.User {
         /// <param name="userId"></param>
         public UserIdentity this[int userId] { get; }
         
+        /// <summary>
+        /// This property is used to get a collection of the identities that meet the given flags.
+        /// </summary>
+        /// <param name="flags"></param>
+        public IEnumerable<UserIdentity> this[UserFilterFlags flags] { get; }
+
         /// <summary>
         /// This property is used to get a collection of identities.
         /// </summary>

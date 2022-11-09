@@ -15,8 +15,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
+using Amilious.Core.Indentity;
+using Amilious.Core.Indentity.User;
 
-namespace Amilious.Core.Indentity.User {
+namespace Amilious.Core.Identity.User {
     
     /// <summary>
     /// This struct is used to represent a user identity.

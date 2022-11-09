@@ -14,42 +14,32 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using Amilious.Core.Identity.Group;
-using FishNet.Serializing;
+using System;
 
-namespace Amilious.Core.FishNet.Groups {
-    /// <summary>
-    /// This class is used by the <see cref="FishNet"/> serializerMethods when sending user id's to the client.
-    /// </summary>
-    public static class GroupIdentitySerializer {
-        
-        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This method is used to write a group identity's values.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        /// <param name="identity">The identity that you want to write.</param>
-        public static void WriteGroupIdentity(this Writer writer, GroupIdentity identity) {
-            writer.WriteByte((byte)identity.GroupType);
-            writer.WriteInt32(identity.Id);
-            writer.WriteString(identity.Name);
-        }
-
-        /// <summary>
-        /// This method is used to read a group identity's values.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <returns>Group Identity build from the reader's values.</returns>
-        public static GroupIdentity ReadGroupIdentity(this Reader reader) {
-            var type = (GroupType)reader.ReadByte();
-            var id = reader.ReadInt32();
-            var name = reader.ReadString();
-            return new GroupIdentity(id, name, type);
-        }
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    }
+namespace Amilious.Core.Identity.User {
     
+    [Flags, Serializable]
+    public enum UserFilterFlags {
+        None = 0,
+        Online = 1 << 0,
+        Offline = 1 << 1,
+        Friend = 1 << 2,
+        
+        /// <summary>
+        /// This flag represents user's that have no friendship status to the player.
+        /// </summary>
+        NoFriendship = 1 << 3,
+        PendingFriend = 1 << 4,
+        RequestingFriendship = 1<< 5,
+        Blocked = 1 << 6,
+        NotBlocked = 1 <<7,
+        ExcludeSelf = 1 <<8,
+        All = Online | Offline | Friend | NoFriendship | PendingFriend | RequestingFriendship | NotBlocked | Blocked,
+        AllExcludeSelf = All | ExcludeSelf,
+        
+        OnlineFriend = NotBlocked | Online | Friend | ExcludeSelf,
+        OfflineFriend = NotBlocked | Offline | Friend | ExcludeSelf,
+        NotBlockedNonFriend = NotBlocked | NoFriendship | ExcludeSelf
+    }
+
 }

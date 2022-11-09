@@ -14,7 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-namespace Amilious.Core.Indentity.Group {
+namespace Amilious.Core.Identity.Group {
     
     public interface IGroupIdentityManager {
         
