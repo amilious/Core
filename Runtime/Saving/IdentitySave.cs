@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group;
 using System.Runtime.Serialization.Formatters.Binary;
+using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
