@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using Amilious.Core.Editor.Extensions;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,14 +45,15 @@ namespace Amilious.Core.Editor {
         /// <summary>
         /// This method is used to make sure that the given define symbols are present.
         /// </summary>
+        /// <param name="targetGroup">The target group that you want to add the symbols to.</param>
         /// <param name="name">The name of the project the define symbols are for.</param>
         /// <param name="defineSymbols">The define symbols that you want to be present.</param>
         /// <returns>The number of added define symbols.</returns>
-        public static int TryAdd(string name, params string[] defineSymbols) {
+        public static int TryAdd(BuildTargetGroup targetGroup, string name, params string[] defineSymbols) {
             var added = 0;
-            var currentTarget = EditorUserBuildSettings.selectedBuildTargetGroup;
-            if(currentTarget == BuildTargetGroup.Unknown) return added;
-            var definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(currentTarget).Trim();
+            if(targetGroup == BuildTargetGroup.Unknown) return added;
+            if (!targetGroup.IsSupported()) return added;
+            var definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup).Trim();
             var defines = definesString.Split(';');
             var changed = false;
             foreach(var define in defineSymbols) {
@@ -62,23 +64,37 @@ namespace Amilious.Core.Editor {
                 added++;
             }
             if(!changed) return added;
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(currentTarget, definesString);
-            Debug.Log(Amilious.MakeTitle($"Added {added} {name} Define Symbols"));
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, definesString);
+            Debug.Log(Amilious.MakeTitle($"Added {added} {name} Define Symbols to the {targetGroup.ToString()} target group"));
+            return added;
+        }
+
+        /// <summary>
+        /// This method is used to try add defines to all target groups.
+        /// </summary>
+        /// <param name="name">The name of the project the define symbols are for.</param>
+        /// <param name="defineSymbols">The define symbols that you want to be present.</param>
+        /// <returns>The number of added define symbols.</returns>
+        public static int TryAddAll(string name, params string[] defineSymbols) {
+            var added = 0;
+            foreach (BuildTargetGroup targetGroup in Enum.GetValues(typeof(BuildTargetGroup)))
+                added += TryAdd(targetGroup, name, defineSymbols);
             return added;
         }
 
         /// <summary>
         /// This method is used to make sure that the give define symbols are not present.
         /// </summary>
+        /// <param name="targetGroup">The target group that you want to remove the symbols from.</param>
         /// <param name="name">The name of the project the define symbols are for.</param>
         /// <param name="defineSymbols">The define symbols that you want to not be present.</param>
         /// <returns>The number of removed define symbols.</returns>
-        public static int TryRemove(string name, params string[] defineSymbols) {
+        public static int TryRemove(BuildTargetGroup targetGroup, string name, params string[] defineSymbols) {
             var removed = 0;
-            var currentTarget = EditorUserBuildSettings.selectedBuildTargetGroup;
-            if(currentTarget == BuildTargetGroup.Unknown) return removed;
+            if(targetGroup == BuildTargetGroup.Unknown) return removed;
+            if (!targetGroup.IsSupported()) return removed;
             StringBuilder.Clear();
-            var definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(currentTarget).Trim();
+            var definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup).Trim();
             var defines = definesString.Split(';');
             var changed = false;
             foreach(var define in defines) {
@@ -91,8 +107,21 @@ namespace Amilious.Core.Editor {
                 StringBuilder.Append(define);
             }
             if(!changed) return removed;
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(currentTarget, StringBuilder.ToString());
-            Debug.Log(Amilious.MakeTitle($"Removed {removed} {name} Define Symbols"));
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, StringBuilder.ToString());
+            Debug.Log(Amilious.MakeTitle($"Removed {removed} {name} Define Symbols from the {targetGroup.ToString()} target group"));
+            return removed;
+        }
+        
+        /// <summary>
+        /// This method is used to try remove the given define symbols from all target groups.
+        /// </summary>
+        /// <param name="name">The name of the project the define symbols are for.</param>
+        /// <param name="defineSymbols">The define symbols that you want to not be present.</param>
+        /// <returns>The number of removed define symbols.</returns>
+        public static int TryRemoveAll(string name, params string[] defineSymbols) {
+            var removed = 0;
+            foreach (BuildTargetGroup targetGroup in Enum.GetValues(typeof(BuildTargetGroup)))
+                removed += TryRemove(targetGroup, name, defineSymbols);
             return removed;
         }
 
@@ -105,8 +134,8 @@ namespace Amilious.Core.Editor {
         /// </summary>
         [InitializeOnLoadMethod]
         private static void AddCoreDefineSymbols() {
-            TryRemove("Amilious Core", RemoveSymbols);
-            TryAdd("Amilious Core", DefineSymbols);
+            TryRemoveAll("Amilious Core", RemoveSymbols);
+            TryAddAll("Amilious Core", DefineSymbols);
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
