@@ -69,6 +69,11 @@ namespace Amilious.Core.Identity.User {
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// This property contains the user's identity manager.
+        /// </summary>
+        public static IUserIdentityManager Manager { get; private set; }
+        
+        /// <summary>
         /// This property contains the user's identification number.
         /// </summary>
         public int Id => _id ?? int.MinValue;
@@ -189,7 +194,17 @@ namespace Amilious.Core.Identity.User {
                 return hashCode;
             }
         }
-        
+
+        /// <summary>
+        /// This method is used to set the identity manger for user identities.
+        /// </summary>
+        /// <param name="manager">The identity manager.</param>
+        /// <remarks>This should only be called by the identity manager.</remarks>
+        public static void SetIdentityManager(IUserIdentityManager manager) {
+            if(Manager != null) return;
+            Manager = manager;
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Operators //////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,15 +1,12 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Linq;
-using UnityEngine;
+using Amilious.Core.Security;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Runtime.Serialization.Formatters.Binary;
-using Amilious.Core.Identity.Group;
 using Amilious.Core.Identity.User;
-using Amilious.Core.Security;
+using Amilious.Core.Identity.Group;
+using System.Runtime.Serialization.Formatters.Binary;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -25,6 +22,7 @@ namespace Amilious.Core.Saving {
         private const string BUILT_SAVE_FILE = "identity.data";
         private const string EDITOR_SAVE_FILE = "identity.editor.data";
         private const string DEVELOPER_SAVE_FILE = "identity.developer.data";
+        private const string DEVELOPER_X_SAVE_FILE = "identity.developer{0}.data";
         private const string IDENTITY_SAVE_VERSION_KEY = "**identity_save_version**";
         private const string SERVER_IDENTIFIER = "**server_identifier**";
         private const string SERVER_USER_DATA = "**server_user_data**";
@@ -37,6 +35,7 @@ namespace Amilious.Core.Saving {
         private const int SERVER_IDENTIFIER_LENGTH = 24;
         private const string CLIENT_USER_NAME = "**client_user_name**";
         private const string CLIENT_PASSWORD = "**client_password**";
+        private const string CLIENT_REPLY_IDENTITY = "**reply_identity";
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -99,7 +98,10 @@ namespace Amilious.Core.Saving {
             var forward = Application.persistentDataPath.Contains('/');
             SavePath = BUILT_SAVE_FILE;
             if(Application.isEditor) SavePath = EDITOR_SAVE_FILE;
-            else if(Debug.isDebugBuild) SavePath = DEVELOPER_SAVE_FILE;
+            else if(Debug.isDebugBuild) {
+                SavePath = !AmiliousCore.TryGetInstanceId(out var id) ? 
+                    DEVELOPER_SAVE_FILE : string.Format(DEVELOPER_X_SAVE_FILE, id);
+            }
             SavePath = Path.Combine(Application.persistentDataPath,SavePath);
             //make the path uniform
             SavePath = forward ? SavePath.Replace('\\', '/') : SavePath.Replace('/', '\\');
@@ -545,6 +547,23 @@ namespace Amilious.Core.Saving {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Client Save Methods ////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This method is used to store the reply identity id.
+        /// </summary>
+        /// <param name="id">The id that should be used for a reply.</param>
+        public static void Client_StoreReplyIdentity(int id) {
+            StoreData(CLIENT_REPLY_IDENTITY,id);
+        }
+
+        /// <summary>
+        /// This method is used to get the reply identity id.
+        /// </summary>
+        /// <param name="id">The reply identity id.</param>
+        /// <returns>True if the reply id exists, otherwise false.</returns>
+        public static bool Client_TryGetReplyIdentity(out int id) {
+            return TryReadData(CLIENT_REPLY_IDENTITY, out id);
+        }
         
         /// <summary>
         /// This method is used to remember the last entered user name.

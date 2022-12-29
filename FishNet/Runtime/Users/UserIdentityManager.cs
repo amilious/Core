@@ -112,12 +112,10 @@ namespace Amilious.Core.FishNet.Users {
         public IEnumerable<UserIdentity> this[UserFilterFlags flags] {
             get {
                 foreach(var identity in Identities) {
-                    //check if all including self
-                    if(flags.HasFlag(UserFilterFlags.AllIncludingSelf)) yield return identity;
                     //check if exclude self
-                    if(flags.HasFlag(UserFilterFlags.ExcludeSelf) && identity.Id == GetIdentity().Id) continue;
-                    //check if all excluding self
-                    if(flags.HasFlag(UserFilterFlags.AllExcludingSelf)) yield return identity;
+                    if(flags.HasFlag(UserFilterFlags.ExcludeSelf) && identity.Id == Client_GetIdentity().Id) continue;
+                    //check if all excluding self (exclude self is already handled)
+                    if(flags.HasFlag(UserFilterFlags.AllIncludingSelf)) yield return identity;
                     //check online status
                     var isOnline = _online.Contains(identity.Id);
                     var hasOnlineFlag = flags.HasFlag(UserFilterFlags.Online);
@@ -212,6 +210,7 @@ namespace Amilious.Core.FishNet.Users {
         
         private void Awake() {
             _online.OnChange += OnlineChanged;
+            UserIdentity.SetIdentityManager(this);
             if(!IsServer) return; //load on server only
             _serverIdentifier = UserIdDataManager.Server_GetServerIdentifier();
         }
@@ -244,8 +243,9 @@ namespace Amilious.Core.FishNet.Users {
         /// <inheritdoc />
         public bool IsOnline(UserIdentity identity) => IsOnline(identity.Id);
 
+
         /// <inheritdoc />
-        public virtual UserIdentity GetIdentity() {
+        public virtual UserIdentity Client_GetIdentity() {
             if(!NetworkManager.TryGetLocalUserId(out var id)) return UserIdentity.DefaultUser;
             return TryGetIdentity(id, out var identity) ? identity : UserIdentity.DefaultUser;
         }
@@ -280,7 +280,31 @@ namespace Amilious.Core.FishNet.Users {
 
         /// <inheritdoc />
         public void Client_UnblockUser(int userId)  => UpdateBlockedOnServer(userId, false);
-        
+
+        /// <inheritdoc />
+        public bool Client_IsFriend(UserIdentity identity) => Client_IsFriend(identity.Id);
+
+        /// <inheritdoc />
+        public bool Client_IsFriend(int id) => _friends.Contains(id);
+
+        /// <inheritdoc />
+        public bool Client_IsBlocked(UserIdentity identity) => Client_IsBlocked(identity.Id);
+
+        /// <inheritdoc />
+        public bool Client_IsBlocked(int id) => _blocked.Contains(id);
+
+        /// <inheritdoc />
+        public bool Client_IsRequestingFriendship(UserIdentity identity) => Client_IsRequestingFriendship(identity.Id);
+
+        /// <inheritdoc />
+        public bool Client_IsRequestingFriendship(int id) => _requestingFriends.Contains(id);
+
+        /// <inheritdoc />
+        public bool Client_IsPendingFriendship(UserIdentity identity) => Client_IsPendingFriendship(identity.Id);
+
+        /// <inheritdoc />
+        public bool Client_IsPendingFriendship(int id) => _pendingFriends.Contains(id);
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region FishNet Only Methods ///////////////////////////////////////////////////////////////////////////////////

@@ -446,12 +446,12 @@ namespace Amilious.Core.FishNet.Authentication {
             if(logBroadcasts)Debug.Log("[Client] Password Request Broadcast Received!");
             if(passRequestBroadcast.NewPassword) {
                 PasswordRequestProvider.RequestNewPassword( pass=> {
+                    password = pass;
                     pass = PasswordTools.HashPasswordSHA512(pass, passRequestBroadcast.Salt);
                     var passwordBroadcast = new PasswordBroadcast() {
                         RequestId = passRequestBroadcast.RequestId,
                         HashedPassword = pass
                     };
-                    password = pass;
                     if(logBroadcasts)Debug.Log("[Client] Password Broadcast Sent!");
                     NetworkManager.ClientManager.Broadcast(passwordBroadcast);
                 });

@@ -269,6 +269,23 @@ namespace Amilious.Core.Identity.User {
         #region Client Data ////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// This method is used to store the reply identity id.
+        /// </summary>
+        /// <param name="id">The id that should be used for a reply.</param>
+        public virtual void Client_StoreReplyIdentity(int id) {
+            IdentitySave.Client_StoreReplyIdentity(id);
+        }
+
+        /// <summary>
+        /// This method is used to get the reply identity id.
+        /// </summary>
+        /// <param name="id">The reply identity id.</param>
+        /// <returns>True if the reply id exists, otherwise false.</returns>
+        public virtual bool Client_TryGetReplyIdentity(out int id) {
+            return IdentitySave.Client_TryGetReplyIdentity(out id);
+        }
+        
+        /// <summary>
         /// This method is used to remember the last entered user name.
         /// </summary>
         /// <param name="userName">The user name that you want to remember.</param>

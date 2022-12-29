@@ -46,8 +46,8 @@ namespace Amilious.Core.TextUtils {
 
         #region Delegates //////////////////////////////////////////////////////////////////////////////////////////////
         
-        public delegate void LinkHoverDelegate(string text, string[] id);
-        public delegate void LinkClickDelegate(PointerEventData clickEvent, string text, string[] id);
+        public delegate void LinkHoverDelegate(TextMeshProUGUI textObject,string text, string[] id);
+        public delegate void LinkClickDelegate(TextMeshProUGUI textObject, PointerEventData clickEvent, string text, string[] id);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -93,7 +93,7 @@ namespace Amilious.Core.TextUtils {
             //check if the link is valid
             if(linkId < 0) return;
             var linkInfo = _tmpText.textInfo.linkInfo[linkId];
-            OnLinkClick?.Invoke(eventData,linkInfo.GetLinkText(),linkInfo.GetLinkID().Split('|'));
+            OnLinkClick?.Invoke(_tmpText,eventData,linkInfo.GetLinkText(),linkInfo.GetLinkID().Split('|'));
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ namespace Amilious.Core.TextUtils {
             // Clear previous word selection.
             if (_selectedLink != -1 && (linkIndex == -1 || linkIndex != _selectedLink)) {
                 if(ModifyLinkTint(_selectedLink, 1.33333f, out var info, true)) {
-                    OnLinkExit?.Invoke(info.GetLinkText(),info.GetLinkID().Split('|'));
+                    OnLinkExit?.Invoke(_tmpText,info.GetLinkText(),info.GetLinkID().Split('|'));
                     _selectedLink = -1;
                 }
             }
@@ -135,7 +135,7 @@ namespace Amilious.Core.TextUtils {
             if (linkIndex != -1 && linkIndex != _selectedLink) {
                 _selectedLink = linkIndex;
                 if(ModifyLinkTint(_selectedLink, 0.75f, out var info)) {
-                    OnLinkEnter?.Invoke(info.GetLinkText(),info.GetLinkID().Split('|'));
+                    OnLinkEnter?.Invoke(_tmpText,info.GetLinkText(),info.GetLinkID().Split('|'));
                 }
             }
 

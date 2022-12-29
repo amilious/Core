@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using Amilious.Core.Extensions;
 
 namespace Amilious.Core {
@@ -55,6 +56,36 @@ namespace Amilious.Core {
         #endif
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #region Arg Methods ////////////////////////////////////////////////////////////////////////////////////////////
+
+        private static int? _instanceId;
+        private static bool _checkedForInstanceId;
+        
+        /// <summary>
+        /// This method is used to try the instance id from the command line arguments.
+        /// </summary>
+        /// <param name="id">The id of the instance.</param>
+        /// <returns>True if has command line arg, otherwise false.</returns>
+        public static bool TryGetInstanceId(out int id) {
+            if(_checkedForInstanceId) {
+                id = _instanceId.GetValueOrDefault();
+                return _instanceId.HasValue;
+            }
+            _checkedForInstanceId = true;
+            var args = Environment.GetCommandLineArgs();
+            for(var i = 0; i<args.Length;i++) {
+                if(!args[i].Equals("-instance-id", StringComparison.CurrentCultureIgnoreCase)) continue;
+                if(i + 1 >= args.Length) continue;
+                if(!int.TryParse(args[1 + 1], out id)) continue;
+                _instanceId = id;
+                return true;
+            }
+            id = 0;
+            return false;
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
     
 }

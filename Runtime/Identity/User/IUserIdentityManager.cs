@@ -16,13 +16,18 @@
 
 using System;
 using System.Collections.Generic;
-using Amilious.Core.Identity.User;
 
 namespace Amilious.Core.Identity.User {
     
     public interface IUserIdentityManager {
         
+        #region Delegates //////////////////////////////////////////////////////////////////////////////////////////////
+        
         public delegate void UserConnectionChangedDelegate(UserIdentity identity, bool connected);
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
         /// This event is triggered when a connection changes.
@@ -32,69 +37,91 @@ namespace Amilious.Core.Identity.User {
         /// <summary>
         /// This event is triggered when the friend list is updated on the client.
         /// </summary>
+        // ReSharper disable once InconsistentNaming
         public event Action Client_OnFriendListUpdated;
 
         /// <summary>
         /// This event is triggered when the pending friend list is updated on the client.
         /// </summary>
+        // ReSharper disable once InconsistentNaming
         public event Action Client_OnPendingFriendListUpdated;
 
         /// <summary>
         /// This event is triggered when the requesting friend list is updated on the client.
         /// </summary>
+        // ReSharper disable once InconsistentNaming
         public event Action Client_OnRequestingFriendListUpdated;
 
         /// <summary>
         /// This event is triggered when the blocked list is updated on the client.
         /// </summary>
+        // ReSharper disable once InconsistentNaming
         public event Action Client_OnBlockedListUpdated;
 
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Client & Server Properties  ////////////////////////////////////////////////////////////////////////////
+        
         /// <summary>
         /// This property is used to get the user identity for the given id.
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userId">The user's id.</param>
         public UserIdentity this[int userId] { get; }
-        
-        /// <summary>
-        /// This property is used to get a collection of the identities that meet the given flags.
-        /// </summary>
-        /// <param name="flags"></param>
-        public IEnumerable<UserIdentity> this[UserFilterFlags flags] { get; }
 
         /// <summary>
         /// This property is used to get a collection of identities.
         /// </summary>
         IEnumerable<UserIdentity> Identities { get; }
-
-        /// <summary>
-        /// This property is used to get a collection of friend identities.
-        /// </summary>
-        IEnumerable<UserIdentity> Friends { get;}
-        
-        /// <summary>
-        /// This property is used to get a collection of identities that are awaiting friendship approval.
-        /// </summary>
-        IEnumerable<UserIdentity> PendingFriends { get; }
-        
-        /// <summary>
-        /// This property is used to get a collection of identities that are requesting approval.
-        /// </summary>
-        IEnumerable<UserIdentity> RequestingFriendShip { get; }
-
-        /// <summary>
-        /// This property is used to a collection of blocked users.
-        /// </summary>
-        IEnumerable<UserIdentity> BlockedUsers { get; }
         
         /// <summary>
         /// If this property is true, friends require acceptance, otherwise only one side needs to add.
         /// </summary>
         public bool FriendsNeedAcceptance { get; }
         
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Client Only Properties /////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// This property is used to get a collection of the identities that meet the given flags.
+        /// </summary>
+        /// <param name="flags">The user filter flags.</param>
+        /// <remarks>This property should be called from the client.</remarks>
+        public IEnumerable<UserIdentity> this[UserFilterFlags flags] { get; }
+
+        /// <summary>
+        /// This property is used to get a collection of friend identities.
+        /// </summary>
+        /// <remarks>This property should be called from the client.</remarks>
+        IEnumerable<UserIdentity> Friends { get;}
+        
+        /// <summary>
+        /// This property is used to get a collection of identities that are awaiting friendship approval.
+        /// </summary>
+        /// <remarks>This property should be called from the client.</remarks>
+        IEnumerable<UserIdentity> PendingFriends { get; }
+        
+        /// <summary>
+        /// This property is used to get a collection of identities that are requesting approval.
+        /// </summary>
+        /// <remarks>This property should be called from the client.</remarks>
+        IEnumerable<UserIdentity> RequestingFriendShip { get; }
+
+        /// <summary>
+        /// This property is used to a collection of blocked users.
+        /// </summary>
+        /// <remarks>This property should be called from the client.</remarks>
+        IEnumerable<UserIdentity> BlockedUsers { get; }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Client Only Methods ////////////////////////////////////////////////////////////////////////////////////
+        
         /// <summary>
         /// This method is used to remove a friend.
         /// </summary>
         /// <param name="friendId">The friend's identity id.</param>
+        /// <seealso cref="Client_RemoveFriend(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_RemoveFriend(int friendId);
 
@@ -102,6 +129,7 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to remove a friend.
         /// </summary>
         /// <param name="friend">The friend's identity.</param>
+        /// <seealso cref="Client_RemoveFriend(int)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_RemoveFriend(UserIdentity friend);
 
@@ -109,6 +137,7 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to add a friend.
         /// </summary>
         /// <param name="friendId">The friend's identity id.</param>
+        /// <seealso cref="Client_AddFriend(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_AddFriend(int friendId);
 
@@ -116,6 +145,7 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to add a friend.
         /// </summary>
         /// <param name="friend">The friend's identity.</param>
+        /// <seealso cref="Client_AddFriend(int)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_AddFriend(UserIdentity friend);
 
@@ -123,32 +153,124 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to block a user.
         /// </summary>
         /// <param name="user">The user that you want to block.</param>
+        /// <seealso cref="Client_BlockUser(int)"/>
+        /// <remarks>This method should be called from the client.</remarks>
         void Client_BlockUser(UserIdentity user);
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="userId">The user id of the user that you want to block.</param>
+        /// <seealso cref="Client_BlockUser(UserIdentity)"/>
+        /// <remarks>This method should be called from the client.</remarks>
         void Client_BlockUser(int userId);
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="user">The user that you want to unblock.</param>
+        /// <seealso cref="Client_UnblockUser(int)"/>
+        /// <remarks>This method should be called from the client.</remarks>
         void Client_UnblockUser(UserIdentity user);
 
         /// <summary>
         /// This method is used to unblock a user.
         /// </summary>
         /// <param name="userId">The user id of the user that you want to unblock.</param>
+        /// <seealso cref="Client_UnblockUser(UserIdentity)"/>
+        /// <remarks>This method should be called from the client.</remarks>
         void Client_UnblockUser(int userId);
+        
+        /// <summary>
+        /// This method is used to check if a user is a friend.
+        /// </summary>
+        /// <param name="identity">The identity of the user.</param>
+        /// <returns>True if the given identity is a friend, otherwise false.</returns>
+        /// <seealso cref="Client_IsFriend(int)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsFriend(UserIdentity identity);
+        
+        /// <summary>
+        /// This method is used to check if a user is a friend.
+        /// </summary>
+        /// <param name="id">The id of the user.</param>
+        /// <returns>True if the given identity is a friend, otherwise false.</returns>
+        /// <seealso cref="Client_IsFriend(UserIdentity)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsFriend(int id);
 
+        /// <summary>
+        /// This method is used to check if a user is blocked.
+        /// </summary>
+        /// <param name="identity">The identity of the user.</param>
+        /// <returns>True if the given user is blocked, otherwise false.</returns>
+        /// <seealso cref="Client_IsBlocked(int)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsBlocked(UserIdentity identity);
+        
+        /// <summary>
+        /// This method is used to check if a user is blocked.
+        /// </summary>
+        /// <param name="id">The id of the user.</param>
+        /// <returns>True if the given user is blocked, otherwise false.</returns>
+        /// <seealso cref="Client_IsBlocked(UserIdentity)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsBlocked(int id);
+
+        /// <summary>
+        /// This method is used to check if a user is requesting friendship with you.
+        /// </summary>
+        /// <param name="identity">The identity of the user.</param>
+        /// <returns>True if the given user is requesting friendship with you, otherwise false.</returns>
+        /// <seealso cref="Client_IsRequestingFriendship(int)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsRequestingFriendship(UserIdentity identity);
+        
+        /// <summary>
+        /// This method is used to check if a user is requesting friendship with you.
+        /// </summary>
+        /// <param name="id">The id of the user.</param>
+        /// <returns>True if the given user is requesting friendship with you, otherwise false.</returns>
+        /// <seealso cref="Client_IsRequestingFriendship(UserIdentity)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsRequestingFriendship(int id);
+
+        /// <summary>
+        /// This method is used to check if you have a pending friendship with the given user.
+        /// </summary>
+        /// <param name="identity">The identity of the user.</param>
+        /// <returns>True if you are pending a friendship with the given user.</returns>
+        /// <seealso cref="Client_IsPendingFriendship(int)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsPendingFriendship(UserIdentity identity);
+        
+        /// <summary>
+        /// This method is used to check if you have a pending friendship with the given user.
+        /// </summary>
+        /// <param name="id">The id of the user.</param>
+        /// <returns>True if you are pending a friendship with the given user.</returns>
+        /// <seealso cref="Client_IsPendingFriendship(UserIdentity)"/>
+        /// <remarks>This method should be called from the client.</remarks>
+        bool Client_IsPendingFriendship(int id);
+
+        /// <summary>
+        /// This method is used to get the current user's identity.
+        /// </summary>
+        /// <returns>The identity associated with the current user.</returns>
+        /// <remarks>This method should only be called from the client!</remarks>
+        UserIdentity Client_GetIdentity();
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Client & Server Methods ////////////////////////////////////////////////////////////////////////////////
+        
         /// <summary>
         /// This method is used to try get the <see cref="UserIdentity"/> for the given id.
         /// </summary>
         /// <param name="id">The id of the <see cref="UserIdentity"/> that you want to get.</param>
         /// <param name="identity">The identity for the given id.</param>
         /// <returns>True if an <see cref="UserIdentity"/> was found with the given id, otherwise false.</returns>
+        /// <seealso cref="TryGetIdentity(string,out UserIdentity)"/>
         /// <remarks>This can be called from the client or server!</remarks>
         bool TryGetIdentity(int id, out UserIdentity identity);
 
@@ -158,6 +280,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userName">The user name that you want to get the user identity for.</param>
         /// <param name="identity">The identity for the given user name.</param>
         /// <returns>True if an <see cref="UserIdentity"/> was found with the given user name, otherwise false.</returns>
+        /// <seealso cref="TryGetIdentity(int,out UserIdentity)"/>
         /// <remarks>This can be called from the client or server!</remarks>
         bool TryGetIdentity(string userName, out UserIdentity identity);
 
@@ -165,6 +288,7 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to check if the user with the given id is currently online.
         /// </summary>
         /// <param name="id">The id of the user.</param>
+        /// <seealso cref="IsOnline(UserIdentity)"/>
         /// <returns>True if you are connected and so is the user with the given id, otherwise false.</returns>
         bool IsOnline(int id);
 
@@ -172,16 +296,14 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to check if the user is currently online.
         /// </summary>
         /// <param name="identity">The id of the user.</param>
+        /// <seealso cref="IsOnline(int)"/>
         /// <returns>True if you are connected and so is the given user, otherwise false.</returns>
         bool IsOnline(UserIdentity identity);
 
-        /// <summary>
-        /// This method is used to get the current user's identity.
-        /// </summary>
-        /// <returns>The identity associated with the current user.</returns>
-        /// <remarks>This method should only be called from the client!</remarks>
-        UserIdentity GetIdentity();
-
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Server Only Methods ////////////////////////////////////////////////////////////////////////////////////
+        
         /// <summary>
         /// This method is used to check if a user is able to send a message to another user.
         /// </summary>
@@ -226,6 +348,8 @@ namespace Amilious.Core.Identity.User {
         /// <returns>True if the user exists, the user name is available, and was updated, otherwise false.</returns>
         /// <remarks>This method should only be called on the server!</remarks>
         bool Server_TryUpdateUserName(int userId, string userName);
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
     

@@ -73,6 +73,8 @@ namespace Amilious.Core.Extensions {
             return true;
         }
         
+        #endif
+        
         /// <summary>
         /// Uses a hacky way to TryGetValue on a dictionary when using IL2CPP and on mobile.
         /// This is to support older devices that don't properly handle IL2CPP builds.
@@ -90,8 +92,6 @@ namespace Amilious.Core.Extensions {
             return dict.TryGetValue(key, out value);
             #endif
         }
-        
-        #endif
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

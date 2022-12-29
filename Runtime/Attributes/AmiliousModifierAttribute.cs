@@ -81,7 +81,7 @@ namespace Amilious.Core.Attributes {
                         return Validate(_comparisonProperty.objectReferenceValue,setValue,value);
                     case SerializedPropertyType.Enum:
                         #if UNITY_2021_1_OR_NEWER
-                        return ValidateEnumValue(hiderProperty.enumValueIndex,hiderProperty.enumValueFlag,value);
+                        return ValidateEnumValue(_comparisonProperty.enumValueIndex,_comparisonProperty.enumValueFlag,value);
                         #else
                         return ValidateEnumValue(_comparisonProperty.enumValueIndex, -1,value);
                         #endif
@@ -117,11 +117,11 @@ namespace Amilious.Core.Attributes {
                         return Validate(_comparisonProperty.boundsIntValue,setValue,value);
                     #if UNITY_2021_2_OR_NEWER
                     case SerializedPropertyType.ManagedReference:
-                        return castedAttribute.Validate(hiderProperty.managedReferenceValue,setValue,value);
+                        return Validate(_comparisonProperty.managedReferenceValue,setValue,value);
                     #endif
                     #if UNITY_2021_1_OR_NEWER
                     case SerializedPropertyType.Hash128:
-                        return castedAttribute.Validate(hiderProperty.hash128Value,setValue,value);
+                        return Validate(_comparisonProperty.hash128Value,setValue,value);
                     #endif
                     default:
                         return false;
