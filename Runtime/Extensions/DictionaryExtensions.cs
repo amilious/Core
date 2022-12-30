@@ -45,7 +45,7 @@ namespace Amilious.Core.Extensions {
                 if(dicValue is T value1){ 
                     value = value1;
                     return true;
-                }
+                } 
                 try {
                     value = (T) Convert.ChangeType(dicValue, typeof(T));
                     return true;

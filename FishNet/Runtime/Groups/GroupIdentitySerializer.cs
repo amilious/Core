@@ -14,10 +14,11 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using Amilious.Core.Identity.Group;
 using FishNet.Serializing;
+using Amilious.Core.Identity.Group;
 
 namespace Amilious.Core.FishNet.Groups {
+    
     /// <summary>
     /// This class is used by the <see cref="FishNet"/> serializerMethods when sending user id's to the client.
     /// </summary>

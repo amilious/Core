@@ -17,12 +17,11 @@
 using UnityEngine;
 using FishNet.Managing;
 using FishNet.Connection;
-using Amilious.Core.Saving;
 using FishNet.Managing.Server;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
-using Amilious.Core.FishNet.Authentication;
 using Amilious.Core.Identity.User;
+using Amilious.Core.FishNet.Authentication;
 
 namespace Amilious.Core.FishNet {
     
@@ -99,6 +98,7 @@ namespace Amilious.Core.FishNet {
                 Debug.LogWarning("Unable to get the Amilious Authenticator from the Server Manager!");
             return authenticator;
         }
+        
         public static void AssignLocalUserId(this NetworkManager networkManager, int localId) {
             LocalIdStorage[networkManager] = localId;
         }
@@ -110,8 +110,7 @@ namespace Amilious.Core.FishNet {
         public static bool IsLocalUser(this NetworkManager networkManager, int id) {
             return LocalIdStorage.TryGetValueFix(networkManager, out var localId) && id==localId;
         }
-        
-        
+
     }
     
 }

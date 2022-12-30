@@ -1,27 +1,46 @@
-using System;
-using Amilious.Core.Attributes;
-using Amilious.Core.FishNet.Authentication;
-using Amilious.Core.Identity.User;
-using FishNet.Managing;
-using FishNet.Transporting;
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                    //
+//    _____            .__ .__   .__                             _________  __              .___.__                   //
+//   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
+//  /  /_\  \  /     \ |  ||  |  |  | /  _ \ |  |  \/  ___/     \_____  \ \   __\|  |  \ / __ | |  | /  _ \ /  ___/   //
+// /    |    \|  Y Y  \|  ||  |__|  |(  <_> )|  |  /\___ \      /        \ |  |  |  |  // /_/ | |  |(  <_> )\___ \    //
+// \____|__  /|__|_|  /|__||____/|__| \____/ |____//____  >    /_______  / |__|  |____/ \____ | |__| \____//____  >   //
+//         \/       \/                                  \/             \/                    \/                 \/    //
+//                                                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  Website:        http://www.amilious.com         Unity Asset Store: https://assetstore.unity.com/publishers/62511  //
+//  Discord Server: https://discord.gg/SNqyDWu            Copyright© Amilious since 2022                              //                    
+//  This code is part of an asset on the unity asset store. If you did not get this from the asset store you are not  //
+//  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using FishNet.Managing;
+using FishNet.Transporting;
+using Amilious.Core.Attributes;
+using Amilious.Core.Identity.User;
+using Amilious.Core.FishNet.Authentication;
 
 namespace Amilious.Core.FishNet.Display {
     
-    
+    /// <summary>
+    /// This class is a modified version of the FISHNET Network Hud.
+    /// </summary>
+    // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     public class AmiliousNetworkHudCanvases : MonoBehaviour {
     
-        #region Types
+        #region Private Enums //////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
         /// Ways the HUD will automatically start a connection.
         /// </summary>
         private enum AutoStartType { Disabled, Host, Server, Client }
-        #endregion
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        #region Serialized
+        #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 
         [SerializeField, AmiliousBool(true)] private bool rememberLastUserName = true;
         [SerializeField, AmiliousBool(true)] private bool rememberLastPassword = true;
@@ -45,25 +64,12 @@ namespace Amilious.Core.FishNet.Display {
         [Header("Inputs")]
         [Tooltip("The user name field.")] [SerializeField]
         private TMP_InputField userName;
-
         [Tooltip("The password field.")] [SerializeField]
         private TMP_InputField password;
         
-        #endregion
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        private UserIdentityDataManager DataManager => UserIdentityDataManager.Instance;
-
-        public NetworkManager NetworkManager {
-            get {
-                if(_networkManager != null) return _networkManager;
-                _networkManager = FindObjectOfType<NetworkManager>();
-                if(_networkManager==null)
-                    Debug.LogError("NetworkManager not found, HUD will not function.");
-                return _networkManager;
-            }
-        }
-
-        #region Private
+        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
         /// Found NetworkManager.
@@ -80,16 +86,39 @@ namespace Amilious.Core.FishNet.Display {
         /// </summary>
         private LocalConnectionState _serverState = LocalConnectionState.Stopped;
         
-        #endregion
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// This property is a shortcut to get the UserIdentityDataManager instance.
+        /// </summary>
+        private static UserIdentityDataManager DataManager => UserIdentityDataManager.Instance;
+
+        /// <summary>
+        /// This property is used to get and cache the network manager.
+        /// </summary>
+        private NetworkManager NetworkManager {
+            get {
+                if(_networkManager != null) return _networkManager;
+                _networkManager = FindObjectOfType<NetworkManager>();
+                if(_networkManager==null)
+                    Debug.LogError("NetworkManager not found, HUD will not function.");
+                return _networkManager;
+            }
+        }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Monobehavior Methods ///////////////////////////////////////////////////////////////////////////////////
+        
         private void Start() {
             OnStoreCredentialsUpdated();
             UpdateColor(LocalConnectionState.Stopped, ref serverIndicator);
             UpdateColor(LocalConnectionState.Stopped, ref clientIndicator);
-            if (autoStartType == AutoStartType.Host || autoStartType == AutoStartType.Server)
-                OnClick_Server();
-            if (!Application.isBatchMode && (autoStartType == AutoStartType.Host || autoStartType == AutoStartType.Client))
-                OnClick_Client();
+            if (autoStartType == AutoStartType.Host || autoStartType == AutoStartType.Server) OnClick_Server();
+            if (!Application.isBatchMode && (autoStartType == AutoStartType.Host || 
+                autoStartType == AutoStartType.Client)) OnClick_Client();
         }
 
         private void OnEnable() {
@@ -110,41 +139,9 @@ namespace Amilious.Core.FishNet.Display {
             NetworkManager.ClientManager.OnClientConnectionState -= ClientManager_OnClientConnectionState;
         }
 
-        /// <summary>
-        /// Updates img color based on state.
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="img"></param>
-        private void UpdateColor(LocalConnectionState state, ref Image img) {
-            Color c;
-            if (state == LocalConnectionState.Started) c = startedColor;
-            else if (state == LocalConnectionState.Stopped) c = stoppedColor;
-            else c = changingColor;
-            img.color = c;
-        }
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        private void ClientManager_OnClientConnectionState(ClientConnectionStateArgs obj) {
-            _clientState = obj.ConnectionState;
-            if(_clientState == LocalConnectionState.Stopped) {
-                userName.enabled = true;
-                userName.textComponent.color = Color.white;
-                password.enabled = true;
-                password.textComponent.color = Color.white;
-            }
-            else {
-                userName.enabled = false;
-                userName.textComponent.color = userName.placeholder.color;
-                password.enabled = false;
-                password.textComponent.color = password.placeholder.color;
-            }
-            
-            UpdateColor(obj.ConnectionState, ref clientIndicator);
-        }
-
-        private void ServerManager_OnServerConnectionState(ServerConnectionStateArgs obj) {
-            _serverState = obj.ConnectionState;
-            UpdateColor(obj.ConnectionState, ref serverIndicator);
-        }
+        #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
 
         public void OnClick_Server() {
             if (NetworkManager == null) return;
@@ -164,8 +161,48 @@ namespace Amilious.Core.FishNet.Display {
             }
             DeselectButtons();
         }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Private Methods ////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// Updates img color based on state.
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="img"></param>
+        protected virtual void UpdateColor(LocalConnectionState state, ref Image img) {
+            Color c;
+            if (state == LocalConnectionState.Started) c = startedColor;
+            else if (state == LocalConnectionState.Stopped) c = stoppedColor;
+            else c = changingColor;
+            img.color = c;
+        }
+        
+        protected virtual  void ClientManager_OnClientConnectionState(ClientConnectionStateArgs obj) {
+            _clientState = obj.ConnectionState;
+            if(_clientState == LocalConnectionState.Stopped) {
+                userName.enabled = true;
+                userName.textComponent.color = Color.white;
+                password.enabled = true;
+                password.textComponent.color = Color.white;
+            }
+            else {
+                userName.enabled = false;
+                userName.textComponent.color = userName.placeholder.color;
+                password.enabled = false;
+                password.textComponent.color = password.placeholder.color;
+            }
+            
+            UpdateColor(obj.ConnectionState, ref clientIndicator);
+        }
 
-        private void OnStoreCredentialsUpdated() {
+        protected virtual  void ServerManager_OnServerConnectionState(ServerConnectionStateArgs obj) {
+            _serverState = obj.ConnectionState;
+            UpdateColor(obj.ConnectionState, ref serverIndicator);
+        }
+
+        protected virtual  void OnStoreCredentialsUpdated() {
             if(rememberLastUserName&&userName!=null) {
                 DataManager.Client_TryGetLastUserName(out var usrName);
                 userName.text = usrName;
@@ -176,8 +213,10 @@ namespace Amilious.Core.FishNet.Display {
             }
         }
 
-        private void DeselectButtons() {
-            
-        }
+        protected virtual  void DeselectButtons() { }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
+    
 }

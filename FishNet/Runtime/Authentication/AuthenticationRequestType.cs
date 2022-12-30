@@ -16,9 +16,21 @@
 
 namespace Amilious.Core.FishNet.Authentication {
     
+    /// <summary>
+    /// This enum is used to represent the authentication request type.
+    /// </summary>
     public enum AuthenticationRequestType {
+        
+        /// <summary>
+        /// The server is requesting a password for the user.
+        /// </summary>
         Password, 
+        
+        /// <summary>
+        /// The server is requesting a new password for the user.
+        /// </summary>
         NewPassword
+        
     }
     
 }

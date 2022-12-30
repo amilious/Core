@@ -33,6 +33,9 @@ using Amilious.Core.Authentication;
 
 namespace Amilious.Core.FishNet.Authentication {
     
+    //TODO: add a mode that can be used to login without a user name or password.  This mode should generate a device identifier and a server identifier.
+    //TODO: build a custom editor that will display different options based on the selected mode.
+    
     public class AmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
         
         #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////

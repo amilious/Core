@@ -15,8 +15,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using Amilious.Core.Identity.User;
 using FishNet.Serializing;
+using Amilious.Core.Identity.User;
 
 namespace Amilious.Core.FishNet.Users {
     
