@@ -412,7 +412,7 @@ namespace Amilious.Core {
         /// <param name="a">The seed you are comparing.</param>
         /// <param name="b">The object that you are comparing to the seed.</param>
         /// <returns>True if the seed is equal to the compared value, otherwise false.</returns>
-        public static bool operator == (Seed a, object b) => a==null?b==null:a.Equals(b);
+        public static bool operator == (Seed a, object b) => a?.Equals(b) ?? b is null;
         
         /// <summary>
         /// This method is used to check if a seed is not equal to another value.
@@ -420,7 +420,7 @@ namespace Amilious.Core {
         /// <param name="a">The seed that you are comparing.</param>
         /// <param name="b">The object that you are comparing to the seed.</param>
         /// <returns>True if the seed is not equal to the compared value, otherwise false.</returns>
-        public static bool operator != (Seed a, object b) => a==null?b!=null:!a.Equals(b);
+        public static bool operator != (Seed a, object b) => !(a==b); 
         
         #endregion
 

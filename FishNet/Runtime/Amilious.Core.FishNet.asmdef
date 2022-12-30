@@ -13,7 +13,8 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "FISHNET"
+        "FISHNET",
+        "AMILIOUS_CORE"
     ],
     "versionDefines": [],
     "noEngineReferences": false

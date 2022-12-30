@@ -13,7 +13,10 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "AMILIOUS_CORE",
+        "FISHNET"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

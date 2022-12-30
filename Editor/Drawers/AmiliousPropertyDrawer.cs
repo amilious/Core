@@ -127,7 +127,7 @@ namespace Amilious.Core.Editor.Drawers {
             AllPropertyModifiers.Clear();
             _staticInitialized = false;
             StaticInitialize();
-            Debug.Log(Amilious.MakeTitle("Reinitialized Amilious Property Drawers"));
+            Debug.Log(Amilious.MakeHeader("Reinitialized Amilious Property Drawers"));
         }
         
         /// <summary>

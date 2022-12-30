@@ -23,6 +23,9 @@ namespace Amilious.Core {
     /// This class is used to add some common and basic unity helper methods.
     /// </summary>
     public static class Amilious {
+
+        public const string TITLE_COLOR = "FFFF88";
+        
         
         /// <summary>
         /// This method is used to find a <see cref="GameObject"/> by its name.  This method should not be used in any
@@ -55,8 +58,19 @@ namespace Amilious.Core {
         /// </summary>
         /// <param name="title">The text that you want in the title.</param>
         /// <returns>The generated title string.</returns>
-        public static string MakeTitle(string title) {
-            return title.PadText('#', 60, 10).SetColor("ffff88");
+        public static string MakeHeader(string title) {
+            return title.PadText('#', 60, 10).SetColor(TITLE_COLOR);
+        }
+
+        /// <summary>
+        /// This method is used to make a title for a log message.
+        /// </summary>
+        /// <param name="formattedText">The formatted text that you want in the title.</param>
+        /// <param name="args">The args for the formatted text.</param>
+        /// <returns>The generated title string.</returns>
+        public static string MakeHeader(string formattedText, params object[] args) {
+            var title = string.Format(formattedText, args);
+            return title.PadText('#', 60, 10).SetColor(TITLE_COLOR);
         }
         
     }

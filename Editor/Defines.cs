@@ -16,30 +16,49 @@
 
 using System;
 using System.Linq;
-using System.Text;
-using Amilious.Core.Editor.Extensions;
 using UnityEditor;
 using UnityEngine;
+using Amilious.Core.Extensions;
+using Amilious.Core.Editor.Extensions;
 
 namespace Amilious.Core.Editor {
 
     /// <summary>
-    /// Defines the ODIN_INSPECTOR symbol.
+    /// This class is used to manage define symbols.
     /// </summary>
     public static class Defines {
 
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This constant is used as the message displayed when a define is removed.
+        /// </summary>
+        private const string REMOVE_DEFINE_MESSAGE = "Removed {0} {1} Define Symbols from the {2} target group!";
+        
+        /// <summary>
+        /// This constant is used as the message displayed when a define is added.
+        /// </summary>
+        private const string ADD_DEFINE_MESSAGE = "Added {0} {1} Define Symbols to the {2} target group!";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         #region Private Static Fields //////////////////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// These are the define symbols that are no longer valid for amilious core and should be removed if they exist.
+        /// </summary>
         private static readonly string[] RemoveSymbols = { };
         
+        /// <summary>
+        /// These are the define symbols that should be added if they do not exist for amilious core.
+        /// <remarks>Remember to update the assembly definitions when changing the active defines.</remarks>
+        /// </summary>
         private static readonly string[] DefineSymbols = {
             "AMILIOUS_CORE", "AMILIOUS_CORE_1_0", "AMILIOUS_CORE_1_0_OR_NEWER"
         };
-        
-        private static readonly StringBuilder StringBuilder = new StringBuilder();
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+       
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
@@ -49,6 +68,7 @@ namespace Amilious.Core.Editor {
         /// <param name="name">The name of the project the define symbols are for.</param>
         /// <param name="defineSymbols">The define symbols that you want to be present.</param>
         /// <returns>The number of added define symbols.</returns>
+        // ReSharper disable once MemberCanBePrivate.Global
         public static int TryAdd(BuildTargetGroup targetGroup, string name, params string[] defineSymbols) {
             var added = 0;
             if(targetGroup == BuildTargetGroup.Unknown) return added;
@@ -65,7 +85,7 @@ namespace Amilious.Core.Editor {
             }
             if(!changed) return added;
             PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, definesString);
-            Debug.Log(Amilious.MakeTitle($"Added {added} {name} Define Symbols to the {targetGroup.ToString()} target group"));
+            Debug.Log(Amilious.MakeHeader(ADD_DEFINE_MESSAGE,added,name,targetGroup));
             return added;
         }
 
@@ -75,6 +95,7 @@ namespace Amilious.Core.Editor {
         /// <param name="name">The name of the project the define symbols are for.</param>
         /// <param name="defineSymbols">The define symbols that you want to be present.</param>
         /// <returns>The number of added define symbols.</returns>
+        // ReSharper disable once MemberCanBePrivate.Global
         public static int TryAddAll(string name, params string[] defineSymbols) {
             var added = 0;
             foreach (BuildTargetGroup targetGroup in Enum.GetValues(typeof(BuildTargetGroup)))
@@ -89,11 +110,12 @@ namespace Amilious.Core.Editor {
         /// <param name="name">The name of the project the define symbols are for.</param>
         /// <param name="defineSymbols">The define symbols that you want to not be present.</param>
         /// <returns>The number of removed define symbols.</returns>
+        // ReSharper disable once MemberCanBePrivate.Global
         public static int TryRemove(BuildTargetGroup targetGroup, string name, params string[] defineSymbols) {
             var removed = 0;
             if(targetGroup == BuildTargetGroup.Unknown) return removed;
             if (!targetGroup.IsSupported()) return removed;
-            StringBuilder.Clear();
+            var stringBuilder = StringBuilderPool.Rent;
             var definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup).Trim();
             var defines = definesString.Split(';');
             var changed = false;
@@ -103,12 +125,11 @@ namespace Amilious.Core.Editor {
                     removed++;
                     continue;
                 }
-                if(StringBuilder.Length > 0) StringBuilder.Append(';');
-                StringBuilder.Append(define);
+                stringBuilder.AddIfNotEmpty(';').Append(define);
             }
             if(!changed) return removed;
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, StringBuilder.ToString());
-            Debug.Log(Amilious.MakeTitle($"Removed {removed} {name} Define Symbols from the {targetGroup.ToString()} target group"));
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, stringBuilder.ToStringAndReturnToPool());
+            Debug.Log(Amilious.MakeHeader(REMOVE_DEFINE_MESSAGE,removed,name,targetGroup));
             return removed;
         }
         
@@ -118,6 +139,7 @@ namespace Amilious.Core.Editor {
         /// <param name="name">The name of the project the define symbols are for.</param>
         /// <param name="defineSymbols">The define symbols that you want to not be present.</param>
         /// <returns>The number of removed define symbols.</returns>
+        // ReSharper disable once MemberCanBePrivate.Global
         public static int TryRemoveAll(string name, params string[] defineSymbols) {
             var removed = 0;
             foreach (BuildTargetGroup targetGroup in Enum.GetValues(typeof(BuildTargetGroup)))

@@ -30,7 +30,8 @@ namespace Amilious.Core {
     /// </summary>
     /// <typeparam name="T">The type of the comparison.</typeparam>
     [Serializable]
-    public class ComparisonMethod<T> : IComparisonMethod where T : IComparable<T>, IConvertible, IEquatable<T>, IFormattable {
+    public class ComparisonMethod<T> : IComparisonMethod where T : IComparable<T>, IConvertible, IEquatable<T>, 
+        IFormattable {
 
         #region Serialized Fields //////////////////////////////////////////////////////////////////////////////////////
         
