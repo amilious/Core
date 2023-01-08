@@ -28,9 +28,9 @@ namespace Amilious.Core.Extensions {
 
         #region Fields /////////////////////////////////////////////////////////////////////////////////////////////////
         
-        public const string APPEND_C_FORMAT = "<color=#{0}>{1}</color>";
-        public const string PADDING_FORMAT = "{0}{1} {2}";
-        public const string LINK_FORMAT = "<link=\"{0}\">{1}</link>";
+        private const string APPEND_C_FORMAT = "<color=#{0}>{1}</color>";
+        private const string PADDING_FORMAT = "{0}{1} {2}";
+        private const string LINK_FORMAT = "<link=\"{0}\">{1}</link>";
         #if UNITY_2019 || UNITY_2020
         private static readonly string[] Splitter = new string[1];
         #endif
@@ -57,11 +57,10 @@ namespace Amilious.Core.Extensions {
         /// <returns>The newly formatted string split using camel case.</returns>
         public static string SplitCamelCase(this string value, bool spitNumbers = false) {
             var sb = StringBuilderPool.Rent;
-            var chars = value.ToCharArray();
-            for(var i = 0; i < chars.Length; i++) {
-                var c = chars[i];
-                if(char.IsDigit(c) && i != 0 && !char.IsDigit(chars[i - 1]) && spitNumbers) sb.Append(' ');
-                else if(char.IsUpper(c) && i != 0 && !char.IsUpper(chars[i - 1])) sb.Append(' ');
+            for (var i = 0; i < value.Length; i++){
+                var c = value[i];
+                if(char.IsDigit(c) && i != 0 && !char.IsDigit(value[i - 1]) && spitNumbers) sb.Append(' ');
+                else if(char.IsUpper(c) && i != 0 && !char.IsUpper(value[i - 1])) sb.Append(' ');
                 if(i == 0) c = char.ToUpper(c);
                 sb.Append(c);
             }
