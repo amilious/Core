@@ -14,8 +14,6 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
-using System.Text;
 using UnityEngine;
 using System.Globalization;
 using System.Collections.Generic;
@@ -50,7 +48,6 @@ namespace Amilious.Core.Extensions {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
-        
         
         /// <summary>
         /// This method is used to add spaces to a string based on capital letters.
