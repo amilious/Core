@@ -112,6 +112,34 @@ namespace Amilious.Core.Extensions {
                 else Object.Destroy(component);
             }
         }
+
+        /// <summary>
+        /// This method is used to get the <see cref="GameObject"/>'s position within its parent.
+        /// </summary>
+        /// <param name="gameObject">The game object.</param>
+        /// <returns>Returns the child id if valid, otherwise returns -1.</returns>
+        public static int GetChildId(this GameObject gameObject, int parentLevel = 0) {
+            if(gameObject == null) return -1;
+            var parent = gameObject.transform;
+            
+            for(var i=0;i<=parentLevel;i++) {
+                if(parent == null) return -1;
+                gameObject = parent.gameObject;
+                parent = parent.parent;
+            }
+            //check root objects if parent is null
+            if(parent == null) {
+                var children = gameObject.scene.GetRootGameObjects();
+                for(var i=0;i<children.Length;i++) 
+                    if(children[i] == gameObject) return i;
+                return -1;
+            }
+            //check parent
+            for(var i=0; i<parent.childCount; i++)
+                if(parent.GetChild(i).gameObject == gameObject)
+                    return i;
+            return -1;
+        }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

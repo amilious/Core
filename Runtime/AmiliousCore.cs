@@ -30,6 +30,10 @@ namespace Amilious.Core {
 
         public const string THREADING_CONTEXT_MENU = MAIN_CONTEXT_MENU + "Threading/";
 
+        public const string UI_CONTEXT_MENU = MAIN_CONTEXT_MENU + "UI/";
+        
+        public const string TAB_CONTEXT_MENU = UI_CONTEXT_MENU + "Tabs/";
+
         public const string INVALID_SUCCESS = "The value property is not available unless state is Success.";
 
         public const string INVALID_ERROR = "The error property is not available unless state is Error.";

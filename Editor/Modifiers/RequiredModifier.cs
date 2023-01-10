@@ -47,7 +47,7 @@ namespace Amilious.Core.Editor.Modifiers {
         public override bool CanCacheInspectorGUI(SerializedProperty property) => false;
         
         /// <inheritdoc />
-        public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden) {
+        public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden, bool disabled) {
             if(ShowMessage(property)) {
                 EditorGUILayout.HelpBox(RequiredAttribute.Message, MessageType.Error);
                 if(_displayedWarning) return;

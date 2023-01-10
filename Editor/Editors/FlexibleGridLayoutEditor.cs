@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,44 +14,17 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-namespace Amilious.Core.Attributes {
+using UnityEditor;
+using Amilious.Core.UI.Layout;
+
+namespace Amilious.Core.Editor.Editors {
     
-    /// <summary>
-    /// This attribute is used to show a warning if the value is missing.
-    /// </summary>
-    public class RequiredAttribute : AmiliousModifierAttribute {
-        
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// The message that you want to show.
-        /// </summary>
-        public string Message { get; }
-
-        #endregion
-        
-        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This constructor is use to create a new amilious required attribute.
-        /// </summary>
-        /// <param name="message">The message that you want to be displayed if the value is not present.</param>
-        public RequiredAttribute(string message) {
-            Message = message;
+    [CustomEditor(typeof(FlexibleGridLayout),true, isFallback = true)]
+    public class FlexibleGridLayoutEditor : AmiliousEditor {
+        protected override void Initialize() {
+            SkipPropertyDraw("m_ChildAlignment");
+            base.Initialize();
         }
-        
-        #endregion
-
-        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <inheritdoc />
-        public override bool ShouldHide<T>(T property) => false;
-        
-        /// <inheritdoc />
-        public override bool ShouldDisable<T>(T property) => false;
-
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
     }
     
 }

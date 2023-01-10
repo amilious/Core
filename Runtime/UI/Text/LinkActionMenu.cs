@@ -8,50 +8,53 @@
 //         \/       \/                                  \/             \/                    \/                 \/    //
 //                                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//  Website:        http://www.amilious.com         Unity Asset Store: https://assetstore.unity.com/publishers/62511  //
+//  Website:        http://www.amilious.comUnity          Asset Store: https://assetstore.unity.com/publishers/62511  //
 //  Discord Server: https://discord.gg/SNqyDWu            Copyright© Amilious since 2022                              //                    
 //  This code is part of an asset on the unity asset store. If you did not get this from the asset store you are not  //
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-namespace Amilious.Core.Attributes {
-    
-    /// <summary>
-    /// This attribute is used to show a warning if the value is missing.
-    /// </summary>
-    public class RequiredAttribute : AmiliousModifierAttribute {
-        
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// The message that you want to show.
-        /// </summary>
-        public string Message { get; }
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
 
-        #endregion
+namespace Amilious.Core.UI.Text {
+    
+    public class LinkActionMenu : AmiliousBehavior, IPointerExitHandler {
+
+        [SerializeField] private GameObject actionPrefab;
+        [SerializeField] private Color mouseOverColor = Color.white;
+        [SerializeField] private Color mouseNotOverColor = Color.gray;
+
+        private readonly Queue<LinkActionItem> _actionItemPool = new Queue<LinkActionItem>();
+        private readonly List<LinkActionItem> _currentActions = new List<LinkActionItem>();
+
+        public Color MouseNotOverColor => mouseNotOverColor;
+
+        public Color MouseOverColor => mouseOverColor;
         
-        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This constructor is use to create a new amilious required attribute.
-        /// </summary>
-        /// <param name="message">The message that you want to be displayed if the value is not present.</param>
-        public RequiredAttribute(string message) {
-            Message = message;
+        public void AddAction(string actionName, Action action) {
+            var actionItem = (_actionItemPool.Count>0)?
+                _actionItemPool.Dequeue():new LinkActionItem(actionPrefab,this);
+            _currentActions.Add(actionItem);
+            actionItem.SetUpAction(actionName, action);
         }
-        
-        #endregion
 
-        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
+        public void Hide() {
+            foreach(var action in _currentActions) {
+                action.Hide();
+                _actionItemPool.Enqueue(action);
+            }
+            _currentActions.Clear();
+            gameObject.SetActive(false);
+        }
 
-        /// <inheritdoc />
-        public override bool ShouldHide<T>(T property) => false;
-        
-        /// <inheritdoc />
-        public override bool ShouldDisable<T>(T property) => false;
+        public void Show(Vector3 position) {
+            transform.position = position;
+            gameObject.SetActive(true);
+        }
 
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        public void OnPointerExit(PointerEventData eventData) => Hide();
     }
-    
 }

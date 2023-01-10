@@ -23,8 +23,8 @@ namespace Amilious.Core.Editor.Modifiers {
     [CustomPropertyDrawer(typeof(AmiliousHelpBoxAttribute))]
     public class HelpBoxModifier : AmiliousPropertyModifier<AmiliousHelpBoxAttribute> {
         
-        public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden) {
-            base.BeforeOnGUI(property, label, hidden);
+        public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden, bool disabled) {
+            base.BeforeOnGUI(property, label, hidden, disabled);
             if(hidden||!Attribute.ShouldShowHelp(property)) return;
             EditorGUILayout.HelpBox(Attribute.Message,Attribute.MessageType);
         }

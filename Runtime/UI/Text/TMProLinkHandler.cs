@@ -14,15 +14,15 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System.Collections.Generic;
+using Amilious.Core.Extensions;
+using Amilious.Core.Input;
 using TMPro;
 using UnityEngine;
-using Amilious.Core.Input;
-using Amilious.Core.Extensions;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
-namespace Amilious.Core.TextUtils {
+namespace Amilious.Core.UI.Text {
     
     /// <summary>
     /// This component is used to handle links within text mesh pro text.

@@ -59,16 +59,17 @@ namespace Amilious.Core.Editor.Modifiers {
     public abstract class AmiliousPropertyModifier : PropertyDrawer {
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
-        
+
         private bool _hide;
+        private bool _disable;
         private bool _initialized;
         private RangeAttribute _range;
         private AmiliousPropertyDrawer _drawer;
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>
         /// This property contains the property that the modifier is applied to.
         /// </summary>
@@ -79,25 +80,27 @@ namespace Amilious.Core.Editor.Modifiers {
         /// This attribute is used to indicate if the modifier is called before drawing.
         /// </summary>
         public bool CalledBeforeDrawer { get; private set; } = false;
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>
         /// This method is called before OnGUI is called.
         /// </summary>
         /// <param name="property">The property that will be drawn.</param>
         /// <param name="label">The properties label.</param>
         /// <param name="hidden">If true the property has been marked as hidden, otherwise false.</param>
-        public virtual void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden) { }
+        /// <param name="disabled">If true the property has been marked as disabled, otherwise false.</param>
+        public virtual void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden, bool disabled) { }
 
         /// <summary>
         /// This method is called after OnGUI.
         /// </summary>
         /// <param name="property">The property that was drawn.</param>
         /// <param name="hidden">If true the property has been marked as hidden, otherwise false.</param>
-        public virtual void AfterOnGUI(SerializedProperty property, bool hidden) { }
+        /// <param name="disabled">If true the property has been marked as disabled, otherwise false.</param>
+        public virtual void AfterOnGUI(SerializedProperty property, bool hidden, bool disabled) { }
 
         /// <summary>
         /// This method is used to check if the property modifier modifies the height.
@@ -105,8 +108,11 @@ namespace Amilious.Core.Editor.Modifiers {
         /// <param name="property">The property being drawn.</param>
         /// <param name="label">The properties label.</param>
         /// <param name="hidden">The property is hidden if true.</param>
+        /// <param name="disabled">The property is disabled if true.</param>
         /// <returns>The amount that the height is modified by.</returns>
-        public virtual float ModifyHeight(SerializedProperty property, GUIContent label, bool hidden) { return 0;}
+        public virtual float ModifyHeight(SerializedProperty property, GUIContent label, bool hidden, bool disabled) {
+            return 0;
+        }
 
         /// <summary>
         /// This method will be called to check if the drawing of the property should be canceled.
@@ -115,39 +121,56 @@ namespace Amilious.Core.Editor.Modifiers {
         /// <returns>True if the drawing of the property should be canceled, otherwise false.</returns>
         public virtual bool ShouldCancelDraw(SerializedProperty property) => false;
 
+        /// <summary>
+        /// This method will be called to check if the property should be disabled.
+        /// </summary>
+        /// <param name="property">The property in question.</param>
+        /// <returns>True if the property should be disabled, otherwise false.</returns>
+        public virtual bool ShouldDisable(SerializedProperty property) => false;
+
         /// <inheritdoc />
         public sealed override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             Initialize(property);
-            if (CalledBeforeDrawer) { Drawer.OnGUI(position,property,label); return; }
+            if(CalledBeforeDrawer) {
+                Drawer.OnGUI(position, property, label);
+                return;
+            }
+
             if(Drawer != null) return;
-            BeforeOnGUI(property,label,_hide);
+            BeforeOnGUI(property, label, _hide, _disable);
             //check for range attribute
             if(!_hide) {
+                if(_disable) EditorGUI.BeginDisabledGroup(true);
                 if(_range != null) {
                     if(property.propertyType == SerializedPropertyType.Integer)
                         EditorGUI.IntSlider(position, property, (int)_range.min, (int)_range.max, label);
-                    else if(property.propertyType == SerializedPropertyType.Float) 
+                    else if(property.propertyType == SerializedPropertyType.Float)
                         EditorGUI.Slider(position, property, _range.min, _range.max, label);
                     else EditorGUI.PropertyField(position, property, label, true);
                 }
                 else EditorGUI.PropertyField(position, property, label, true);
+                if(_disable) EditorGUI.EndDisabledGroup();
             }
-            AfterOnGUI(property, _hide);
+
+            AfterOnGUI(property, _hide, _disable);
         }
 
         /// <inheritdoc />
         public sealed override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
             Initialize(property);
-            if(CalledBeforeDrawer) { return Drawer.GetPropertyHeight(property,label); }
-            var height = _hide? 0 : base.GetPropertyHeight(property, label);
-            height += ModifyHeight(property, label, _hide);
+            if(CalledBeforeDrawer) {
+                return Drawer.GetPropertyHeight(property, label);
+            }
+
+            var height = _hide ? 0 : base.GetPropertyHeight(property, label);
+            height += ModifyHeight(property, label, _hide, _disable);
             return height;
         }
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         #region Private And Protected Methods //////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>
         /// This method is used to initialize the property modifier.
         /// </summary>
@@ -157,12 +180,13 @@ namespace Amilious.Core.Editor.Modifiers {
             if(_initialized) return;
             _initialized = true;
             _range = fieldInfo.GetCustomAttribute<RangeAttribute>();
-            if(Drawer != null || !AmiliousPropertyDrawer.AllAmiliousDrawers.TryGetValue(property.type, out var drawerType)) return;
+            if(Drawer != null ||
+                !AmiliousPropertyDrawer.AllAmiliousDrawers.TryGetValue(property.type, out var drawerType)) return;
             CalledBeforeDrawer = true;
             _drawer = (AmiliousPropertyDrawer)Activator.CreateInstance(drawerType);
             //set the fieldInfo and attribute
             var fieldI = GetType().GetField("m_FieldInfo", BindingFlags.NonPublic | BindingFlags.Instance);
-            fieldI?.SetValue(Drawer,fieldInfo);
+            fieldI?.SetValue(Drawer, fieldInfo);
             Initialize();
         }
 
@@ -170,9 +194,7 @@ namespace Amilious.Core.Editor.Modifiers {
         /// This method is called during initialization.
         /// </summary>
         protected virtual void Initialize() { }
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
     }
-    
 }

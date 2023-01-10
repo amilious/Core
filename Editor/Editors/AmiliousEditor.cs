@@ -34,6 +34,7 @@ namespace Amilious.Core.Editor.Editors {
         
         public const string UNITY_ASSET_STORE_ICON = "AssetStore Icon";
         public const string WEBSITE_ICON = "BuildSettings.Web";
+        public const string SCRIPT = "m_Script";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -47,6 +48,7 @@ namespace Amilious.Core.Editor.Editors {
         private bool _initialized;
         private readonly Dictionary<string, TabInfo> _tabs = new Dictionary<string, TabInfo>();
         private readonly List<string> _dontDraw = new List<string>();
+        private readonly List<string> _disabled = new List<string>();
         private readonly List<LinkInfo> _links = new List<LinkInfo>();
         private readonly List<string> _drawnTabs = new List<string>();
         private List<AmiliousHelpBoxAttribute> _helpBoxAttributes = new List<AmiliousHelpBoxAttribute>();
@@ -72,7 +74,12 @@ namespace Amilious.Core.Editor.Editors {
                 if (!_dontDraw.Contains<string>(iterator.name)) {
                     if (iterator.hasChildren && iterator.GetAttributes<AmiliousModifierAttribute>()
                             .Any(a => a.ShouldHide(iterator))) continue;
+                    var disable = _disabled.Contains(iterator.name)||iterator
+                        .GetAttributes<AmiliousModifierAttribute>()
+                        .Any(a => a.ShouldDisable(iterator));
+                    if(disable) EditorGUI.BeginDisabledGroup(true);
                     EditorGUILayout.PropertyField(iterator, true);
+                    if(disable) EditorGUI.EndDisabledGroup();
                 }
                 else {
                     //skipped drawing the property
@@ -116,14 +123,35 @@ namespace Amilious.Core.Editor.Editors {
         /// This method is used to skip drawing a property with the default property drawer.
         /// </summary>
         /// <param name="propertyName">The names of the properties that you want to skip drawing.</param>
-        protected void SkipDraw(params string[] propertyName) => _dontDraw.AddRange(propertyName);
+        protected void SkipPropertyDraw(params string[] propertyName) {
+            foreach(var property in propertyName)
+                if(!_dontDraw.Contains(property))_dontDraw.Add(property);
+        }
 
         /// <summary>
         /// This method is used to skip drawing a property with the default property drawer.
         /// </summary>
         /// <param name="property">The properties that you want to skip drawing.</param>
-        protected void SkipDraw(params SerializedProperty[] property) =>
-            SkipDraw(property.Select(x => x.name).ToArray());
+        protected void SkipPropertyDraw(params SerializedProperty[] property) =>
+            SkipPropertyDraw(property.Select(x => x.name).ToArray());
+
+        protected void DisableProperty(params string[] propertyName) {
+            foreach(var property in propertyName)
+                if(!_disabled.Contains(property))_disabled.Add(property);
+        }
+
+        protected void DisableProperty(params SerializedProperty[] property) {
+            DisableProperty(property.Select(x => x.name).ToArray());
+        }
+        
+        protected void EnableProperty(params string[] propertyName) {
+            foreach(var property in propertyName)
+                if(_disabled.Contains(property))_disabled.Remove(property);
+        }
+
+        protected void EnableProperty(params SerializedProperty[] property) {
+            EnableProperty(property.Select(x => x.name).ToArray());
+        }
         
         /// <summary>
         /// This method is called before drawing the default properties.
@@ -144,13 +172,28 @@ namespace Amilious.Core.Editor.Editors {
         
         #region Private Methods ////////////////////////////////////////////////////////////////////////////////////////
         
+        private void OnEnable() {
+            AmiliousCoreEditor.OnShowScriptsChanged += ShowScriptsChanged;
+        }
+
+        private void OnDisable() {
+            AmiliousCoreEditor.OnShowScriptsChanged -= ShowScriptsChanged;
+        }
+
+        private void ShowScriptsChanged(bool showScripts) {
+            var current = _dontDraw.Contains(SCRIPT);
+            if(showScripts && current) _dontDraw.Remove(SCRIPT);
+            if(!showScripts && !current) _dontDraw.Add(SCRIPT);
+            Repaint();
+        }
+        
         /// <summary>
         /// This method is used to add a serialized property to a tab.
         /// </summary>
         /// <param name="tabInfo">The tab info.</param>
         private void AddToTab(TabInfo tabInfo) {
             _tabs[tabInfo.Property.name] = tabInfo;
-            SkipDraw(tabInfo.Property);
+            SkipPropertyDraw(tabInfo.Property);
         }
 
         /// <summary>
@@ -312,7 +355,8 @@ namespace Amilious.Core.Editor.Editors {
                 normal = { textColor = Color.white }
             };
             //hide the script
-            _dontDraw.Add("m_Script");
+            _disabled.Add(SCRIPT);
+            if(!AmiliousCoreEditor.ShowScripts && !_dontDraw.Contains(SCRIPT)) _dontDraw.Add(SCRIPT);
             if(_tabButtonStyle==null)_tabButtonStyle = new GUIStyle(EditorStyles.miniButtonMid) {
                 fontSize = 10, fontStyle = FontStyle.Bold,
             };

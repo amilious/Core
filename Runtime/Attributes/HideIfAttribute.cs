@@ -72,6 +72,9 @@ namespace Amilious.Core.Attributes {
             return CompareProperty(property, PropertyName, SetValue, Value);
         }
         
+        /// <inheritdoc />
+        public override bool ShouldDisable<T>(T property) => false;
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

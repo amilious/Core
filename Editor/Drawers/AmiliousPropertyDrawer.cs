@@ -61,6 +61,8 @@ namespace Amilious.Core.Editor.Drawers {
         /// This field is used to store if the drawer should be drawn or not.
         /// </summary>
         private bool _hideDraw;
+
+        private bool _disable;
         
         /// <summary>
         /// This dictionary is used to store all of the modifiers that are applied to a property.
@@ -78,13 +80,17 @@ namespace Amilious.Core.Editor.Drawers {
             InitializeDrawer(property);
             
             //call before draw
-            foreach(var modifier in _modifiers.Values) modifier.BeforeOnGUI(property,label,_hideDraw);
+            foreach(var modifier in _modifiers.Values) modifier.BeforeOnGUI(property,label,_hideDraw,_disable);
             
+            //if disabled start disable group
+            if(_disable) EditorGUI.BeginDisabledGroup(true);
             //draw gui
             if(!_hideDraw) AmiliousOnGUI(position, property, label);
+            //if disabled end disable group
+            if(_disable) EditorGUI.EndDisabledGroup();
             
             //call after draw
-            foreach(var modifier in _modifiers.Values) modifier.AfterOnGUI(property,_hideDraw);
+            foreach(var modifier in _modifiers.Values) modifier.AfterOnGUI(property,_hideDraw,_disable);
 
         }
 
@@ -92,7 +98,7 @@ namespace Amilious.Core.Editor.Drawers {
         public sealed override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
             InitializeDrawer(property);
             var height = _hideDraw? 0f: AmiliousGetPropertyHeight(property, label);
-            foreach(var modifier in _modifiers.Values) height += modifier.ModifyHeight(property, label, _hideDraw);
+            foreach(var modifier in _modifiers.Values) height += modifier.ModifyHeight(property, label, _hideDraw, _disable);
             return height;
         }
         
@@ -137,6 +143,7 @@ namespace Amilious.Core.Editor.Drawers {
         private void InitializeDrawer(SerializedProperty property) {
             if(_initialized) {
                 _hideDraw = _modifiers.Values.Any(x => x.ShouldCancelDraw(property));
+                _disable = _modifiers.Values.Any(x => x.ShouldDisable(property));
                 return;
             }
             _initialized = true;
@@ -147,6 +154,7 @@ namespace Amilious.Core.Editor.Drawers {
                 if(TryCreatePropertyModifier(modifier, out var modifierDrawer))
                     _modifiers.Add(modifier, modifierDrawer);
                 if(modifierDrawer.ShouldCancelDraw(property)) _hideDraw = true;
+                if(modifierDrawer.ShouldDisable(property)) _disable = true;
             }
             Initialize();
         }

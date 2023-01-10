@@ -36,6 +36,13 @@ namespace Amilious.Core.Attributes {
         /// <param name="property">The property.</param>
         /// <returns>True if the property should be hidden, otherwise false.</returns>
         public abstract bool ShouldHide<T>(T property);
+        
+        /// <summary>
+        /// This method is used to check if the property should be disabled.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property should be disabled, otherwise false.</returns>
+        public abstract bool ShouldDisable<T>(T property);
 
         #if UNITY_EDITOR
         

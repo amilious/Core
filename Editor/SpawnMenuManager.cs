@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,44 +14,34 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-namespace Amilious.Core.Attributes {
+using UnityEditor;
+
+namespace Amilious.Core.Editor {
     
     /// <summary>
-    /// This property modifier is used to dynamically change a property's label.
+    /// This class is used to add items to the game object menu.
     /// </summary>
-    public class DynamicLabelAttribute : AmiliousModifierAttribute {
-
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+    public static class SpawnMenuManager {
+       
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
-        /// <summary>
-        /// This property contains the name of a field or a string value. 
-        /// </summary>
-        public string StringOrField { get; }
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This property modifier is used to dynamically change a property's label.
-        /// </summary>
-        /// <param name="stringOrField">The name of a field or a string value</param>
-        public DynamicLabelAttribute(string stringOrField) {
-            StringOrField = stringOrField;
-        }
+        public const string ROOT = "GameObject/UI/";
+        public const string TAB_GROUP_HORIZONTAL = "Prefabs/Amilious/TabGroupHorizontal";
+        public const string TAB_GROUP_VERTICAL = "Prefabs/Amilious/TabGroupVertical";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <inheritdoc />
-        public override bool ShouldHide<T>(T property) => false;
         
-        /// <inheritdoc />
-        public override bool ShouldDisable<T>(T property) => false;
+        #region Spawn Menu Methods /////////////////////////////////////////////////////////////////////////////////////
+       
+        [MenuItem(ROOT + "Tab Group (Horizontal)", false, -100)]
+        public static void SpawnHorizontalTabGroup() =>
+            Spawn.SpawnPrefab(TAB_GROUP_HORIZONTAL, "Tab Group (Horizontal)", true);
+        
+        [MenuItem(ROOT + "Tab Group (Vertical)", false, -100)]
+        public static void SpawnVerticalTabGroup() =>
+            Spawn.SpawnPrefab(TAB_GROUP_VERTICAL, "Tab Group (Vertical)", true);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }
-    
 }

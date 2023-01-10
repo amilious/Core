@@ -8,50 +8,59 @@
 //         \/       \/                                  \/             \/                    \/                 \/    //
 //                                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//  Website:        http://www.amilious.com         Unity Asset Store: https://assetstore.unity.com/publishers/62511  //
+//  Website:        http://www.amilious.comUnity          Asset Store: https://assetstore.unity.com/publishers/62511  //
 //  Discord Server: https://discord.gg/SNqyDWu            Copyright© Amilious since 2022                              //                    
 //  This code is part of an asset on the unity asset store. If you did not get this from the asset store you are not  //
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-namespace Amilious.Core.Attributes {
-    
-    /// <summary>
-    /// This attribute is used to show a warning if the value is missing.
-    /// </summary>
-    public class RequiredAttribute : AmiliousModifierAttribute {
-        
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// The message that you want to show.
-        /// </summary>
-        public string Message { get; }
+using System;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
-        #endregion
-        
-        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This constructor is use to create a new amilious required attribute.
-        /// </summary>
-        /// <param name="message">The message that you want to be displayed if the value is not present.</param>
-        public RequiredAttribute(string message) {
-            Message = message;
+namespace Amilious.Core.UI.Text {
+    public class LinkActionItem {
+
+        private readonly GameObject _gameObject;
+        private readonly TMP_Text _name;
+        private Action _clickAction;
+        private LinkActionMenu _linkMenu;
+
+        public LinkActionItem(GameObject prefab, LinkActionMenu parent) {
+            _linkMenu = parent;
+            _gameObject = Object.Instantiate(prefab, parent.transform);
+            var listener = _gameObject.AddComponent<UIEnterExitListener>();
+            listener.OnMouseEnterUI += OnMouseEnter;
+            listener.OnMouseExitUI += OnMouseExit;
+            var button = _gameObject.GetComponent<Button>();
+            button.onClick.AddListener(OnActionClicked);
+            _name = button.GetComponentInChildren<TMP_Text>();
+        }
+
+        private void OnMouseEnter() => _name.color = _linkMenu.MouseOverColor;
+
+        private void OnMouseExit() => _name.color = _linkMenu.MouseNotOverColor;
+
+        public void Hide() {
+            _gameObject.SetActive(false);
+            _gameObject.name = "pooled";
+            _clickAction = null;
+        }
+
+        public void SetUpAction(string name, Action clickAction) {
+            _name.text = name;
+            _clickAction = clickAction;
+            _gameObject.transform.SetAsLastSibling();
+            _gameObject.name = name;
+            _gameObject.SetActive(true);
         }
         
-        #endregion
-
-        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <inheritdoc />
-        public override bool ShouldHide<T>(T property) => false;
+        private void OnActionClicked() {
+            _clickAction?.Invoke();
+            _linkMenu.Hide();
+        }
         
-        /// <inheritdoc />
-        public override bool ShouldDisable<T>(T property) => false;
-
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
     }
-    
 }

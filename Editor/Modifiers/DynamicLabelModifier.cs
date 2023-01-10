@@ -29,7 +29,7 @@ namespace Amilious.Core.Editor.Modifiers {
         #region Protected Override Methods /////////////////////////////////////////////////////////////////////////////
         
         /// <inheritdoc />
-        public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden) {
+        public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden, bool disabled) {
             var prop = property.serializedObject.FindProperty(Attribute.StringOrField);
             if(prop == null){ 
                 label.text = Attribute.StringOrField;

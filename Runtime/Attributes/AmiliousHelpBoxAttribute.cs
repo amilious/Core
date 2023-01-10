@@ -38,7 +38,10 @@ namespace Amilious.Core.Attributes {
         
         /// <inheritdoc />
         public override bool ShouldHide<T>(T property) => false;
-        
+
+        /// <inheritdoc />
+        public override bool ShouldDisable<T>(T property) => false;
+
         /// <summary>
         /// The conditional property name.
         /// </summary>
