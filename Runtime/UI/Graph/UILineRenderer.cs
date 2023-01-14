@@ -30,12 +30,17 @@ namespace Amilious.Core.UI.Graph {
         [FormerlySerializedAs("thickness")] 
         [SerializeField] private float lineThickness = 10f;
         [SerializeField] private List<Vector2> points;
-
+        [SerializeField] private bool cropToGrid;
+        
         private float _width, _height;
 
         private Vector2 _unitSize;
 
         private float _scaledLineThickness;
+
+        private readonly List<Vector2Int> _connectingPoints = new List<Vector2Int>();
+        private readonly List<int> _skippedLines = new List<int>();
+        private readonly List<int> _skippedConnections = new List<int>();
 
         public UIGridRenderer Grid {
             get => grid;
@@ -88,8 +93,11 @@ namespace Amilious.Core.UI.Graph {
             }
             if(points.Count<2) return;
 
-            var minPoint = grid.Origin * _unitSize;
-            var maxPoint = offset + (_unitSize * grid.Size);
+            var minPoint = grid.Origin * gridSize;
+            var maxPoint = (grid.Origin + gridSize)* grid.Scale;
+            _connectingPoints.Clear();
+            _skippedLines.Clear();
+            _skippedConnections.Clear();
 
             float angle = 0;
             for (var i = 0; i < points.Count - 1; i++) {
@@ -97,53 +105,126 @@ namespace Amilious.Core.UI.Graph {
                 var point = points[i];
                 var point2 = points[i+1];
 
-                if (i < points.Count - 1) {
-                    angle = GetAngle(point, point2) + 90f;
+                if(cropToGrid) {
+                    if(!ShouldDraw(ref point, ref point2, minPoint, maxPoint, out var point1Modified,
+                        out bool point2Modified)) {
+                        _skippedLines.Add(i);
+                        continue; //do not add verticies or draw lines
+                    }
+
+                    if(point1Modified) _skippedConnections.Add(i);
                 }
 
+                angle = GetAngle(point, point2) + 90f;
                 DrawVerticesForPoint(point, point2, offset,angle, vh);
             }
 
             //draw lines
             for (var i = 0; i < points.Count - 1; i++) {
+                if(_skippedLines.Contains(i)) continue;
                 var index = i * 4;
                 //draw line
                 vh.AddTriangle(index + 0, index + 1, index + 2);
                 vh.AddTriangle(index + 1, index + 2, index + 3);
-                if(i >= points.Count - 2) continue;
+                if(i >= points.Count - 2 || _skippedConnections.Contains(i)) continue;
                 //draw line connection
                 vh.AddTriangle(index + 3, index + 2, index + 4);
                 vh.AddTriangle(index + 5, index + 4, index + 3);
             }
         }
 
-        private bool ShouldDraw(ref Vector2 point1, ref Vector2 point2, Vector2 min, Vector2 max, 
-            out bool point1Modified, out bool point2Modified) {
-            point1Modified = false;
-            point2Modified = false;
-            if (min == max || point1 == point2)return false;
-            if(point1.x < min.x || point1.x > max.x || point1.y < min.y || point1.y > max.y || point2.x < min.x || 
-                point2.x > max.x || point2.y < min.y || point2.y > max.y) return false;
-            if (point2.x - point1.x == 0) {
-                point1Modified = true;
-                point2Modified = true;
-                point1.x = point2.x;
-                point1.y = min.y;
-                point2.y = max.y;
-            } else {
-                var m = (point2.y - point1.y) / (point2.x - point1.x);
-                var b = point1.y - m * point1.x;
-                var x = (point1.x < min.x) ? min.x : (point1.x > max.x) ? max.x : point1.x;
-                if(x != point1.x) point1Modified = true;
-                point1.y = m * x + b;
-                point1.x = x;
-                x = (point2.x < min.x) ? min.x : (point2.x > max.x) ? max.x : point2.x;
-                if(x != point2.x) point2Modified = true;
-                point2.y = m * x + b;
-                point2.x = x;
-            }
-            return true;
+        private bool ShouldDraw(ref Vector2 point1, ref Vector2 point2, Vector2 minPoint, Vector2 maxPoint, out bool point1Modified, out bool point2Modified)
+{
+    point1Modified = false;
+    point2Modified = false;
+
+    // Check if point1 is within the grid
+    if (point1.x < minPoint.x || point1.x > maxPoint.x || point1.y < minPoint.y || point1.y > maxPoint.y)
+    {
+        // Check if the line between point1 and point2 intersects the left or bottom side of the grid
+        if (point1.x < minPoint.x && point2.x > minPoint.x)
+        {
+            float slope = (point2.y - point1.y) / (point2.x - point1.x);
+            point1.y = slope * (minPoint.x - point1.x) + point1.y;
+            point1.x = minPoint.x;
+            point1Modified = true;
         }
+        else if (point1.y < minPoint.y && point2.y > minPoint.y)
+        {
+            float slope = (point2.x - point1.x) / (point2.y - point1.y);
+            point1.x = slope * (minPoint.y - point1.y) + point1.x;
+            point1.y = minPoint.y;
+            point1Modified = true;
+        }
+
+        // Check if the line between point1 and point2 intersects the right or top side of the grid
+        if (point1.x > maxPoint.x && point2.x < maxPoint.x)
+        {
+            float slope = (point2.y - point1.y) / (point2.x - point1.x);
+            point1.y = slope * (maxPoint.x - point1.x) + point1.y;
+            point1.x = maxPoint.x;
+            point1Modified = true;
+        }
+        else if (point1.y > maxPoint.y && point2.y < maxPoint.y)
+        {
+            float slope = (point2.x - point1.x) / (point2.y - point1.y);
+            point1.x = slope * (maxPoint.y - point1.y) + point1.x;
+            point1.y = maxPoint.y;
+            point1Modified = true;
+        }
+    }
+
+    // Check if point2 is within the grid
+    if (point2.x < minPoint.x || point2.x > maxPoint.x || point2.y < minPoint.y || point2.y > maxPoint.y)
+    {
+        // Check if the line between point1 and point2 intersects the left or bottom side of the grid
+        if (point2.x < minPoint.x && point1.x > minPoint.x)
+        {
+            float slope = (point2.y - point1.y) / (point2.x - point1.x);
+            point2.y = slope * (minPoint.x - point1.x) + point1.y;
+            point2.x = minPoint.x;
+            point2Modified = true;
+        }
+        else if (point2.y < minPoint.y && point1.y > minPoint.y)
+        {
+            float slope = (point2.x - point1.x) / (point2.y - point1.y);
+            point2.x = slope * (minPoint.y - point1.y) + point1.x;
+            point2.y = minPoint.y;
+            point2Modified = true;
+        }
+
+        // Check if the line between point1 and point2 intersects the right or top side of the grid
+        if (point2.x > maxPoint.x && point1.x < maxPoint.x)
+        {
+            float slope = (point2.y - point1.y) / (point2.x - point1.x);
+            point2.y = slope * (maxPoint.x - point1.x)+point1.y;
+            point2.x = maxPoint.x;
+            point2Modified = true;
+        }
+        else if (point2.y > maxPoint.y && point1.y < maxPoint.y)
+        {
+            float slope = (point2.x - point1.x) / (point2.y - point1.y);
+            point2.x = slope * (maxPoint.y - point1.y) + point1.x;
+            point2.y = maxPoint.y;
+            point2Modified = true;
+        }
+    }
+
+// Return true if the line between point1 and point2 intersects the grid
+    return point1Modified || point2Modified || (point1.x >= minPoint.x && point1.x <= maxPoint.x && point1.y >= minPoint.y && point1.y <= maxPoint.y) || (point2.x >= minPoint.x && point2.x <= maxPoint.x && point2.y >= minPoint.y && point2.y <= maxPoint.y);
+}
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
 
         private void Update() {
             if(grid) gridSize = grid.Size;
