@@ -36,6 +36,13 @@ namespace Amilious.Core.MathHelpers {
         /// </summary>
         /// ReSharper disable once MemberCanBePrivate.Global
         public readonly float B;
+
+        /// <summary>
+        /// This property is true 
+        /// </summary>
+        public readonly bool IsVertical;
+
+        public readonly bool IsHorizontal;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -47,6 +54,12 @@ namespace Amilious.Core.MathHelpers {
         /// <param name="pointA">The first point.</param>
         /// <param name="pointB">The second point.</param>
         public LinearEquation(Vector2 pointA, Vector2 pointB) {
+            IsVertical = pointA.x == pointB.x;
+            IsHorizontal = pointA.y == pointB.y;
+            if(IsHorizontal || IsVertical) {
+                M = 1;
+                B = IsVertical ? pointA.x : pointA.y;
+            }
             M = (pointB.y - pointA.y) / (pointB.x - pointA.x);
             B = pointA.y - (M * pointA.x);
         }
@@ -59,28 +72,63 @@ namespace Amilious.Core.MathHelpers {
         public LinearEquation(float m, float b) {
             M = m;
             B = b;
+            IsVertical = false;
+            IsHorizontal = false;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <summary>
         /// This method uses the equation to calculate the x value for, the given y value.
         /// </summary>
         /// <param name="y">The y value.</param>
-        /// <returns>The corresponding x value.</returns>
-        public float FindX(float y) => (y - B) / M;
+        /// <param name="x">The resulting x value if it can be calculated.</param>
+        /// <returns>True if the x value can be calculated, otherwise false.</returns>
+        public bool TryFindX(float y, out float x) {
+            if(IsHorizontal) { x = 0; return false; }
+            x = IsVertical ? B : (y - B) / M;
+            return true;
+        }
 
         /// <summary>
-        /// This method uses the equation to calculate the y value from the given x value.
+        /// This property is used to return the point at the given y value;
+        /// </summary>
+        /// <param name="y">The given y value.</param>
+        /// <param name="point">The point at the given y value.</param>
+        /// <returns>True if the y value can be calculated, otherwise false.</returns>
+        public bool FindPointFromY(float y, out Vector2 point) {
+            var result = TryFindX(y, out var x);
+            point = new Vector2(x, y);
+            return result;
+        }
+
+        /// <summary>
+        /// This method uses the equation to calculate the y value for, the given x value.
         /// </summary>
         /// <param name="x">The x value.</param>
-        /// <returns>The corresponding Y value.</returns>
-        public float FindY(float x) => (M * x) + B;
+        /// <param name="y">The resulting y value if it can be calculated.</param>
+        /// <returns>True if the y value can be calculated, otherwise false.</returns>
+        public bool TryFindY(float x, out float y) {
+            if(IsVertical) { y = 0; return false; }
+            y = IsHorizontal ? B : (M * x) + B;
+            return true;
+        }
 
+        /// <summary>
+        /// This property is used to return the point at the given x value;
+        /// </summary>
+        /// <param name="x">The given y value.</param>
+        /// <param name="point">The point at the given x value.</param>
+        /// <returns>True if the x value can be calculated, otherwise false.</returns>
+        public bool FindPointFromX(float x, out Vector2 point) {
+            var result = TryFindY(x, out var y);
+            point = new Vector2(x, y);
+            return result;
+        }
         /// <inheritdoc />
-        public override string ToString() => $"y=({M})x+{B}";
+        public override string ToString() => IsVertical? $"x={B}" : IsHorizontal? $"y={B}" : $"y=({M})x+{B}";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
