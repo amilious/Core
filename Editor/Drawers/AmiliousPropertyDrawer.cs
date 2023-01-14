@@ -108,7 +108,8 @@ namespace Amilious.Core.Editor.Drawers {
         
         /// <inheritdoc cref="GetPropertyHeight"/>
         protected virtual float AmiliousGetPropertyHeight(SerializedProperty property, GUIContent label) {
-            return base.GetPropertyHeight(property, label);
+            var height = base.GetPropertyHeight(property, label);
+            return height;
         }
 
         /// <inheritdoc cref="OnGUI"/>
@@ -236,5 +237,5 @@ namespace Amilious.Core.Editor.Drawers {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
-    
+  
 }

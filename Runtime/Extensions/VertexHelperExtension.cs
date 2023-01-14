@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -15,41 +15,42 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using UnityEngine;
-using Amilious.Core.MathHelpers;
+using UnityEngine.UI;
 
 namespace Amilious.Core.Extensions {
     
     /// <summary>
-    /// This class is used to add methods to the <see cref="Gizmos"/> class.
+    /// This class is used to add methods to the <see cref="VertexHelper"/>.
     /// </summary>
-    public static class GizmoExtensions {
-        
+    public static class VertexHelperExtension {
+
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// Draws a wire arc.
+        /// This method is used to add a vertex to a <see cref="VertexHelper"/> at the given position.
         /// </summary>
-        /// <param name="position">The center position of the arc.</param>
-        /// <param name="dir">The direction from which the anglesRange is taken into account</param>
-        /// <param name="anglesRange">The angle range, in degrees.</param>
-        /// <param name="radius">The radius of the arc.</param>
-        /// <param name="maxSteps">How many steps to use to draw the arc.</param>
-        public static void DrawWireArc(Vector3 position, Vector3 dir, float anglesRange, float radius, float maxSteps = 20) {
-            var srcAngles = MathV.AnglesFromDirection(position, dir);
-            // ReSharper disable once InlineTemporaryVariable
-            var initialPos = position;
-            var posA = initialPos;
-            var stepAngles = anglesRange / maxSteps;
-            var angle = srcAngles - anglesRange / 2;
-            for (var i = 0; i <= maxSteps; i++) {
-                var rad = Mathf.Deg2Rad * angle;
-                var posB = initialPos;
-                posB += new Vector3(radius * Mathf.Cos(rad), 0, radius * Mathf.Sin(rad));
-                Gizmos.DrawLine(posA, posB);
-                angle += stepAngles;
-                posA = posB;
-            }
-            Gizmos.DrawLine(posA, initialPos);
+        /// <param name="vh">The vertex helper.</param>
+        /// <param name="uiVertex">The vertex that you want to add to the vertex helper at the given position.</param>
+        /// <param name="x">The x position of the vertex.</param>
+        /// <param name="y">The y position of the vertex.</param>
+        public static void AddVertex(this VertexHelper vh,ref UIVertex uiVertex, float x, float y) {
+            if(vh == null) return;
+            uiVertex.position = new Vector3(x, y);
+            vh.AddVert(uiVertex);
+        }
+        
+        /// <summary>
+        /// This method is used to add a vertex to a <see cref="VertexHelper"/> at the given position.
+        /// </summary>
+        /// <param name="vh">The vertex helper.</param>
+        /// <param name="uiVertex">The vertex that you want to add to the vertex helper at the given position.</param>
+        /// <param name="x">The x position of the vertex.</param>
+        /// <param name="y">The y position of the vertex.</param>
+        /// <param name="z">The z position of the vertex.</param>
+        public static void AddVertex(this VertexHelper vh,ref UIVertex uiVertex, float x, float y, float z) {
+            if(vh == null) return;
+            uiVertex.position = new Vector3(x, y, z);
+            vh.AddVert(uiVertex);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

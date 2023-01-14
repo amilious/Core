@@ -1,15 +1,31 @@
-﻿using System;
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                    //
+//    _____            .__ .__   .__                             _________  __              .___.__                   //
+//   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
+//  /  /_\  \  /     \ |  ||  |  |  | /  _ \ |  |  \/  ___/     \_____  \ \   __\|  |  \ / __ | |  | /  _ \ /  ___/   //
+// /    |    \|  Y Y  \|  ||  |__|  |(  <_> )|  |  /\___ \      /        \ |  |  |  |  // /_/ | |  |(  <_> )\___ \    //
+// \____|__  /|__|_|  /|__||____/|__| \____/ |____//____  >    /_______  / |__|  |____/ \____ | |__| \____//____  >   //
+//         \/       \/                                  \/             \/                    \/                 \/    //
+//                                                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  Website:        http://www.amilious.comUnity          Asset Store: https://assetstore.unity.com/publishers/62511  //
+//  Discord Server: https://discord.gg/SNqyDWu            Copyright© Amilious since 2022                              //                    
+//  This code is part of an asset on the unity asset store. If you did not get this from the asset store you are not  //
+//  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  inspiration taken from [Game Dev Guide] -> https://www.youtube.com/watch?v=CGsEJToeXmA&t=84s  //////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using Amilious.Core.Attributes;
 
 namespace Amilious.Core.UI.Layout {
     
-    
-    //https://www.youtube.com/watch?v=CGsEJToeXmA&t=84s
+    //TODO: add divide by zero checks
     
     public class FlexibleGridLayout : LayoutGroup {
-
         
         public enum FitType { Uniform, Width, Height, FixedRows, FixedColumns}
 
@@ -19,6 +35,9 @@ namespace Amilious.Core.UI.Layout {
         public Vector2 cellSize;
         public Vector2 spacing;
         
+        #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <inheritdoc />
         public override void CalculateLayoutInputHorizontal() {
 
             base.CalculateLayoutInputHorizontal();
@@ -71,10 +90,17 @@ namespace Amilious.Core.UI.Layout {
 
         }
 
+        /// <inheritdoc />
         public override void CalculateLayoutInputVertical() {}
 
+        /// <inheritdoc />
         public override void SetLayoutHorizontal() {}
 
+        /// <inheritdoc />
         public override void SetLayoutVertical() {}
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
+    
 }

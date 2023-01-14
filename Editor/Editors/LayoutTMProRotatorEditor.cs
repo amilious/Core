@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,42 +14,24 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using UnityEngine;
-using Amilious.Core.MathHelpers;
+using UnityEditor;
+using Amilious.Core.UI.Layout;
 
-namespace Amilious.Core.Extensions {
+namespace Amilious.Core.Editor.Editors {
     
     /// <summary>
-    /// This class is used to add methods to the <see cref="Gizmos"/> class.
+    /// This editor is used for displaying the <see cref="LayoutTMProRotator"/> in the inspector.
     /// </summary>
-    public static class GizmoExtensions {
+    [CanEditMultipleObjects]
+    [CustomEditor(typeof(LayoutTMProRotator),true, isFallback = true)]
+    public class LayoutTMProRotatorEditor : AmiliousEditor {
         
-        #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
+        #region Override Methods ///////////////////////////////////////////////////////////////////////////////////////
         
-        /// <summary>
-        /// Draws a wire arc.
-        /// </summary>
-        /// <param name="position">The center position of the arc.</param>
-        /// <param name="dir">The direction from which the anglesRange is taken into account</param>
-        /// <param name="anglesRange">The angle range, in degrees.</param>
-        /// <param name="radius">The radius of the arc.</param>
-        /// <param name="maxSteps">How many steps to use to draw the arc.</param>
-        public static void DrawWireArc(Vector3 position, Vector3 dir, float anglesRange, float radius, float maxSteps = 20) {
-            var srcAngles = MathV.AnglesFromDirection(position, dir);
-            // ReSharper disable once InlineTemporaryVariable
-            var initialPos = position;
-            var posA = initialPos;
-            var stepAngles = anglesRange / maxSteps;
-            var angle = srcAngles - anglesRange / 2;
-            for (var i = 0; i <= maxSteps; i++) {
-                var rad = Mathf.Deg2Rad * angle;
-                var posB = initialPos;
-                posB += new Vector3(radius * Mathf.Cos(rad), 0, radius * Mathf.Sin(rad));
-                Gizmos.DrawLine(posA, posB);
-                angle += stepAngles;
-                posA = posB;
-            }
-            Gizmos.DrawLine(posA, initialPos);
+        /// <inheritdoc/>
+        protected override void Initialize() {
+            SkipPropertyDraw("m_ChildAlignment");
+            base.Initialize();
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -39,6 +39,28 @@ namespace Amilious.Core.Extensions {
         /// <returns>The maximum position.</returns>
         public static Vector2 MaxPosition(this Rect rect) => new Vector2(rect.xMax, rect.yMax);
 
+        /// <summary>
+        /// This method is used to get the width and the height of the rect.
+        /// </summary>
+        /// <param name="rect">The rect that you want to get the height and width for.</param>
+        /// <param name="width">The width of the rect.</param>
+        /// <param name="height">The height of the rect.</param>
+        public static void GetSizes(this Rect rect, out float width, out float height) {
+            width = rect.width;
+            height = rect.height;
+        }
+
+        /// <summary>
+        /// This method is used to get the min x and the min y of the rect.
+        /// </summary>
+        /// <param name="rect">The rect that you want to get the min x and y values for.</param>
+        /// <param name="minX">The minimum x.</param>
+        /// <param name="minY">The minimum y.</param>
+        public static void GetMinimums(this Rect rect, out float minX, out float minY) {
+            minX = rect.xMin;
+            minY = rect.yMin;
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }

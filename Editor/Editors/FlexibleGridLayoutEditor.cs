@@ -19,12 +19,22 @@ using Amilious.Core.UI.Layout;
 
 namespace Amilious.Core.Editor.Editors {
     
+    /// <summary>
+    /// This editor is used for displaying the <see cref="FlexibleGridLayout"/> in the inspector.
+    /// </summary>
     [CustomEditor(typeof(FlexibleGridLayout),true, isFallback = true)]
     public class FlexibleGridLayoutEditor : AmiliousEditor {
+        
+        #region Override Methods ///////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <inheritdoc/>
         protected override void Initialize() {
             SkipPropertyDraw("m_ChildAlignment");
             base.Initialize();
         }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
     
 }

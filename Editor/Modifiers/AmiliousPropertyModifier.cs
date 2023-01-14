@@ -15,11 +15,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Amilious.Core.Attributes;
 using Amilious.Core.Editor.Drawers;
 
@@ -73,12 +71,14 @@ namespace Amilious.Core.Editor.Modifiers {
         /// <summary>
         /// This property contains the property that the modifier is applied to.
         /// </summary>
-        // ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
+        /// ReSharper disable once ConvertToAutoPropertyWithPrivateSetter
+        /// ReSharper disable once MemberCanBePrivate.Global
         public AmiliousPropertyDrawer Drawer => _drawer;
 
         /// <summary>
         /// This attribute is used to indicate if the modifier is called before drawing.
         /// </summary>
+        /// ReSharper disable once MemberCanBePrivate.Global
         public bool CalledBeforeDrawer { get; private set; } = false;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ namespace Amilious.Core.Editor.Modifiers {
                 return Drawer.GetPropertyHeight(property, label);
             }
 
-            var height = _hide ? 0 : base.GetPropertyHeight(property, label);
+            var height = _hide ? 0 : EditorGUI.GetPropertyHeight(property);
             height += ModifyHeight(property, label, _hide, _disable);
             return height;
         }
@@ -196,5 +196,7 @@ namespace Amilious.Core.Editor.Modifiers {
         protected virtual void Initialize() { }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
+    
 }

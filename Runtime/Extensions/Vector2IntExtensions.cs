@@ -36,15 +36,43 @@ namespace Amilious.Core.Extensions {
         }
         
         /// <summary>
-        /// This method is used to get the values from the <see cref="Vector2"/>
+        /// This method is used to get the values from the <see cref="Vector2Int"/>
         /// </summary>
-        /// <param name="vector2">The <see cref="Vector2"/> that you want to get the values for.</param>
+        /// <param name="vector2Int">The <see cref="Vector2Int"/> that you want to get the values for.</param>
         /// <param name="x">The x value.</param>
         /// <param name="y">The y value.</param>
-        public static void GetValues(this Vector2 vector2, out float x, out float y) {
-            x = vector2.x;
-            y = vector2.y;
+        public static void GetValues(this Vector2Int vector2Int, out int x, out int y) {
+            x = vector2Int.x;
+            y = vector2Int.y;
         }
+
+        /// <summary>
+        /// This method is used to get the width or the x value.
+        /// </summary>
+        /// <param name="vector2Int">The vector that you want to get the x or width value of.</param>
+        /// <returns>The width or x value of the vector.</returns>
+        public static int Width(this Vector2Int vector2Int) => vector2Int.x;
+
+        /// <summary>
+        /// This method is used to set the width or the x value.
+        /// </summary>
+        /// <param name="vector2Int">The vector that you want to set the x or width value of.</param>
+        /// <param name="width">The width or x value.</param>
+        public static void Width(this Vector2Int vector2Int, int width) => vector2Int.x = width;
+
+        /// <summary>
+        /// This method is used to get the height or the y value.
+        /// </summary>
+        /// <param name="vector2Int">The vector that you want to get the y or height value of.</param>
+        /// <returns>The height or y value of the vector.</returns>
+        public static int Height(this Vector2Int vector2Int) => vector2Int.y;
+
+        /// <summary>
+        /// This method is used to set the height or the y value.
+        /// </summary>
+        /// <param name="vector2Int">The vector that you want to set the y or height value of.</param>
+        /// <param name="height">The height or y value.</param>
+        public static int Height(this Vector2Int vector2Int, int height) => vector2Int.y = height;
        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

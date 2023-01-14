@@ -16,7 +16,7 @@
 
 using UnityEngine;
 
-namespace Amilious.Core {
+namespace Amilious.Core.MathHelpers {
     
     /// <summary>
     /// This class is contains math operations for vectors.
