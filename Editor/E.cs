@@ -6,7 +6,7 @@
     public static partial class E {
 
         //localization groups
-        public const string LOCALIZATION_GROUP = "amilious/localization/editor/";
+        public const string LOCAL_INFO_GROUP = "amilious/localization/editor/";
         public const string LOCAL_INFO_UXML = "Assets/Amilious/Core/Editor/VisualElements/LocalizationInformation.uxml";
         public const string LOCAL_INFO_LOCATION = "location";
         public const string LOCAL_INFO_DESCRIPTION = "description";
@@ -47,6 +47,15 @@
         public const string LOCAL_ENTRY_DESCRIPTION_LABEL = "description";
         public const string LOCAL_ENTRY_TRANSLATION_LABEL = "translation";
         public const string LOCAL_ENTRY_KEY_LABEL = "key";
+
+        //localization browser window
+        public const string LOCAL_BROWSER_GROUP = "amilious/localization/editor/";
+        public const string LOCAL_BROWSER_FIND_BUTTON = "find_button";
+        public const string LOCAL_BROWSER_FIND_TOOLTIP = "find_tooltip";
+        public const string LOCAL_BROWSER_MENU_ADD_LANGUAGE = "menu_add_language";
+        public const string LOCAL_BROWSER_MENU_RELOAD = "menu_reload";
+        public const string LOCAL_BROWSER_MENU_CLEAR_COUNT = "menu_clear_count";
+        public const string LOCAL_BROWSER_LANGUAGE_MENU = "language_menu";
 
     }
 }

@@ -215,7 +215,7 @@ namespace Amilious.Core.Editor.VisualElements {
         private void Initialize() {
             if(_initialized) return;
             _initialized = true;
-            _localGroup = new LocalizedGroup(E.LOCALIZATION_GROUP);
+            _localGroup = new LocalizedGroup(E.LOCAL_INFO_GROUP);
             Asset ??= AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(E.LOCAL_INFO_UXML);
             Asset.CloneTree(this);
             //find elements

@@ -29,7 +29,6 @@ namespace Amilious.Core.Editor.Windows {
         private const string SORT_BY_MENU = "SortByMenu";
         private const string SHOW_DESCRIPTION = "ShowDescription";
         private const string SHOW_TRANSLATION = "ShowTranslation";
-        private const string LOCALIZATION_GROUP = "amilious/localization/editor/";
         private const string ITEMS_PER_PAGE = "Amilious/Localization/Items Per Page";
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,15 +180,15 @@ namespace Amilious.Core.Editor.Windows {
 
         private void UpdateLocalizationText() {
             Initialize();
-            _findButton.text = _localGroup["find_button"];
-            _findButton.tooltip = _localGroup["find_tooltip"];
+            _findButton.text = _localGroup[E.LOCAL_BROWSER_FIND_BUTTON];
+            _findButton.tooltip = _localGroup[E.LOCAL_BROWSER_FIND_TOOLTIP];
             _actionMenu.ClearMenu();
-            _actionMenu.menu.AppendAction(_localGroup["menu_add_language"],MenuAddLanguageClicked);
-            _actionMenu.menu.AppendAction(_localGroup["menu_reload"],MenuReloadDataClicked);
-            _actionMenu.menu.AppendAction(_localGroup["menu_clear_count"],MenuClearCountClicked);
+            _actionMenu.menu.AppendAction(_localGroup[E.LOCAL_BROWSER_MENU_ADD_LANGUAGE],MenuAddLanguageClicked);
+            _actionMenu.menu.AppendAction(_localGroup[E.LOCAL_BROWSER_MENU_RELOAD],MenuReloadDataClicked);
+            _actionMenu.menu.AppendAction(_localGroup[E.LOCAL_BROWSER_MENU_CLEAR_COUNT],MenuClearCountClicked);
             _actionMenu.menu.AppendSeparator();
             foreach(var lang in AmiliousLocalization.Languages) _actionMenu.menu.AppendAction(
-                _localGroup["language_menu",lang],MenuSetCurrentLanguage, CheckCurrentLanguage,lang);
+                _localGroup[E.LOCAL_BROWSER_LANGUAGE_MENU,lang],MenuSetCurrentLanguage, CheckCurrentLanguage,lang);
             #if AMILIOUS_DEVELOPMENT
             _actionMenu.menu.AppendSeparator();
             _actionMenu.menu.AppendAction("Development/Redraw Keys",RedrawKeys);
@@ -224,9 +223,7 @@ namespace Amilious.Core.Editor.Windows {
         private void MenuReloadDataClicked(DropdownMenuAction obj) => AmiliousLocalization.ReloadData();
 
         private void MenuSetCurrentLanguage(DropdownMenuAction obj) {
-            var index = obj.name.LastIndexOf("/");
-            var lang = obj.name.Substring(index + 1);
-            AmiliousLocalization.CurrentLanguage = lang;
+            AmiliousLocalization.CurrentLanguage = (string)obj.userData;
         }
 
         private void TranslationUpdated(string language, string key) {
@@ -322,7 +319,7 @@ namespace Amilious.Core.Editor.Windows {
             _initialized = true;
             //get the visual element
             this.CloneAssetTree();
-            _localGroup = new LocalizedGroup(LOCALIZATION_GROUP);
+            _localGroup = new LocalizedGroup(E.LOCAL_BROWSER_GROUP);
             var texture = Resources.Load<Texture>("Icons/translate2");
             titleContent = new GUIContent("Amilious Localization",texture);
             this.Q(ACTION_MENU,out _actionMenu);
