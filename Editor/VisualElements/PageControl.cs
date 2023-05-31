@@ -43,8 +43,6 @@ namespace Amilious.Core.Editor.VisualElements {
         protected const string PAGE_LABEL = "PageLabel";
         protected const string CURRENT_PAGE = "CurrentPage";
         protected const string PER_PAGE_LABEL = "PerPageLabel";
-        protected const string LOCALIZATION_GROUP = "amilious/editor/page_control/";
-        protected const string ASSET_PATH = "Assets/Amilious/Core/Editor/VisualElements/PageControl.uxml";
         protected static readonly Dictionary<string, int> LookUp = new Dictionary<string, int>() {
             {"5", 5}, {"10", 10}, {"15", 15}, {"20", 20}, {"25", 25}, {"50",50}, {"100",100}
         };
@@ -172,8 +170,8 @@ namespace Amilious.Core.Editor.VisualElements {
         /// This method is used to initialize the page control. 
         /// </summary>
         protected void Initialize() {
-            LocalGroup ??= new LocalizedGroup(LOCALIZATION_GROUP);
-            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ASSET_PATH);
+            LocalGroup ??= new LocalizedGroup(E.PAGE_CONTROL_GROUP);
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(E.PAGE_CONTROL_UXML);
             asset.CloneTree(this);
             this.Q(PAGE_LABEL, out _pageLabel);
             this.Q(PREVIOUS, out _previousButton);
@@ -217,9 +215,9 @@ namespace Amilious.Core.Editor.VisualElements {
         /// This method is called when the localized values should be updated.
         /// </summary>
         protected virtual void UpdateLocalizationText() {
-            _pageLabel.text = LocalGroup["page"];
-            _perPageLabel.text = LocalGroup["per_page"];
-            _of.text = LocalGroup["of"];
+            _pageLabel.text = LocalGroup[E.PAGE_CONTROL_PAGE_LABEL];
+            _perPageLabel.text = LocalGroup[E.PAGE_CONTROL_PER_PAGE_LABEL];
+            _of.text = LocalGroup[E.PAGE_CONTROL_OF_LABEL];
         }
 
         /// <summary>

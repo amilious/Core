@@ -3,10 +3,10 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.UIElements;
+using Amilious.Core.Extensions;
 using Amilious.Core.Localization;
 using System.Collections.Generic;
 using Amilious.Core.Editor.Extensions;
-using Amilious.Core.Extensions;
 using Amilious.Core.Editor.VisualElements;
 
 namespace Amilious.Core.Editor.Windows {
@@ -25,10 +25,8 @@ namespace Amilious.Core.Editor.Windows {
         private const string DESCRIPTION_LABEL = "DescriptionLabel";
         private const string TRANSLATION = "Translation";
         private const string TRANSLATION_LABEL = "TranslationLabel";
-        private const string LOCALIZATION_GROUP = "amilious/localization/editor/";
         private const string KEY_VALIDATION_ELEMENT = "KeyValidationElement";
         private const string VALIDATION_FIELD = "ValidationField";
-        private const string ASSET_PATH = "Assets/Amilious/Core/Editor/Windows/LocalizationEntryWindow.uxml";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -99,16 +97,16 @@ namespace Amilious.Core.Editor.Windows {
         private void UpdateLocalizationText() {
             Initialize();
             if(_adding) {
-                _actionButton.text = _localGroup["add_button"];
+                _actionButton.text = _localGroup[E.LOCAL_ENTRY_ADD_BUTTON];
                 _locationDropdown.value = AmiliousLocalization.GetLocationName(_path);
             } else {
-                _actionButton.text = _localGroup["save_button"];
+                _actionButton.text = _localGroup[E.LOCAL_ENTRY_SAVE_BUTTON];
                 _locationDropdown.value = AmiliousLocalization.GetLocationName(_path);
             }
-            _locationLabel.text = _localGroup["location"];
-            _descriptionLabel.text = _localGroup["description"];
-            _translationLabel.text = _localGroup["translation"];
-            _keyLabel.text = _localGroup["key"];
+            _locationLabel.text = _localGroup[E.LOCAL_ENTRY_LOCATION_LABEL];
+            _descriptionLabel.text = _localGroup[E.LOCAL_ENTRY_DESCRIPTION_LABEL];
+            _translationLabel.text = _localGroup[E.LOCAL_ENTRY_TRANSLATION_LABEL];
+            _keyLabel.text = _localGroup[E.LOCAL_ENTRY_KEY_LABEL];
             _locationDropdown.choices = AmiliousLocalization.KeyFileNames.ToList();
         }
         
@@ -193,27 +191,21 @@ namespace Amilious.Core.Editor.Windows {
             _initialized = true;
             //get the visual element
             this.CloneAssetTree();
-            _localGroup = new LocalizedGroup(LOCALIZATION_GROUP);
+            _localGroup = new LocalizedGroup(E.LOCAL_ENTRY_GROUP);
             //get the fields
-            _keyField = rootVisualElement.Q<TextField>(KEY);
-            _keyLabel = rootVisualElement.Q<Label>(KEY_LABEL);
-            _locationLabel = rootVisualElement.Q<Label>(LOCATION_LABEL);
-            _descriptionLabel = rootVisualElement.Q<Label>(DESCRIPTION_LABEL);
-            _translationLabel = rootVisualElement.Q<Label>(TRANSLATION_LABEL);
-            _descriptionField = rootVisualElement.Q<TextField>(DESCRIPTION);
-            _keyValidationElement = rootVisualElement.Q<VisualElement>(KEY_VALIDATION_ELEMENT);
-            _validationField = rootVisualElement.Q<Label>(VALIDATION_FIELD);
-            
-            var holder = rootVisualElement.Q<VisualElement>("LanguageSelectorHolder");
+            this.Q(KEY, out _keyField);
+            this.Q(KEY_LABEL, out _keyLabel);
+            this.Q(LOCATION_LABEL, out _locationLabel);
+            this.Q(DESCRIPTION_LABEL, out _descriptionLabel);
+            this.Q(TRANSLATION_LABEL, out _translationLabel);
+            this.Q(DESCRIPTION, out _descriptionField);
+            this.Q(KEY_VALIDATION_ELEMENT, out _keyValidationElement);
+            this.Q(VALIDATION_FIELD, out _validationField);
+            this.Q(TRANSLATION, out _translationField);
+            this.Q(ADD_SAVE, out _actionButton);
+            this.Q(LOCATION, out _locationDropdown);
             _languageSelector = new LanguageSelector(_language);
-            holder.Clear();
-            holder.Add(_languageSelector);
-            
-            //_languageSelector = rootVisualElement.Q<LanguageSelector>("LanguageSelector");
-            if(_languageSelector== null) Debug.Log("no inspector");
-            _translationField = rootVisualElement.Q<TextField>(TRANSLATION);
-            _actionButton = rootVisualElement.Q<Button>(ADD_SAVE);
-            _locationDropdown = rootVisualElement.Q<DropdownField>(LOCATION);
+            this.ReplaceContent("LanguageSelectorHolder", _languageSelector);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

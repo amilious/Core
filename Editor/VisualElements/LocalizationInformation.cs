@@ -48,7 +48,6 @@ namespace Amilious.Core.Editor.VisualElements {
         private const string DESCRIPTION_ELEMENT = "DescriptionElement";
         private const string USAGE_ELEMENT = "UsageElement";
         private const string TRANSLATION_INFO = "TranslationInformation";
-        private const string ASSET_PATH = "Assets/Amilious/Core/Editor/VisualElements/LocalizationInformation.uxml";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -217,7 +216,7 @@ namespace Amilious.Core.Editor.VisualElements {
             if(_initialized) return;
             _initialized = true;
             _localGroup = new LocalizedGroup(E.LOCALIZATION_GROUP);
-            Asset ??= AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ASSET_PATH);
+            Asset ??= AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(E.LOCAL_INFO_UXML);
             Asset.CloneTree(this);
             //find elements
             this.Q(TRANSLATION_INFO, out _translationInformation);
@@ -300,24 +299,24 @@ namespace Amilious.Core.Editor.VisualElements {
         /// </summary>
         private void UpdateLocalizedText(string previous = null, string current=null) {
             Initialize();
-            _pathLabel.text = _localGroup[E.LOCATION];
-            _descriptionLabel.text = _localGroup[E.DESCRIPTION];
-            _translationLabel.text = _localGroup[E.TRANSLATION];
-            _copyButton.tooltip = _localGroup[E.COPY_TOOLTIP];
-            _copyKeyButton.tooltip = _localGroup[E.COPY_KEY_TOOLTIP];
-            _editButton.tooltip = _localGroup[E.EDIT_TOOLTIP];
+            _pathLabel.text = _localGroup[E.LOCAL_INFO_LOCATION];
+            _descriptionLabel.text = _localGroup[E.LOCAL_INFO_DESCRIPTION];
+            _translationLabel.text = _localGroup[E.LOCAL_INFO_TRANSLATION];
+            _copyButton.tooltip = _localGroup[E.LOCAL_INFO_COPY_TOOLTIP];
+            _copyKeyButton.tooltip = _localGroup[E.LOCAL_INFO_COPY_KEY_TOOLTIP];
+            _editButton.tooltip = _localGroup[E.LOCAL_INFO_EDIT_TOOLTIP];
             var items = _menuButton.menu.MenuItems().Count;
             for(var i=0;i<items;i++) _menuButton.menu.RemoveItemAt(0);
-            _menuButton.menu.AppendAction(_localGroup[E.MENU_COPY],CopyKeyMenuClicked);
-            _menuButton.menu.AppendAction(_localGroup[E.MENU_COPY_GROUP],CopyGroupMenuClicked);
-            _menuButton.menu.AppendAction(_localGroup[E.MENU_COPY_KEY_NAME],CopyKeyNameMenuClicked);
+            _menuButton.menu.AppendAction(_localGroup[E.LOCAL_INFO_MENU_COPY],CopyKeyMenuClicked);
+            _menuButton.menu.AppendAction(_localGroup[E.LOCAL_INFO_MENU_COPY_GROUP],CopyGroupMenuClicked);
+            _menuButton.menu.AppendAction(_localGroup[E.LOCAL_INFO_MENU_COPY_KEY_NAME],CopyKeyNameMenuClicked);
             _menuButton.menu.AppendSeparator();
-            _menuButton.menu.AppendAction(_localGroup[E.MENU_SEARCH_GROUP],SearchGroupMenuClicked);
+            _menuButton.menu.AppendAction(_localGroup[E.LOCAL_INFO_MENU_SEARCH_GROUP],SearchGroupMenuClicked);
             _menuButton.menu.AppendSeparator();
-            _menuButton.menu.AppendAction(_localGroup[E.MENU_CLEAR_COUNT],MenuClearCountClicked);
+            _menuButton.menu.AppendAction(_localGroup[E.LOCAL_INFO_MENU_CLEAR_COUNT],MenuClearCountClicked);
             _menuButton.menu.AppendSeparator();
-            _menuButton.menu.AppendAction(_localGroup[E.MENU_EDIT],EditKeyMenuClicked);
-            _menuButton.menu.AppendAction(_localGroup[E.MENU_DELETE],DeleteKeyMenuClicked);
+            _menuButton.menu.AppendAction(_localGroup[E.LOCAL_INFO_MENU_EDIT],EditKeyMenuClicked);
+            _menuButton.menu.AppendAction(_localGroup[E.LOCAL_INFO_MENU_DELETE],DeleteKeyMenuClicked);
         }
 
         private void MenuClearCountClicked(DropdownMenuAction obj) {
@@ -352,7 +351,7 @@ namespace Amilious.Core.Editor.VisualElements {
             var tran = AmiliousLocalization.TryGetTranslation(language, _key, out var translation,false);
             AmiliousLocalization.ResumeCounting();
             if(string.IsNullOrWhiteSpace(translation)||!tran)
-                translation = _localGroup["no_translation", language];
+                translation = _localGroup[E.LOCAL_INFO_NO_TRANSLATION, language];
             Translation = translation;
         }
 
@@ -364,7 +363,7 @@ namespace Amilious.Core.Editor.VisualElements {
             if(key != Key) return;
             var description = AmiliousLocalization.GetDescription(key);
             if(string.IsNullOrWhiteSpace(description)) 
-                description  = _localGroup["no_description"];
+                description  = _localGroup[E.LOCAL_INFO_NO_DESCRIPTION];
             Description = description;
         }
 

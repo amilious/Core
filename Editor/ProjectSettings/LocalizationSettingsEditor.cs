@@ -1,7 +1,10 @@
 ﻿using UnityEditor;
+using UnityEngine;
 
 namespace Amilious.Core.Editor.ProjectSettings {
-    public class LocalizationSettings : UnityEditor.Editor {
+
+
+    public class LocalizationSettingsEditor : UnityEditor.Editor {
         
         [SettingsProvider]
         public static SettingsProvider CreateCustomSettingsProvider() {
@@ -16,4 +19,5 @@ namespace Amilious.Core.Editor.ProjectSettings {
         }
         
     }
+
 }

@@ -55,13 +55,45 @@ namespace Amilious.Core.Editor.Extensions {
         /// This method is used to get elements by their given name.
         /// </summary>
         /// <param name="window">The window that you want to get the property for.</param>
-        /// <param name="propName">The property name.</param>
+        /// <param name="name">The property name.</param>
         /// <param name="field">The fields property.</param>
         /// <typeparam name="T">The type of the field.</typeparam>
         /// <returns>True if the element was found, otherwise false.</returns>
-        public static bool Q<T>(this EditorWindow window,string propName, out T field) where T : VisualElement {
-            field = window.rootVisualElement.Q<T>(propName);
+        public static bool Q<T>(this EditorWindow window,string name, out T field) where T : VisualElement {
+            field = window.rootVisualElement.Q<T>(name);
             return field != null;
+        }
+
+        /// <summary>
+        /// This method is used to replace the content within the holder element with the given content.
+        /// </summary>
+        /// <param name="window">The window.</param>
+        /// <param name="holderName">The name of the holder element.</param>
+        /// <param name="content">The content that you want to replace the holder element contents with.</param>
+        /// <returns>True if the holder element exists, otherwise false.</returns>
+        public static bool ReplaceContent(this EditorWindow window, string holderName, VisualElement content) {
+            var holder = window.rootVisualElement.Q<VisualElement>(holderName);
+            if(holder == null) return false;
+            holder.Clear();
+            holder.Add(content);
+            return true;
+        }
+
+        /// <summary>
+        /// This method is used to replace the content within the holder element with the given content.
+        /// </summary>
+        /// <param name="window">The window.</param>
+        /// <param name="holderName">The name of the holder element.</param>
+        /// <param name="content">The content that you want to replace the holder element contents with.</param>
+        /// <param name="holder">The holder element.</param>
+        /// <returns>True if the holder element exists, otherwise false.</returns>
+        public static bool ReplaceContent(this EditorWindow window, string holderName, VisualElement content,
+            out VisualElement holder) {
+            holder = window.rootVisualElement.Q<VisualElement>(holderName);
+            if(holder == null) return false;
+            holder.Clear();
+            holder.Add(content);
+            return true;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
