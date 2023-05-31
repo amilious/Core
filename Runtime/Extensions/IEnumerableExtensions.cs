@@ -345,7 +345,6 @@ namespace Amilious.Core.Extensions {
         public static Vector4 GetMinXYZW(this IEnumerable<Vector4> collection) =>
             collection.GetMinXYZW(Vector4.one * float.MinValue);
 
-
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }

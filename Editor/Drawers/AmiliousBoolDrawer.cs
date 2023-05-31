@@ -26,15 +26,15 @@ namespace Amilious.Core.Editor.Drawers {
     /// This drawer is used instead of the default color drawer.
     /// </summary>
     [CustomPropertyDrawer(typeof(bool))]
-    [CustomPropertyDrawer(typeof(AmiliousBoolAttribute))]
+    [CustomPropertyDrawer(typeof(AmiBoolAttribute))]
     public class AmiliousBoolDrawer : AmiliousPropertyDrawer {
-        
+
         #region Protected Methods //////////////////////////////////////////////////////////////////////////////////////
         
         /// <inheritdoc />
         protected override void AmiliousOnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            var att = property.GetAttributes<AmiliousBoolAttribute>()
-                .FirstOrDefault()??new AmiliousBoolAttribute();
+            var att = property.GetAttributes<AmiBoolAttribute>()
+                .FirstOrDefault()??new AmiBoolAttribute();
             property.boolValue = att.ToggleLeft ? 
                 EditorGUI.ToggleLeft(position, label, property.boolValue) : 
                 EditorGUI.Toggle(position, label, property.boolValue);

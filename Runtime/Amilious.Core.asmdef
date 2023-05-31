@@ -3,7 +3,8 @@
     "rootNamespace": "Amilious.Core",
     "references": [
         "Unity.TextMeshPro",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Cysharp.Text"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using Amilious.Core.Extensions;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace Amilious.Core {
     
@@ -34,12 +34,15 @@ namespace Amilious.Core {
         
         public const string TAB_CONTEXT_MENU = UI_CONTEXT_MENU + "Tabs/";
 
+        public const string GRAPH_CONTEXT_MENU = UI_CONTEXT_MENU + "Graph/";
+
+        public const string PROGRESS_CONTEXT_MENU = UI_CONTEXT_MENU + "Progress/";
+
         public const string INVALID_SUCCESS = "The value property is not available unless state is Success.";
 
         public const string INVALID_ERROR = "The error property is not available unless state is Error.";
 
         public const string INVALID_PENDING = "Cannot process a future that isn't in the Pending state.";
-
 
         #region Menu Buttons ///////////////////////////////////////////////////////////////////////////////////////////
         #if UNITY_EDITOR

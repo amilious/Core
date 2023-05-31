@@ -20,8 +20,8 @@ using Amilious.Core.Attributes;
 
 namespace Amilious.Core.Editor.Modifiers {
     
-    [CustomPropertyDrawer(typeof(AmiliousHelpBoxAttribute))]
-    public class HelpBoxModifier : AmiliousPropertyModifier<AmiliousHelpBoxAttribute> {
+    [CustomPropertyDrawer(typeof(AmiHelpBoxAttribute))]
+    public class HelpBoxModifier : AmiliousPropertyModifier<AmiHelpBoxAttribute> {
         
         public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden, bool disabled) {
             base.BeforeOnGUI(property, label, hidden, disabled);

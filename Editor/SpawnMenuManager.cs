@@ -28,6 +28,7 @@ namespace Amilious.Core.Editor {
         public const string ROOT = "GameObject/UI/";
         public const string TAB_GROUP_HORIZONTAL = "Prefabs/Amilious/TabGroupHorizontal";
         public const string TAB_GROUP_VERTICAL = "Prefabs/Amilious/TabGroupVertical";
+        public const string LINE_GRAPH = "Prefabs/Amilious/LineGraph";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -40,6 +41,9 @@ namespace Amilious.Core.Editor {
         [MenuItem(ROOT + "Tab Group (Vertical)", false, -100)]
         public static void SpawnVerticalTabGroup() =>
             Spawn.SpawnPrefab(TAB_GROUP_VERTICAL, "Tab Group (Vertical)", true);
+
+        [MenuItem(ROOT + "Line Graph", false, -100)]
+        public static void SpawnLineGraph() => Spawn.SpawnPrefab(LINE_GRAPH, "Line Graph", true);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

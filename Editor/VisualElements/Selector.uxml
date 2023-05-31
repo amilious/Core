@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="SelectorElement" style="flex-grow: 1; margin-left: 5px; margin-right: 5px;">
+        <uie:Toolbar style="border-top-left-radius: 5px; border-bottom-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; height: 20px; width: 100%; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; padding-left: 0; padding-right: 0; margin-left: 0; margin-right: 0; flex-grow: 0; flex-shrink: 1;">
+            <uie:ToolbarButton text="◄" display-tooltip-when-elided="true" name="Previous" tabindex="-1" focusable="false" style="-unity-text-align: middle-left; padding-top: 0; border-top-left-radius: 5px; border-bottom-left-radius: 5px; padding-bottom: 1px; -unity-font-style: bold; padding-left: 4px; padding-right: 4px; margin-left: -1px; font-size: 7px;" />
+            <ui:VisualElement style="flex-grow: 1;">
+                <ui:Label text="English" display-tooltip-when-elided="true" name="Label" tabindex="-1" style="-unity-text-align: middle-center; flex-grow: 1; overflow: hidden; padding-left: 0; padding-right: 0; padding-top: 4px; padding-bottom: 5px;" />
+            </ui:VisualElement>
+            <uie:ToolbarMenu display-tooltip-when-elided="true" name="Menu" style="padding-left: 2px; -unity-background-scale-mode: stretch-to-fill; -unity-text-align: middle-left;" />
+            <uie:ToolbarButton text="►" display-tooltip-when-elided="true" name="Next" tabindex="-1" focusable="false" style="-unity-text-align: middle-left; padding-top: 0; border-top-right-radius: 5px; border-bottom-right-radius: 5px; padding-bottom: 1px; -unity-font-style: bold; margin-right: -1px; padding-left: 4px; padding-right: 4px; border-top-width: 0; border-bottom-width: 0; border-right-width: 0; font-size: 7px; color: rgb(196, 196, 196);" />
+        </uie:Toolbar>
+    </ui:VisualElement>
+</ui:UXML>

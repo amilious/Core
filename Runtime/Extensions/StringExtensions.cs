@@ -210,6 +210,17 @@ namespace Amilious.Core.Extensions {
             return values.Count > 0;
         }
         
+        /// <summary>
+        /// This method is used to uppercase the first letter of a string and lowercase the rest.
+        /// </summary>
+        /// <param name="str">The string that you want to modify.</param>
+        /// <returns>The string with the first letter uppercase and the remaining characters lowercase.</returns>
+        public static string ToUpperFirst(this string str) {
+            if(string.IsNullOrEmpty(str)) return str;
+            if(str.Length == 1) return str.ToUpper();
+            return char.ToUpper(str[0]) + str.Substring(1).ToLower();
+        }
+        
         #if UNITY_2019 || UNITY_2020
         
         /// <summary>

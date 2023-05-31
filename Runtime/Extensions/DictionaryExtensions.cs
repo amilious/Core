@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Amilious.Core.Extensions {
     
@@ -91,6 +92,62 @@ namespace Amilious.Core.Extensions {
             #else
             return dict.TryGetValue(key, out value);
             #endif
+        }
+        
+        /// <summary>
+        /// This method is used to get the previous value in a dictionary.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to get the next value in.</param>
+        /// <param name="currentKey">The current value.</param>
+        /// <typeparam name="TKey">The dictionary key type.</typeparam>
+        /// <typeparam name="TValue">The dictionary value type.</typeparam>
+        /// <returns>The next item or the first item.</returns>
+        public static TKey GetNext<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey currentKey) {
+            var keys = dictionary.Keys.ToList();
+            return keys.GetNext(currentKey);
+        }
+
+        /// <summary>
+        /// This method is used to get the previous value in a dictionary.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to get the next value in.</param>
+        /// <param name="currentKey">The current value.</param>
+        /// <param name="extraKeys">Extra values to include.</param>
+        /// <typeparam name="TKey">The dictionary key type.</typeparam>
+        /// <typeparam name="TValue">The dictionary value type.</typeparam>
+        /// <returns>The next item or the first item.</returns>
+        public static TKey GetNext<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, 
+            TKey currentKey, params TKey[] extraKeys) {
+            var keys = dictionary.Keys.ToList();
+            return keys.GetNext(currentKey, extraKeys);
+        }
+
+        /// <summary>
+        /// This method is used to get the previous value in a dictionary.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to get the previous value in.</param>
+        /// <param name="currentKey">The current value.</param>
+        /// <typeparam name="TKey">The dictionary key type.</typeparam>
+        /// <typeparam name="TValue">The dictionary value type.</typeparam>
+        /// <returns>The previous item or the first item.</returns>
+        public static TKey GetPrevious<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey currentKey) {
+            var keys = dictionary.Keys.ToList();
+            return keys.GetPrevious(currentKey);
+        }
+
+        /// <summary>
+        /// This method is used to get the previous value in a dictionary.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to get the previous value in.</param>
+        /// <param name="currentKey">The current value.</param>
+        /// <param name="extraKeys">Extra values to include.</param>
+        /// <typeparam name="TKey">The dictionary key type.</typeparam>
+        /// <typeparam name="TValue">The dictionary value type.</typeparam>
+        /// <returns>The previous item or the first item.</returns>
+        public static TKey GetPrevious<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, 
+            TKey currentKey, params TKey[] extraKeys) {
+            var keys = dictionary.Keys.ToList();
+            return keys.GetPrevious(currentKey, extraKeys);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

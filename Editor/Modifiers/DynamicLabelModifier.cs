@@ -23,8 +23,8 @@ namespace Amilious.Core.Editor.Modifiers {
     /// <summary>
     /// This modifier is used to dynamically set the label of a property.
     /// </summary>
-    [CustomPropertyDrawer(typeof(DynamicLabelAttribute))]
-    public class DynamicLabelModifier : AmiliousPropertyModifier<DynamicLabelAttribute> {
+    [CustomPropertyDrawer(typeof(AmiDynamicLabelAttribute))]
+    public class DynamicLabelModifier : AmiliousPropertyModifier<AmiDynamicLabelAttribute> {
         
         #region Protected Override Methods /////////////////////////////////////////////////////////////////////////////
         

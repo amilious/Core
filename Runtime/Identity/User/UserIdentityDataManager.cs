@@ -16,16 +16,16 @@
 
 using System;
 using UnityEngine;
-using Amilious.Core.Saving;
 using Amilious.Core.Attributes;
 using System.Collections.Generic;
+using Amilious.Core.IO;
 
 namespace Amilious.Core.Identity.User {
     
     /// <summary>
     /// This class is used to access, store, and edit information.
     /// </summary>
-    [AmiliousHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
+    [AmiHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
     public class UserIdentityDataManager : AmiliousBehavior {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////

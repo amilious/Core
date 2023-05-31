@@ -31,8 +31,7 @@ namespace Amilious.Core.UI.Layout {
 
         public FitType fitType;
         public Vector2Int gridSize;
-        [AmiliousDisable]
-        public Vector2 cellSize;
+        [AmiDisable] public Vector2 cellSize;
         public Vector2 spacing;
         
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
@@ -67,8 +66,12 @@ namespace Amilious.Core.UI.Layout {
             var parentWidth = rectTransform.rect.width;
 
             //   size                 totalSize      -         spacing             -           padding
-            var cellWidth = parentWidth/gridSize.x - spacing.x/gridSize.x*(gridSize.x-1) - (padding.left+padding.right)/(float)gridSize.x;
-            var cellHeight = parentHeight/gridSize.y - spacing.y/gridSize.y*(gridSize.y-1) - (padding.top+padding.bottom)/(float)gridSize.y;
+            var cellWidth = parentWidth/gridSize.x 
+                - spacing.x/gridSize.x*(gridSize.x-1) 
+                - (padding.left+padding.right)/(float)gridSize.x;
+            var cellHeight = parentHeight/gridSize.y 
+                - spacing.y/gridSize.y*(gridSize.y-1) 
+                - (padding.top+padding.bottom)/(float)gridSize.y;
 
             cellSize.x = cellWidth;
             cellSize.y = cellHeight;

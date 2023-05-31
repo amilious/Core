@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,7 +14,6 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
@@ -28,7 +27,7 @@ namespace Amilious.Core.Editor.Drawers {
     /// This drawer is used instead of the default color drawer.
     /// </summary>
     [CustomPropertyDrawer(typeof(Color))]
-    [CustomPropertyDrawer(typeof(AmiliousColorAttribute))]
+    [CustomPropertyDrawer(typeof(AmiColorAttribute))]
     public class AmiliousColorDrawer : AmiliousPropertyDrawer {
         
         #region Protected Methods //////////////////////////////////////////////////////////////////////////////////////
@@ -36,8 +35,8 @@ namespace Amilious.Core.Editor.Drawers {
         /// <inheritdoc />
         protected override void AmiliousOnGUI(Rect position, SerializedProperty property, GUIContent label) {
 
-            var att = property.GetAttributes<AmiliousColorAttribute>()
-                .FirstOrDefault()??new AmiliousColorAttribute();
+            var att = property.GetAttributes<AmiColorAttribute>()
+                .FirstOrDefault()??new AmiColorAttribute();
 
             var oldColor = property.colorValue;
             var oldHex = '#'+oldColor.HtmlRGB(att.ShowAlpha);
@@ -56,8 +55,7 @@ namespace Amilious.Core.Editor.Drawers {
             }
             position.width = 30+width;
             var newColor = EditorGUI.ColorField(position,GUIContent.none, oldColor,true,att.ShowAlpha,att.UseHDR);
-            //if(!newHex.StartsWith('#')) newHex = '#' + newHex;
-            if(newHex.Length>0&&newHex[0]=='#') newHex = '#' + newHex;
+            if(newHex.Length>0&&newHex[0]!='#') newHex = '#' + newHex;
             if(newColor != oldColor) property.colorValue = newColor;
             else if(newHex != oldHex && ColorUtility.TryParseHtmlString(newHex, out newColor)){
                 property.colorValue = newColor;

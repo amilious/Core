@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="Element" style="flex-shrink: 0; width: 100%;">
+        <ui:Label text="Label" display-tooltip-when-elided="true" name="Label" style="margin-left: 10px; margin-right: 10px; margin-top: 10px; margin-bottom: 10px; padding-left: 10px; padding-right: 10px; padding-top: 10px; padding-bottom: 10px; -unity-text-align: middle-center; white-space: normal; overflow: hidden; flex-shrink: 1; flex-grow: 1; display: none;" />
+        <ui:Button text="Button" display-tooltip-when-elided="true" name="Button" style="margin-left: 10px; margin-right: 10px; margin-top: 10px; margin-bottom: 10px; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; flex-shrink: 1; flex-grow: 1;" />
+    </ui:VisualElement>
+</ui:UXML>

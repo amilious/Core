@@ -16,15 +16,14 @@
 
 using UnityEditor;
 using Amilious.Core.Attributes;
-using Amilious.Core.Editor.Extensions;
 
 namespace Amilious.Core.Editor.Modifiers {
     
     /// <summary>
     /// This modifier is used to show a property only if a condition is met.
     /// </summary>
-    [CustomPropertyDrawer(typeof(ShowIfAttribute))]
-    public class ShowIfModifier : AmiliousPropertyModifier<ShowIfAttribute> {
+    [CustomPropertyDrawer(typeof(AmiShowIfAttribute))]
+    public class ShowIfModifier : AmiliousPropertyModifier<AmiShowIfAttribute> {
         
         #region Public Override Methods ////////////////////////////////////////////////////////////////////////////////
         
@@ -32,25 +31,8 @@ namespace Amilious.Core.Editor.Modifiers {
         public override bool CanCacheInspectorGUI(SerializedProperty property) => false;
 
         /// <inheritdoc />
-        public override bool ShouldCancelDraw(SerializedProperty property) {
-            var cancel = !Show(property);
-            return cancel;
-        }
+        public override bool ShouldCancelDraw(SerializedProperty property) => Attribute.ShouldHide(property);
 
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Protected Methods //////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This method is used to check if the property should be shown.
-        /// </summary>
-        /// <param name="property">The property that you want to check.</param>
-        /// <returns>True if the property should be shown, otherwise false.</returns>
-        protected bool Show(SerializedProperty property) {
-            var castedAttribute = (ShowIfAttribute)attribute;
-            return !castedAttribute.ShouldHide(property);
-        }
-        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

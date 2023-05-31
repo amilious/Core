@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using UnityEngine;
 
 namespace Amilious.Core.Extensions {
     
@@ -106,6 +108,66 @@ namespace Amilious.Core.Extensions {
             if(!string.IsNullOrWhiteSpace(startsWith)) {
                 if(value.StartsWith(startsWith, !caseSensitive, CultureInfo.InvariantCulture)) list.Add(value);
             } else list.Add(value);
+        }
+
+        /// <summary>
+        /// This method is used to get the next value in a list.
+        /// </summary>
+        /// <param name="list">The list that you want to get the next value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The next item or the first item.</returns>
+        public static T GetNext<T>(this List<T> list, T current) {
+            var index = list.IndexOf(current);
+            return index < 0 ? list[0] : list[(index + 1) % list.Count];
+        }
+
+        /// <summary>
+        /// This method is used to get the next value in a list.
+        /// </summary>
+        /// <param name="list">The list that you want to get the next value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <param name="extra">Extra values to include.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The next item or the first item.</returns>
+        public static T GetNext<T>(this List<T> list, T current, params T[] extra) {
+            var index = list.IndexOf(current);
+            if(index < 0) index = Array.IndexOf(extra, current) + list.Count;
+            if(index < 0) return list[0]??extra[0];
+            index++;
+            var maxIndex = list.Count + extra.Length - 1;
+            if(index > maxIndex) index = 0;
+            return (index < list.Count) ? list[index] : extra[index - list.Count];
+        }
+
+        /// <summary>
+        /// This method is used to get the previous value in a list.
+        /// </summary>
+        /// <param name="list">The list that you want to get the previous value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The previous item or the first item.</returns>
+        public static T GetPrevious<T>(this List<T> list, T current) {
+            var index = list.IndexOf(current);
+            return index < 0 ? list[0] : list[(index - 1 + list.Count) % list.Count];
+        }
+
+        /// <summary>
+        /// This method is used to get the previous value in a list.
+        /// </summary>
+        /// <param name="list">The list that you want to get the previous value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <param name="extra">Extra values to include.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The previous item or the first item.</returns>
+        public static T GetPrevious<T>(this List<T> list, T current, params T[] extra) {
+            var index = list.IndexOf(current);
+            if(index < 0) index = Array.IndexOf(extra, current) + list.Count;
+            if(index < 0) return list[0]??extra[0];
+            index--;
+            var maxIndex = list.Count + extra.Length - 1;
+            if(index < 0) index = maxIndex;
+            return (index < list.Count) ? list[index] : extra[index - list.Count];
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

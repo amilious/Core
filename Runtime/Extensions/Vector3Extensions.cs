@@ -106,7 +106,7 @@ namespace Amilious.Core.Extensions {
             //calculate the x
             switch(x) {
                 case AxisPos.Min: result.x = -parentHalf.x + halfSize.x; break;
-                case AxisPos.Zero: result.x = 0; break;
+                case AxisPos.Center: result.x = 0; break;
                 case AxisPos.Max: result.x = parentHalf.x - halfSize.x; break;
                 default: result.x = 0; break;
             }
@@ -114,7 +114,7 @@ namespace Amilious.Core.Extensions {
             //calculate the y
             switch(y) {
                 case AxisPos.Min: result.y = -parentHalf.y + halfSize.y; break;
-                case AxisPos.Zero: result.y = 0; break;
+                case AxisPos.Center: result.y = 0; break;
                 case AxisPos.Max: result.y = parentHalf.y - halfSize.y; break;
                 default: result.y = 0; break;
             }
@@ -122,7 +122,7 @@ namespace Amilious.Core.Extensions {
             //calculate the z
             switch(z) {
                 case AxisPos.Min: result.z = -parentHalf.z + halfSize.z; break;
-                case AxisPos.Zero: result.z = 0; break;
+                case AxisPos.Center: result.z = 0; break;
                 case AxisPos.Max: result.z = parentHalf.z - halfSize.z; break;
                 default: result.z = 0; break;
             }

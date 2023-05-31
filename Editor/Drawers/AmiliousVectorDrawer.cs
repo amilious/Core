@@ -25,12 +25,12 @@ namespace Amilious.Core.Editor.Drawers {
     /// <summary>
     /// This class is used to draw vectors in the inspector
     /// </summary>
-    [CustomPropertyDrawer(typeof(AmiliousVectorAttribute))]
+    [CustomPropertyDrawer(typeof(AmiVectorAttribute))]
     public class AmiliousVectorDrawer : AmiliousPropertyDrawer {
         
         #region Cache //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        private AmiliousVectorAttribute _attribute;
+        private AmiVectorAttribute _attribute;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -81,10 +81,10 @@ namespace Amilious.Core.Editor.Drawers {
         /// </summary>
         /// <param name="property">The serialized property.</param>
         /// <returns>The attribute.</returns>
-        private AmiliousVectorAttribute GetAttribute(SerializedProperty property) {
+        private AmiVectorAttribute GetAttribute(SerializedProperty property) {
             if(_attribute != null) return _attribute;
-            _attribute = property.GetAttributes<AmiliousVectorAttribute>().FirstOrDefault()??
-                new AmiliousVectorAttribute();
+            _attribute = property.GetAttributes<AmiVectorAttribute>().FirstOrDefault()??
+                new AmiVectorAttribute();
             return _attribute;
         }
         
@@ -95,7 +95,7 @@ namespace Amilious.Core.Editor.Drawers {
         /// <param name="value">The current value.</param>
         /// <param name="att">The attribute.</param>
         /// <returns>The result value.</returns>
-        private Vector2 DrawVector2(Rect position, Vector2 value, AmiliousVectorAttribute att) {
+        private Vector2 DrawVector2(Rect position, Vector2 value, AmiVectorAttribute att) {
             var move = CalculateMove(2, att, ref position, out var position2);
             EditorGUI.LabelField(position,att.XLabel);
             value.x = EditorGUI.FloatField(position2, value.x);
@@ -112,7 +112,7 @@ namespace Amilious.Core.Editor.Drawers {
         /// <param name="value">The current value.</param>
         /// <param name="att">The attribute.</param>
         /// <returns>The result value.</returns>
-        private Vector2Int DrawVector2Int(Rect position, Vector2Int value, AmiliousVectorAttribute att) {
+        private Vector2Int DrawVector2Int(Rect position, Vector2Int value, AmiVectorAttribute att) {
             var move = CalculateMove(2, att, ref position, out var position2);
             EditorGUI.LabelField(position,att.XLabel);
             value.x = EditorGUI.IntField(position2, value.x);
@@ -130,7 +130,7 @@ namespace Amilious.Core.Editor.Drawers {
         /// <param name="value">The current value.</param>
         /// <param name="att">The attribute.</param>
         /// <returns>The result value.</returns>
-        private Vector3 DrawVector3(Rect position, Vector3 value, AmiliousVectorAttribute att) {
+        private Vector3 DrawVector3(Rect position, Vector3 value, AmiVectorAttribute att) {
             var move = CalculateMove(3, att, ref position, out var position2);
             EditorGUI.LabelField(position,att.XLabel);
             value.x = EditorGUI.FloatField(position2, value.x);
@@ -150,7 +150,7 @@ namespace Amilious.Core.Editor.Drawers {
         /// <param name="value">The current value.</param>
         /// <param name="att">The attribute.</param>
         /// <returns>The result value.</returns>
-        private Vector3Int DrawVector3Int(Rect position, Vector3Int value, AmiliousVectorAttribute att) {
+        private Vector3Int DrawVector3Int(Rect position, Vector3Int value, AmiVectorAttribute att) {
             var move = CalculateMove(3, att, ref position, out var position2);
             EditorGUI.LabelField(position,att.XLabel);
             value.x = EditorGUI.IntField(position2, value.x);
@@ -170,7 +170,7 @@ namespace Amilious.Core.Editor.Drawers {
         /// <param name="value">The current value.</param>
         /// <param name="att">The attribute.</param>
         /// <returns>The result value.</returns>
-        private Vector4 DrawVector4(Rect position, Vector4 value, AmiliousVectorAttribute att) {
+        private Vector4 DrawVector4(Rect position, Vector4 value, AmiVectorAttribute att) {
             var move = CalculateMove(4, att, ref position, out var position2);
             EditorGUI.LabelField(position,att.XLabel);
             value.x = EditorGUI.FloatField(position2, value.x);
@@ -194,7 +194,7 @@ namespace Amilious.Core.Editor.Drawers {
         /// <param name="position">The first position.</param>
         /// <param name="position2">The second position.</param>
         /// <returns>The rate at which the drawer should move.</returns>
-        private float CalculateMove(float vectors, AmiliousVectorAttribute att, ref Rect position, out Rect position2) {
+        private float CalculateMove(float vectors, AmiVectorAttribute att, ref Rect position, out Rect position2) {
             //move the cursor over away from the label.
             if(att.Layout != VLayout.FullDoubleLine && att.Layout != VLayout.TripleLine) {
                 position.x += EditorGUIUtility.labelWidth + 2;

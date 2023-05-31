@@ -87,6 +87,66 @@ namespace Amilious.Core.Extensions {
                 ary[index] = modifier(ary[index]);
             }
         }
+        
+        /// <summary>
+        /// This method is used to get the next value in an array.
+        /// </summary>
+        /// <param name="array">The array that you want to get the next value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The next item or the first item.</returns>
+        public static T GetNext<T>(this T[] array, T current) {
+            var index = Array.IndexOf(array, current);
+            return index < 0 ? array[0] : array[(index + 1) % array.Length];
+        }
+
+        /// <summary>
+        /// This method is used to get the next value in an array.
+        /// </summary>
+        /// <param name="array">The array that you want to get the next value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <param name="extra">Extra values to include.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The next item or the first item.</returns>
+        public static T GetNext<T>(this T[] array, T current, params T[] extra) {
+            var index = Array.IndexOf(array,current);
+            if(index < 0) index = Array.IndexOf(extra, current) + array.Length;
+            if(index < 0) return array[0]??extra[0];
+            index++;
+            var maxIndex = array.Length + extra.Length - 1;
+            if(index > maxIndex) index = 0;
+            return (index < array.Length) ? array[index] : extra[index - array.Length];
+        }
+
+        /// <summary>
+        /// This method is used to get the previous value in an array.
+        /// </summary>
+        /// <param name="array">The array that you want to get the previous value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The previous item or the first item.</returns>
+        public static T GetPrevious<T>(this T[] array, T current) {
+            var index = Array.IndexOf(array, current);
+            return index < 0 ? array[0] : array[(index - 1 + array.Length) % array.Length];
+        }
+
+        /// <summary>
+        /// This method is used to get the previous value in an array.
+        /// </summary>
+        /// <param name="array">The array that you want to get the previous value in.</param>
+        /// <param name="current">The current value.</param>
+        /// <param name="extra">Extra values to include.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <returns>The previous item or the first item.</returns>
+        public static T GetPrevious<T>(this T[] array, T current, params T[] extra) {
+            var index = Array.IndexOf(array,current);
+            if(index < 0) index = Array.IndexOf(extra, current) +array.Length;
+            if(index < 0) return array[0]??extra[0];
+            index--;
+            var maxIndex = array.Length + extra.Length - 1;
+            if(index < 0) index = maxIndex;
+            return (index < array.Length) ? array[index] : extra[index - array.Length];
+        }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

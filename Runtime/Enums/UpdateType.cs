@@ -19,12 +19,14 @@ using System;
 namespace Amilious.Core {
 
     /// <summary>
-    /// This enum is used to represent an update loop.
+    /// This enum is used to represent a type of update loop.
     /// </summary>
     [Serializable]
     public enum UpdateType {
         
-        //This variation represents the normal update.
+        /// <summary>
+        /// This variation represents the normal update.
+        /// </summary>
         Update, 
         
         /// <summary>

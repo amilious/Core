@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -18,10 +18,29 @@ using System;
 
 namespace Amilious.Core {
     
+    /// <summary>
+    /// This enum is a wrapper for UnityEditor.MessageType that can be used without importing UnityEditor
+    /// </summary>
     public enum HelpBoxType {
+        
+        /// <summary>
+        /// used to represent no message style
+        /// </summary>
         None, 
+        
+        /// <summary>
+        /// used to represent the info message style
+        /// </summary>
         Info, 
+        
+        /// <summary>
+        /// used to represent the warning message style
+        /// </summary>
         Warning, 
+        
+        /// <summary>
+        /// used to represent the error message style
+        /// </summary>
         Error
     }
 

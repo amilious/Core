@@ -26,18 +26,19 @@ namespace Amilious.Core.UI.Graph {
     /// This class is used to draw a grid.
     /// </summary>
     [ExecuteAlways, RequireComponent(typeof(CanvasRenderer))]
+    [AddComponentMenu(AmiliousCore.GRAPH_CONTEXT_MENU+"UI Grid Renderer")]
     public class UIGridRenderer : Graphic {
 
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
         
         [Tooltip("The number of rows and columns that the grid should contain.")]
-        [AmiliousVector(VLayout.SingleLine,"Columns","Rows")]
+        [AmiVector(VLayout.SingleLine,"Columns","Rows")]
         [SerializeField] private Vector2Int size = new Vector2Int(10, 10);
         [Tooltip("The display origin of the grid.")]
-        [AmiliousVector(VLayout.SingleLine, "First-X", "First-Y")]
+        [AmiVector(VLayout.SingleLine, "First-X", "First-Y")]
         [SerializeField] private Vector2Int origin = new Vector2Int(0, 0);
         [Tooltip("The number of units per grid line.")]
-        [AmiliousVector(VLayout.SingleLine,"X-Axis", "Y-Axis")]
+        [AmiVector(VLayout.SingleLine,"X-Axis", "Y-Axis")]
         [SerializeField]private Vector2Int scale = new Vector2Int(1, 1);
         [Tooltip("The thickness of the grid lines.")]
         [SerializeField] private float lineThickness = 2f;
@@ -60,7 +61,7 @@ namespace Amilious.Core.UI.Graph {
         /// This event is triggered when the grid is redrawn.
         /// </summary>
         public event Action OnGridUpdated;
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////

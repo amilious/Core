@@ -41,18 +41,18 @@ namespace Amilious.Core.FishNet.Authentication {
         #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////
 
         [Header("Authenticator Options")]
-        [SerializeField, AmiliousBool(true)]
+        [SerializeField, AmiBool(true)]
         [Tooltip("If true the authenticator will log broadcasts.")]
         private bool logBroadcasts;
-        [SerializeField, AmiliousBool(true)] 
+        [SerializeField, AmiBool(true)] 
         [Tooltip("If true a user id will be used for authentication, otherwise a user name will be used.")] 
         private bool useUserId;
-        [SerializeField, AmiliousBool(true), HideIf(nameof(useUserId))]
+        [SerializeField, AmiBool(true), AmiHideIf(nameof(useUserId))]
         [Tooltip("If true a new user will be created when joining with an unused user id.")]
         private bool autoRegister;
-        [SerializeField, AmiliousBool(true)] [Tooltip("If true the failure reason will be reported.")]
+        [SerializeField, AmiBool(true)] [Tooltip("If true the failure reason will be reported.")]
         private bool reportFailReason;
-        [SerializeField, AmiliousBool(true)]
+        [SerializeField, AmiBool(true)]
         [Tooltip("If true the user will be required to use a password to join the game.")] 
         private bool usePassword = true;
         
@@ -63,12 +63,12 @@ namespace Amilious.Core.FishNet.Authentication {
      
         [Header("Credentials")]
         [Tooltip("If true the last entered credentials will be saved!")]
-        [SerializeField,AmiliousBool(true)] private bool rememberLast = true;
-        [SerializeField, ShowIf(nameof(useUserId)), Tooltip("This optional field contains the user's id.")] 
+        [SerializeField,AmiBool(true)] private bool rememberLast = true;
+        [SerializeField, AmiShowIf(nameof(useUserId)), Tooltip("This optional field contains the user's id.")] 
         private int userId;
-        [SerializeField, HideIf(nameof(useUserId)), Tooltip("This optional field contains the user's user name.")] 
+        [SerializeField, AmiHideIf(nameof(useUserId)), Tooltip("This optional field contains the user's user name.")] 
         private string userName;
-        [SerializeField, PasswordPropertyText, ShowIf(nameof(usePassword))] 
+        [SerializeField, PasswordPropertyText, AmiShowIf(nameof(usePassword))] 
         [Tooltip("The user's password!")]
         private string password;
 

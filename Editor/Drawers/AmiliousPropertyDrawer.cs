@@ -67,8 +67,8 @@ namespace Amilious.Core.Editor.Drawers {
         /// <summary>
         /// This dictionary is used to store all of the modifiers that are applied to a property.
         /// </summary>
-        private readonly Dictionary<AmiliousModifierAttribute, AmiliousPropertyModifier> _modifiers = 
-            new Dictionary<AmiliousModifierAttribute, AmiliousPropertyModifier>();
+        private readonly Dictionary<AmiModifierAttribute, AmiliousPropertyModifier> _modifiers = 
+            new Dictionary<AmiModifierAttribute, AmiliousPropertyModifier>();
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -149,8 +149,8 @@ namespace Amilious.Core.Editor.Drawers {
             }
             _initialized = true;
             StaticInitialize();
-            var modifiers = fieldInfo.GetCustomAttributes(typeof(AmiliousModifierAttribute),
-                true).Cast<AmiliousModifierAttribute>().ToList();
+            var modifiers = fieldInfo.GetCustomAttributes(typeof(AmiModifierAttribute),
+                true).Cast<AmiModifierAttribute>().ToList();
             foreach(var modifier in modifiers) {
                 if(TryCreatePropertyModifier(modifier, out var modifierDrawer))
                     _modifiers.Add(modifier, modifierDrawer);
@@ -166,7 +166,7 @@ namespace Amilious.Core.Editor.Drawers {
         /// <param name="modifierAttribute">The attribute that you want to get the modifier for.</param>
         /// <param name="modifier">The modifier for the given attribute.</param>
         /// <returns>True if able to get a modifier for the given attribute.</returns>
-        private bool TryCreatePropertyModifier(AmiliousModifierAttribute modifierAttribute,
+        private bool TryCreatePropertyModifier(AmiModifierAttribute modifierAttribute,
             out AmiliousPropertyModifier modifier) {
             modifier = null;
             if(modifierAttribute == null) return false;
@@ -209,7 +209,7 @@ namespace Amilious.Core.Editor.Drawers {
                     if(!cd.TryGetDrawersPropertyType(out var type)) 
                         Debug.Log("Unable to get the type of the property drawer!");
                     else {
-                        if(!type.IsSubclassOf(typeof(AmiliousModifierAttribute))) continue;
+                        if(!type.IsSubclassOf(typeof(AmiModifierAttribute))) continue;
                         if(!AllPropertyModifiers.ContainsKey(type)) AllPropertyModifiers.Add(type, drawer);
                     }
                 

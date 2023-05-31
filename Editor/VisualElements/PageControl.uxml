@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement>
+        <uie:Toolbar style="border-left-width: 0; border-bottom-width: 0; border-top-width: 1px;">
+            <ui:Label text="Per Page" display-tooltip-when-elided="true" name="PerPageLabel" style="-unity-text-align: middle-left; margin-left: 5px; margin-right: 5px;" />
+            <uie:ToolbarMenu display-tooltip-when-elided="true" text="10" name="PerPage" style="flex-shrink: 0; min-width: 40px;" />
+            <uie:ToolbarSpacer style="flex-grow: 1;" />
+            <ui:Label text="Page" display-tooltip-when-elided="true" name="PageLabel" style="-unity-text-align: middle-left; margin-left: 0; margin-right: 5px;" />
+            <uie:ToolbarButton text="◄" display-tooltip-when-elided="true" name="Previous" style="-unity-text-align: middle-left; flex-shrink: 0; left: 0;" />
+            <uie:IntegerField value="42" name="CurrentPage" style="min-width: 40px;" />
+            <ui:Label text="of" display-tooltip-when-elided="true" name="Of" style="-unity-text-align: middle-left;" />
+            <ui:Label text="200" display-tooltip-when-elided="true" name="MaxPages" style="-unity-text-align: middle-left;" />
+            <uie:ToolbarButton text="►" display-tooltip-when-elided="true" name="Next" style="-unity-text-align: middle-left; flex-shrink: 0; font-size: 10px;" />
+        </uie:Toolbar>
+    </ui:VisualElement>
+</ui:UXML>

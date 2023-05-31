@@ -22,6 +22,7 @@ using System.Reflection;
 using Amilious.Core.Attributes;
 using System.Collections.Generic;
 using Amilious.Core.Editor.Extensions;
+using Amilious.Core.Editor.Tabs;
 
 namespace Amilious.Core.Editor.Editors {
     
@@ -37,6 +38,13 @@ namespace Amilious.Core.Editor.Editors {
         public const string SCRIPT = "m_Script";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        public TabController TabController {
+            get {
+                _tabController ??= new TabController(this);
+                return _tabController;
+            }
+        }
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
@@ -44,15 +52,14 @@ namespace Amilious.Core.Editor.Editors {
         private static MethodInfo _renderMethod;
         private static bool _initializedGetSpritePreview;
         private GUIStyle _style;
-        private GUIStyle _tabButtonStyle;
         private bool _initialized;
-        private readonly Dictionary<string, TabInfo> _tabs = new Dictionary<string, TabInfo>();
         private readonly List<string> _dontDraw = new List<string>();
         private readonly List<string> _disabled = new List<string>();
         private readonly List<LinkInfo> _links = new List<LinkInfo>();
-        private readonly List<string> _drawnTabs = new List<string>();
-        private List<AmiliousHelpBoxAttribute> _helpBoxAttributes = new List<AmiliousHelpBoxAttribute>();
-
+        private List<AmiHelpBoxAttribute> _helpBoxAttributes = new List<AmiHelpBoxAttribute>();
+        private TabController _tabController;
+        
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +67,8 @@ namespace Amilious.Core.Editor.Editors {
         /// <inheritdoc />
         public override void OnInspectorGUI() {
             InitializeAmiliousEditor();
-            _drawnTabs.Clear();
+            TabController.ClearDraw();
+            //_drawnTabs.Clear();
             DrawLinks();
             DrawHelpBoxes();
             serializedObject.Update();
@@ -72,10 +80,10 @@ namespace Amilious.Core.Editor.Editors {
             while (iterator.NextVisible(enterChildren)) {
                 enterChildren = false;
                 if (!_dontDraw.Contains<string>(iterator.name)) {
-                    if (iterator.hasChildren && iterator.GetAttributes<AmiliousModifierAttribute>()
+                    if (iterator.hasChildren && iterator.GetAttributes<AmiModifierAttribute>()
                             .Any(a => a.ShouldHide(iterator))) continue;
                     var disable = _disabled.Contains(iterator.name)||iterator
-                        .GetAttributes<AmiliousModifierAttribute>()
+                        .GetAttributes<AmiModifierAttribute>()
                         .Any(a => a.ShouldDisable(iterator));
                     if(disable) EditorGUI.BeginDisabledGroup(true);
                     EditorGUILayout.PropertyField(iterator, true);
@@ -83,7 +91,8 @@ namespace Amilious.Core.Editor.Editors {
                 }
                 else {
                     //skipped drawing the property
-                    DrawTabGroup(iterator.name);
+                    TabController.TryDrawTabGroup(iterator.name);
+                    //DrawTabGroup(iterator.name);
                 }
             }
             //end draw default properties
@@ -132,7 +141,7 @@ namespace Amilious.Core.Editor.Editors {
         /// This method is used to skip drawing a property with the default property drawer.
         /// </summary>
         /// <param name="property">The properties that you want to skip drawing.</param>
-        protected void SkipPropertyDraw(params SerializedProperty[] property) =>
+        public void SkipPropertyDraw(params SerializedProperty[] property) =>
             SkipPropertyDraw(property.Select(x => x.name).ToArray());
 
         protected void DisableProperty(params string[] propertyName) {
@@ -188,15 +197,6 @@ namespace Amilious.Core.Editor.Editors {
         }
         
         /// <summary>
-        /// This method is used to add a serialized property to a tab.
-        /// </summary>
-        /// <param name="tabInfo">The tab info.</param>
-        private void AddToTab(TabInfo tabInfo) {
-            _tabs[tabInfo.Property.name] = tabInfo;
-            SkipPropertyDraw(tabInfo.Property);
-        }
-
-        /// <summary>
         /// This method is used to add a link button to the top of the inspector.
         /// </summary>
         /// <param name="toolTip">The tooltip that you want to used for the button.</param>
@@ -230,57 +230,8 @@ namespace Amilious.Core.Editor.Editors {
         /// <param name="a">The first item.</param>
         /// <param name="b">The second item.</param>
         /// <returns>The sorted value.</returns>
-        private static int SortTabs(TabInfo a, TabInfo b) {
-            return b.Order - a.Order;
-        }
-        
-        /// <summary>
-        /// This method is called to handle the drawing of tabs.
-        /// </summary>
-        private void DrawTabGroup(string tabPropertyName) {
-            if(_drawnTabs.Contains(tabPropertyName)) return;
-            if(!_tabs.ContainsKey(tabPropertyName)) return;
-            //build the tab list
-            var tabGroup = _tabs[tabPropertyName].TabGroup;
-            var tabProperties = _tabs.Values.Where(x => x.TabGroup == tabGroup).ToList();
-            foreach(var tp in tabProperties) _drawnTabs.Add(tp.Property.name);
-            //get the tab group information
-            var editorPrefName = $"TabGroup/{target.GetType().Name}/{tabGroup}";
-            var tabs = tabProperties.GroupBy(prop => prop.TabName).
-                ToDictionary(grp => grp.Key, grp => grp.ToList());
-            var tabNames = tabs.Keys.ToArray();
-            var currentTab = Mathf.Min(EditorPrefs.GetInt(editorPrefName), tabs.Count - 1);
-            var currentTabName = tabNames[currentTab];
-            //draw tabs
-            
-            EditorGUILayout.Separator();
-            var boxStyle = new GUIStyle(EditorStyles.helpBox);
-            if(tabGroup != string.Empty) {
-                EditorGUILayout.BeginVertical(boxStyle);
-                EditorGUILayout.LabelField(tabGroup);
-                EditorGUILayout.EndHorizontal();
-                GUILayout.Space(-5f);
-            }
-
-            EditorGUILayout.BeginHorizontal(new GUIStyle(GUIStyle.none){padding = new RectOffset(2,0,0,0)});
-            EditorGUI.BeginChangeCheck();
-            EditorPrefs.SetInt(editorPrefName, GUILayout.Toolbar(currentTab, tabs.Keys.ToArray(), _tabButtonStyle));
-            if(EditorGUI.EndChangeCheck()) GUI.FocusControl(null);
-            EditorGUILayout.EndHorizontal();
-            
-            GUILayout.Space(-5f);
-            EditorGUILayout.BeginVertical(boxStyle);
-            EditorGUI.indentLevel = 1;
-            EditorGUILayout.BeginVertical(); 
-            EditorGUILayout.Separator();
-            tabs[currentTabName].Sort(SortTabs);
-            foreach(var tabItem in tabs[currentTabName]) {
-                EditorGUILayout.PropertyField(tabItem.Property);
-            } 
-            EditorGUILayout.Separator();
-            EditorGUILayout.EndVertical();
-            EditorGUI.indentLevel = 0;
-            EditorGUILayout.EndVertical();
+        private static int SortTabs(TabProperty a, TabProperty b) {
+            return a.Order - b.Order;
         }
 
         /// <summary>
@@ -345,7 +296,7 @@ namespace Amilious.Core.Editor.Editors {
             if(_initialized) return;
             _initialized = true;
             _dontDraw.Clear();
-            _tabs.Clear();
+            TabController.Reset();
             _links.Clear();
             _style = new GUIStyle { fixedHeight = 12, alignment = TextAnchor.MiddleLeft,
                 fontSize = 10, fontStyle = FontStyle.Bold,
@@ -357,20 +308,15 @@ namespace Amilious.Core.Editor.Editors {
             //hide the script
             _disabled.Add(SCRIPT);
             if(!AmiliousCoreEditor.ShowScripts && !_dontDraw.Contains(SCRIPT)) _dontDraw.Add(SCRIPT);
-            if(_tabButtonStyle==null)_tabButtonStyle = new GUIStyle(EditorStyles.miniButtonMid) {
-                fontSize = 10, fontStyle = FontStyle.Bold,
-            };
-            /*_tabButtonStyle ??= new GUIStyle(EditorStyles.miniButtonMid) {
-                fontSize = 10, fontStyle = FontStyle.Bold,
-            };*/
+            
             //check link attributes
             var linkAttributes = 
-                target.GetType().GetCustomAttributes<EditorLinkAttribute>(true);
-            _helpBoxAttributes = target.GetType().GetCustomAttributes<AmiliousHelpBoxAttribute>(true).ToList();
+                target.GetType().GetCustomAttributes<AmiLinkAttribute>(true);
+            _helpBoxAttributes = target.GetType().GetCustomAttributes<AmiHelpBoxAttribute>(true).ToList();
             foreach(var attribute in linkAttributes)
                 AddLinkButton(attribute.ToolTip, attribute.IconResourcePath, attribute.Link, attribute.LinkName);
             //check hide property attributes
-            foreach(var hide in target.GetType().GetCustomAttributes<EditorHidePropertyAttribute>())
+            foreach(var hide in target.GetType().GetCustomAttributes<AmiHideAttribute>())
                 _dontDraw.Add(hide.PropertyName);
             //get tabs
             var iterator = serializedObject.GetIterator( );
@@ -378,9 +324,9 @@ namespace Amilious.Core.Editor.Editors {
             while (iterator.NextVisible(enterChildren)) {
                 enterChildren = false;
                 var attributes = 
-                    iterator.GetAttributes(typeof(AmiliousTabAttribute),false).Cast<AmiliousTabAttribute>();
-                foreach(var attribute in attributes)
-                    AddToTab(new TabInfo(attribute,serializedObject.FindProperty(iterator.name)));
+                    iterator.GetAttributes(typeof(AmiTabAttribute),false).Cast<AmiTabAttribute>();
+                foreach(var attribute in attributes) 
+                    TabController.AddToGroup(new TabProperty(attribute,serializedObject.FindProperty(iterator.name)));
             }
             Initialize();
         }

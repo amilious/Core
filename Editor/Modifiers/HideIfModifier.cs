@@ -16,15 +16,14 @@
 
 using UnityEditor;
 using Amilious.Core.Attributes;
-using Amilious.Core.Editor.Extensions;
 
 namespace Amilious.Core.Editor.Modifiers {
     
     /// <summary>
     /// This modifier is used to hide a property if a condition is met.
     /// </summary>
-    [CustomPropertyDrawer(typeof(HideIfAttribute))]
-    public class HideIfModifier : AmiliousPropertyModifier<HideIfAttribute> {
+    [CustomPropertyDrawer(typeof(AmiHideIfAttribute))]
+    public class HideIfModifier : AmiliousPropertyModifier<AmiHideIfAttribute> {
 
         #region Public Override Methods ////////////////////////////////////////////////////////////////////////////////
         
@@ -32,22 +31,8 @@ namespace Amilious.Core.Editor.Modifiers {
         public override bool CanCacheInspectorGUI(SerializedProperty property) => false;
         
         /// <inheritdoc />
-        public override bool ShouldCancelDraw(SerializedProperty property) =>Hide(property);
+        public override bool ShouldCancelDraw(SerializedProperty property) => Attribute.ShouldHide(property);
         
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Protected Methods //////////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This method is used to check if the property should be hidden.
-        /// </summary>
-        /// <param name="property">The property that you want to check.</param>
-        /// <returns>True if the property should be hidden, otherwise false.</returns>
-        protected bool Hide(SerializedProperty property) {
-            var castedAttribute = (HideIfAttribute)attribute;
-            return castedAttribute.ShouldHide(property);
-        }
-
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

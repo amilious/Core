@@ -52,6 +52,18 @@ namespace Amilious.Core.Extensions {
             uiVertex.position = new Vector3(x, y, z);
             vh.AddVert(uiVertex);
         }
+
+        /// <summary>
+        /// This method is used to add a vertex to a <see cref="VertexHelper"/> at the given position.
+        /// </summary>
+        /// <param name="vh">The vertex helper.</param>
+        /// <param name="uiVertex">The vertex that you want to add to the vertex helper at the given position.</param>
+        /// <param name="position">The position of the vertex.</param>
+        public static void AddVertex(this VertexHelper vh,ref UIVertex uiVertex, Vector3 position) {
+            if(vh == null) return;
+            uiVertex.position = position;
+            vh.AddVert(uiVertex);
+        }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

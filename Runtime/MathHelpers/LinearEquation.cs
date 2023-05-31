@@ -65,6 +65,22 @@ namespace Amilious.Core.MathHelpers {
         }
 
         /// <summary>
+        /// This constructor is used to generate a linear equation from the two given points of the resulting line.
+        /// </summary>
+        /// <param name="pointA">The first point.</param>
+        /// <param name="pointB">The second point.</param>
+        public LinearEquation(Vector3 pointA, Vector3 pointB) {
+            IsVertical = pointA.x == pointB.x;
+            IsHorizontal = pointA.y == pointB.y;
+            if(IsHorizontal || IsVertical) {
+                M = 1;
+                B = IsVertical ? pointA.x : pointA.y;
+            }
+            M = (pointB.y - pointA.y) / (pointB.x - pointA.x);
+            B = pointA.y - (M * pointA.x);
+        }
+
+        /// <summary>
         /// This constructor is used to generate a linear equation from the given slope and constant value. y=mx+b
         /// </summary>
         /// <param name="m">The slope of the equation.</param>
@@ -88,7 +104,7 @@ namespace Amilious.Core.MathHelpers {
         /// <returns>True if the x value can be calculated, otherwise false.</returns>
         public bool TryFindX(float y, out float x) {
             if(IsHorizontal) { x = 0; return false; }
-            x = IsVertical ? B : (y - B) / M;
+            x = IsVertical ? B : (y - B) / (M);
             return true;
         }
 
@@ -103,6 +119,18 @@ namespace Amilious.Core.MathHelpers {
             point = new Vector2(x, y);
             return result;
         }
+        
+        /// <summary>
+        /// This property is used to return the point at the given y value;
+        /// </summary>
+        /// <param name="y">The given y value.</param>
+        /// <param name="point">The point at the given y value.</param>
+        /// <returns>True if the y value can be calculated, otherwise false.</returns>
+        public bool FindPointFromY(float y, out Vector3 point) {
+            var result = TryFindX(y, out var x);
+            point = new Vector3(x, y,0);
+            return result;
+        }
 
         /// <summary>
         /// This method uses the equation to calculate the y value for, the given x value.
@@ -112,7 +140,7 @@ namespace Amilious.Core.MathHelpers {
         /// <returns>True if the y value can be calculated, otherwise false.</returns>
         public bool TryFindY(float x, out float y) {
             if(IsVertical) { y = 0; return false; }
-            y = IsHorizontal ? B : (M * x) + B;
+            y = IsHorizontal ? B : M * x + B;
             return true;
         }
 
@@ -127,6 +155,19 @@ namespace Amilious.Core.MathHelpers {
             point = new Vector2(x, y);
             return result;
         }
+        
+        /// <summary>
+        /// This property is used to return the point at the given x value;
+        /// </summary>
+        /// <param name="x">The given y value.</param>
+        /// <param name="point">The point at the given x value.</param>
+        /// <returns>True if the x value can be calculated, otherwise false.</returns>
+        public bool FindPointFromX(float x, out Vector3 point) {
+            var result = TryFindY(x, out var y);
+            point = new Vector3(x, y,0);
+            return result;
+        }
+        
         /// <inheritdoc />
         public override string ToString() => IsVertical? $"x={B}" : IsHorizontal? $"y={B}" : $"y=({M})x+{B}";
         

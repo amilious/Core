@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
 namespace Amilious.Core.Extensions {
     
     /// <summary>
@@ -38,7 +42,7 @@ namespace Amilious.Core.Extensions {
             //just add an s
             return $"{i} {singular}s";
         }
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

@@ -14,29 +14,33 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Amilious.Core.Attributes;
+using Amilious.Core.Editor.Extensions;
+using Amilious.Core.Extensions;
 
 namespace Amilious.Core.Editor.Modifiers {
     
     /// <summary>
     /// This modifier is used to display a warning message if an inspector field is left blank.
     /// </summary>
-    [CustomPropertyDrawer(typeof(RequiredAttribute))]
-    public class RequiredModifier : AmiliousPropertyModifier<RequiredAttribute> {
+    [CustomPropertyDrawer(typeof(AmiRequiredAttribute))]
+    public class RequiredModifier : AmiliousPropertyModifier<AmiRequiredAttribute> {
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
-        private RequiredAttribute _attribute;
-        private bool _displayedWarning;
+        private AmiRequiredAttribute _attribute;
+        private string _key;
+        private static readonly Dictionary<string, bool> DisplayedWarning = new Dictionary<string, bool>();
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
-        public RequiredAttribute RequiredAttribute {
-            get { return _attribute ?? (_attribute = (RequiredAttribute)attribute); }
+        public AmiRequiredAttribute amiRequiredAttribute {
+            get { return _attribute ??= (AmiRequiredAttribute)attribute; }
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,16 +53,16 @@ namespace Amilious.Core.Editor.Modifiers {
         /// <inheritdoc />
         public override void BeforeOnGUI(SerializedProperty property, GUIContent label, bool hidden, bool disabled) {
             if(ShowMessage(property)) {
-                EditorGUILayout.HelpBox(RequiredAttribute.Message, MessageType.Error);
-                if(_displayedWarning) return;
-                _displayedWarning = true;
+                EditorGUILayout.HelpBox(amiRequiredAttribute.Message, MessageType.Error);
+                if(HasDisplayedWarning()) return;
+                SetDisplayedWarning(true);
                 //select the property in the inspector
                 GUI.FocusControl(property.name);
                 //display warning
                 Debug.LogWarningFormat("The {0} field is required but not present!\n{1}", property.name, 
-                    RequiredAttribute.Message);
+                    amiRequiredAttribute.Message);
             }
-            else _displayedWarning = false;
+            else SetDisplayedWarning(false);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +84,19 @@ namespace Amilious.Core.Editor.Modifiers {
                 default: return false;
             }
         }
-        
+
+        protected override void Initialize(SerializedProperty property) {
+            _key = property.GetUniqueString();
+        }
+
+        private bool HasDisplayedWarning() {
+            return DisplayedWarning.TryGetValueFix(_key, out var warn) && warn;
+        }
+
+        private void SetDisplayedWarning(bool displayed) {
+            DisplayedWarning[_key] = displayed;
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

@@ -48,30 +48,30 @@ namespace Amilious.Core.UI.Tab {
         
         [Header("Sprite Settings")]
         [Tooltip("If true the image's sprite will be changed based on the tab's state.")]
-        [SerializeField, AmiliousBool(true)] 
+        [SerializeField, AmiBool(true)] 
         private bool changeSpriteWithState;
         [Tooltip("The sprite that should be used by default when the tab is not hovered or selected.")]
-        [SerializeField, ShowIf(nameof(changeSpriteWithState))]
+        [SerializeField, AmiShowIf(nameof(changeSpriteWithState))]
         private Sprite idleSprite;
         [Tooltip("The sprite that should be used when the tab is hovered over.")]
-        [SerializeField, ShowIf(nameof(changeSpriteWithState))]
+        [SerializeField, AmiShowIf(nameof(changeSpriteWithState))]
         private Sprite hoverSprite;
         [Tooltip("The sprite that should be used when the tab is selected.")]
-        [SerializeField, ShowIf(nameof(changeSpriteWithState))]
+        [SerializeField, AmiShowIf(nameof(changeSpriteWithState))]
         private Sprite selectedSprite;
 
         [Header("Color Settings")]
         [Tooltip("If true the image's color will be changed based on the tab's state.")]
-        [SerializeField, AmiliousBool(true)] 
+        [SerializeField, AmiBool(true)] 
         private bool changeColorWithState;
         [Tooltip("The color that should be used by default when the tab is not hovered or selected.")]
-        [SerializeField, ShowIf(nameof(changeColorWithState)), AmiliousColor]
+        [SerializeField, AmiShowIf(nameof(changeColorWithState)), AmiColor]
         private Color idleColor;
         [Tooltip("The color that should be used when the tab is hovered over.")]
-        [SerializeField, ShowIf(nameof(changeColorWithState)), AmiliousColor]
+        [SerializeField, AmiShowIf(nameof(changeColorWithState)), AmiColor]
         private Color hoverColor;
         [Tooltip("The color that should be used when the tab is selected.")]
-        [SerializeField, ShowIf(nameof(changeColorWithState)), AmiliousColor]
+        [SerializeField, AmiShowIf(nameof(changeColorWithState)), AmiColor]
         private Color selectedColor;
         
         [Header("Events")]

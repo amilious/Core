@@ -1,23 +1,33 @@
 namespace Amilious.Core {
     
     /// <summary>
-    /// This class is used to represent a level of time.
+    /// This enum is used to represent a level of time.
     /// </summary>
     public enum TimeLevel {
         
-        //This variation represents milliseconds.
+        /// <summary>
+        /// This variation represents milliseconds.
+        /// </summary>
         Millisecond = 0,
         
-        //This variation represents seconds.
+        /// <summary>
+        /// This variation represents seconds.
+        /// </summary>
         Second = 1, 
         
-        //This variation represents minutes.
+        /// <summary>
+        /// This variation represents minutes.
+        /// </summary>
         Minute = 2, 
         
-        //This variation represents hours.
+        /// <summary>
+        /// This variation represents hours.
+        /// </summary>
         Hour = 3, 
         
-        //This variation represents days.
+        /// <summary>
+        /// This variation represents days.
+        /// </summary>
         Day = 4
         
     }

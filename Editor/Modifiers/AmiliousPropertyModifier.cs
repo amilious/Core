@@ -26,7 +26,7 @@ namespace Amilious.Core.Editor.Modifiers {
     /// <summary>
     /// This class is used to add a modify a property.  This variation will also handle casting the attribute.
     /// </summary>
-    public abstract class AmiliousPropertyModifier<T> : AmiliousPropertyModifier where T : AmiliousModifierAttribute {
+    public abstract class AmiliousPropertyModifier<T> : AmiliousPropertyModifier where T : AmiModifierAttribute {
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
@@ -130,7 +130,7 @@ namespace Amilious.Core.Editor.Modifiers {
 
         /// <inheritdoc />
         public sealed override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-            Initialize(property);
+            DoInitialization(property);
             if(CalledBeforeDrawer) {
                 Drawer.OnGUI(position, property, label);
                 return;
@@ -157,7 +157,7 @@ namespace Amilious.Core.Editor.Modifiers {
 
         /// <inheritdoc />
         public sealed override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-            Initialize(property);
+            DoInitialization(property);
             if(CalledBeforeDrawer) {
                 return Drawer.GetPropertyHeight(property, label);
             }
@@ -175,25 +175,28 @@ namespace Amilious.Core.Editor.Modifiers {
         /// This method is used to initialize the property modifier.
         /// </summary>
         /// <param name="property">The property that the modifier is for.</param>
-        private void Initialize(SerializedProperty property) {
+        private void DoInitialization(SerializedProperty property) {
             _hide = ShouldCancelDraw(property);
+            _disable = ShouldDisable(property);
             if(_initialized) return;
             _initialized = true;
             _range = fieldInfo.GetCustomAttribute<RangeAttribute>();
-            if(Drawer != null ||
-                !AmiliousPropertyDrawer.AllAmiliousDrawers.TryGetValue(property.type, out var drawerType)) return;
+            if(Drawer != null || !AmiliousPropertyDrawer.AllAmiliousDrawers.TryGetValue(property.type, out var drawerType)) {
+                Initialize(property);
+                return;
+            }
             CalledBeforeDrawer = true;
             _drawer = (AmiliousPropertyDrawer)Activator.CreateInstance(drawerType);
             //set the fieldInfo and attribute
             var fieldI = GetType().GetField("m_FieldInfo", BindingFlags.NonPublic | BindingFlags.Instance);
             fieldI?.SetValue(Drawer, fieldInfo);
-            Initialize();
+            Initialize(property);
         }
 
         /// <summary>
         /// This method is called during initialization.
         /// </summary>
-        protected virtual void Initialize() { }
+        protected virtual void Initialize(SerializedProperty property) { }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

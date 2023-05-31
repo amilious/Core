@@ -24,25 +24,39 @@ namespace Amilious.Core {
     [Serializable]
     public enum ComparisonType {
         
-        //This variation represents ==
+        /// <summary>
+        /// This variation represents ==
+        /// </summary>
         Equal,
         
-        //This variation represents (Max(a,b)-Min(a,b))<=delta
+        /// <summary>
+        /// This variation represents (Max(a,b)-Min(a,b))<=delta
+        /// </summary>
         ApproximatelyEqual,
         
-        //This variation represents !=
+        /// <summary>
+        /// This variation represents !=
+        /// </summary>
         NotEqual,
         
-        //This variation represents <
+        /// <summary>
+        ///This variation represents <
+        /// </summary>
         LessThan,
         
-        //This variation represents <=
+        /// <summary>
+        /// This variation represents <=
+        /// </summary>
         LessThanOrEqual,
         
-        //This variation represents >
+        /// <summary>
+        /// This variation represents >
+        /// </summary>
         GreaterThan,
         
-        //This variation represents >=
+        /// <summary>
+        /// This variation represents >=
+        /// </summary>
         GreaterThanOrEqual
         
     }

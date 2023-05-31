@@ -12,10 +12,10 @@ namespace Amilious.Core.UI.MISC {
         [SerializeField] private string textPretext;
         [SerializeField] private int parentLevel = 0;
         [SerializeField] private bool setTextComponentName;
-        [SerializeField, ShowIf(nameof(setTextComponentName))]
+        [SerializeField, AmiShowIf(nameof(setTextComponentName))]
         private string textComponentPreText;
         [SerializeField] private bool setGameObjectName;
-        [SerializeField, ShowIf(nameof(setGameObjectName))]
+        [SerializeField, AmiShowIf(nameof(setGameObjectName))]
         private string gameObjectPreText;
         
         private TextMeshProUGUI TextComponent => this.GetCacheComponent(ref textComponent);

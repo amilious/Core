@@ -31,7 +31,7 @@ namespace Amilious.Core.FishNet.Users {
 
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 
-        [SerializeField,AmiliousBool(true)]
+        [SerializeField,AmiBool(true)]
         [Tooltip("If true friendships must be accepted, otherwise no acceptance is needed.")]
         private bool friendshipsRequireAcceptance = true;
         

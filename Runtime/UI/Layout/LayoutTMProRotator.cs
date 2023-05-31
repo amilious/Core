@@ -66,38 +66,38 @@ namespace Amilious.Core.UI.Layout {
         
         [Header("Alignment")]
         [Tooltip("If true the alignment of TextMeshPro text objects will be edited.")]
-        [SerializeField, AmiliousBool(true)] private bool applyAlignment;
-        [SerializeField, ShowIf(nameof(applyAlignment))]
+        [SerializeField, AmiBool(true)] private bool applyAlignment;
+        [SerializeField, AmiShowIf(nameof(applyAlignment))]
         [Tooltip("The alignment to apply to the TextMeshPro text if the rotation type is set to none.")]
         private TextAlignmentOptions noRotationAlignment = TextAlignmentOptions.BottomRight;
-        [SerializeField, ShowIf(nameof(applyAlignment))] 
+        [SerializeField, AmiShowIf(nameof(applyAlignment))] 
         [Tooltip("The alignment to apply to the TextMeshPro text if the rotation type is set to clockwise.")]
         private TextAlignmentOptions clockwiseAlignment = TextAlignmentOptions.BottomRight;
-        [SerializeField, ShowIf(nameof(applyAlignment))] 
+        [SerializeField, AmiShowIf(nameof(applyAlignment))] 
         [Tooltip("The alignment to apply to the TextMeshPro text if the rotation type is set to counter clockwise.")]
         private TextAlignmentOptions counterClockwiseAlignment = TextAlignmentOptions.BottomLeft;
-        [SerializeField, ShowIf(nameof(applyAlignment))] 
+        [SerializeField, AmiShowIf(nameof(applyAlignment))] 
         [Tooltip("The alignment to apply to the TextMeshPro text if the rotation type is set to upside down.")]
         private TextAlignmentOptions upsideDownAlignment = TextAlignmentOptions.BottomLeft;
 
         [Header("Margins")]
         [Tooltip("If true the text padding of TextMeshPro text objects will be edited.")]
-        [SerializeField, AmiliousBool(true)] private bool applyMargins;
-        [SerializeField, ShowIf(nameof(applyMargins))] 
+        [SerializeField, AmiBool(true)] private bool applyMargins;
+        [SerializeField, AmiShowIf(nameof(applyMargins))] 
         [Tooltip("The margins to apply to the text if there is no rotation.")]
-        [AmiliousVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
+        [AmiVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
         private Vector4 noRotationMargins;
-        [SerializeField, ShowIf(nameof(applyMargins))]
+        [SerializeField, AmiShowIf(nameof(applyMargins))]
         [Tooltip("The margins to apply to the text if there is clockwise rotation.")]
-        [AmiliousVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
+        [AmiVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
         private Vector4 clockwiseMargins;
-        [SerializeField, ShowIf(nameof(applyMargins))] 
+        [SerializeField, AmiShowIf(nameof(applyMargins))] 
         [Tooltip("The margins to apply to the text if there is counter-clockwise rotation.")]
-        [AmiliousVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
+        [AmiVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
         private Vector4 counterClockwiseMargins;
-        [SerializeField, ShowIf(nameof(applyMargins))] 
+        [SerializeField, AmiShowIf(nameof(applyMargins))] 
         [Tooltip("The margins to apply to the text if it is upside down.")]
-        [AmiliousVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
+        [AmiVector(VLayout.TripleLine,"Left","Top","Right","Bottom")] 
         private Vector4 upsideDownMargins;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

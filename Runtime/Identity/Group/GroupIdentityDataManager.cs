@@ -16,7 +16,7 @@
 
 using System.Collections.Generic;
 using Amilious.Core.Attributes;
-using Amilious.Core.Saving;
+using Amilious.Core.IO;
 using UnityEngine;
 
 namespace Amilious.Core.Identity.Group {
@@ -24,7 +24,7 @@ namespace Amilious.Core.Identity.Group {
     /// <summary>
     /// This class is used to access, store, and edit information.
     /// </summary>
-    [AmiliousHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
+    [AmiHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
     public class GroupIdentityDataManager : AmiliousBehavior {
         
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////

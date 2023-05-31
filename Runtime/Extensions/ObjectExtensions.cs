@@ -14,7 +14,8 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
+using UnityEngine;
+using Amilious.Core.IO;
 using System.Reflection;
 
 namespace Amilious.Core.Extensions {
@@ -32,7 +33,7 @@ namespace Amilious.Core.Extensions {
         /// <param name="value">The value of the found field or property.</param>
         /// <typeparam name="T">The type of value of the field or property.</typeparam>
         /// <returns>True if the field or property exists and is of the given type.</returns>
-        public static bool TryGetFieldOrPropertyValue<T>(this Object obj, string name, out T value) {
+        public static bool TryGetFieldOrPropertyValue<T>(this System.Object obj, string name, out T value) {
             //try load field value
             var field = obj.GetType().GetField(name,
                 BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
@@ -57,6 +58,45 @@ namespace Amilious.Core.Extensions {
             }
             value = default;
             return false;
+        }
+        
+        /// <summary>
+        /// This method is used to get the file path of the object.
+        /// </summary>
+        /// <param name="obj">The object that you want to get the file path for.</param>
+        /// <returns>The file path of the object, otherwise the name of the object if not in the editor.</returns>
+        /// <remarks>This method should only be used with the editor.</remarks>
+        public static string GetFilePath(this Object obj) {
+            #if UNITY_EDITOR
+            return FileHelper.CreatePath(Application.dataPath, 
+                UnityEditor.AssetDatabase.GetAssetPath(obj).Substring(7)); //remove the duplicate Assets
+            #else
+            var stackTrace = new StackTrace(1, true); // skip first frame to exclude LogWarningWithStackTrace() from the stack trace
+            var callingFrame = stackTrace.GetFrame(0);
+            var callingMethod = callingFrame.GetMethod();
+            var callingLocation = $"{callingMethod.DeclaringType}.{callingMethod.Name}() at {callingFrame.GetFileName()}:{callingFrame.GetFileLineNumber()}";
+            Debug.LogError($"Unable to get the file location of an object during runtime.\nCaller: {callingLocation}\nStack Trace: {stackTrace}");
+            return obj.name;
+            #endif
+        }
+
+        /// <summary>
+        /// This method is used to get the file path of the object within the project assets.
+        /// </summary>
+        /// <param name="obj">The object that you want to get the file path for.</param>
+        /// <returns>The file path of the object, otherwise the name of the object if not in the editor.</returns>
+        /// <remarks>This method should only be used with the editor.</remarks>
+        public static string GetAssetPath(this Object obj) {
+            #if UNITY_EDITOR
+            return FileHelper.FixPath(UnityEditor.AssetDatabase.GetAssetPath(obj).Substring(7));
+            #else
+            var stackTrace = new StackTrace(1, true); // skip first frame to exclude LogWarningWithStackTrace() from the stack trace
+            var callingFrame = stackTrace.GetFrame(0);
+            var callingMethod = callingFrame.GetMethod();
+            var callingLocation = $"{callingMethod.DeclaringType}.{callingMethod.Name}() at {callingFrame.GetFileName()}:{callingFrame.GetFileLineNumber()}";
+            Debug.LogError($"Unable to get the file location of an object during runtime.\nCaller: {callingLocation}\nStack Trace: {stackTrace}");
+            return obj.name;
+            #endif
         }
         
     }

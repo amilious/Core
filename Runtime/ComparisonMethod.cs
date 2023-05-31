@@ -35,9 +35,9 @@ namespace Amilious.Core {
 
         #region Serialized Fields //////////////////////////////////////////////////////////////////////////////////////
         
-        [SerializeField, DynamicLabel(""), Tooltip("The comparison type.")] 
+        [SerializeField, AmiDynamicLabel(""), Tooltip("The comparison type.")] 
         private ComparisonType compareType = ComparisonType.GreaterThanOrEqual;
-        [ShowIf(nameof(compareType),ComparisonType.ApproximatelyEqual)]
+        [AmiShowIf(nameof(compareType),ComparisonType.ApproximatelyEqual)]
         [SerializeField, Tooltip("The acceptable difference between two values for the approximate comparison type.")] 
         private T approximateDelta;
         
