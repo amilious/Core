@@ -1,30 +1,18 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
-    <ui:Template name="LanguageSelector" src="project://database/Assets/Amilious/Core/Editor/VisualElements/Selector.uxml?fileID=9197481963319205126&amp;guid=8b9aadf188d8227479a377feb8078cac&amp;type=3#Selector" />
     <ui:VisualElement style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px; max-width: none; min-width: initial; min-height: initial;">
-        <ui:VisualElement name="KeyFieldElement" style="align-items: stretch; flex-direction: row; margin-top: 5px;">
-            <ui:Label text="Key:" display-tooltip-when-elided="true" name="KeyLabel" style="width: 75px; justify-content: flex-start; align-items: stretch; -unity-text-align: middle-left;" />
-            <ui:TextField picking-mode="Ignore" text="key" name="Key" readonly="false" style="flex-grow: 1;" />
+        <ui:VisualElement style="flex-direction: row;">
+            <ui:Label text="Key:" display-tooltip-when-elided="true" name="KeyLabel" style="width: auto; justify-content: flex-start; align-items: stretch; -unity-text-align: middle-left; flex-grow: 0; flex-shrink: 1;" />
+            <ui:TextField picking-mode="Ignore" text="key" name="Key" readonly="false" style="flex-grow: 1; margin-right: 0; flex-shrink: 1;" />
+            <ui:Button text="Restore" display-tooltip-when-elided="true" name="RestoreKeyButton" style="margin-left: 1px; margin-right: 0; border-top-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-left-radius: 3px; border-bottom-left-radius: 3px; border-bottom-color: rgb(33, 33, 33); padding-top: 1px; padding-bottom: 1px; margin-top: 1px; margin-bottom: 1px; border-top-color: rgb(13, 13, 13); border-right-color: rgb(33, 33, 33); border-left-color: rgb(33, 33, 33); padding-left: 2px; padding-right: 2px;" />
         </ui:VisualElement>
+        <ui:Label display-tooltip-when-elided="true" name="ValidationField" style="width: 100%; justify-content: flex-start; align-items: stretch; -unity-text-align: middle-right; font-size: 10px; margin-bottom: 3px;" />
         <ui:VisualElement name="KeyValidationElement" style="align-items: stretch; flex-direction: row; margin-top: 0; visibility: visible; display: none;">
             <ui:Label text="Invalid Key" display-tooltip-when-elided="true" name="ValidationField" style="-unity-text-align: upper-right; flex-shrink: 1; flex-grow: 1; font-size: 10px;" />
         </ui:VisualElement>
-        <ui:VisualElement name="LocationElement" style="align-items: stretch; flex-direction: row; margin-bottom: 10px; margin-top: 3px;">
-            <ui:Label text="Location:" display-tooltip-when-elided="true" name="LocationLabel" style="width: 75px; justify-content: flex-start; align-items: stretch; -unity-text-align: middle-left;" />
-            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" name="LocationDropdown" style="flex-grow: 1; display: flex;" />
-        </ui:VisualElement>
-        <ui:VisualElement name="DescriptionElement" style="align-items: stretch; flex-direction: row; margin-bottom: 0;">
-            <ui:Label text="Description:" display-tooltip-when-elided="true" name="DescriptionLabel" style="width: 75px; justify-content: flex-start; align-items: stretch; -unity-text-align: middle-left;" />
-            <ui:VisualElement style="flex-shrink: 1; flex-grow: 0; flex-direction: row; width: 100%; margin-right: 5px;">
-                <ui:TextField picking-mode="Ignore" multiline="true" name="Description" style="flex-grow: 1; height: 83px; flex-direction: column; white-space: normal; flex-shrink: 0; flex-wrap: wrap; width: 100%;" />
-            </ui:VisualElement>
-        </ui:VisualElement>
-        <ui:VisualElement name="LanguageElement" style="align-items: stretch; flex-direction: row; margin-bottom: 5px; margin-top: 10px; flex-shrink: 0; padding-right: 0;">
-            <ui:Label text="Translation:" display-tooltip-when-elided="true" name="TranslationLabel" style="width: 75px; justify-content: flex-start; align-items: stretch; -unity-text-align: middle-left;" />
-            <ui:VisualElement name="LanguageSelectorHolder" style="flex-grow: 1;">
-                <ui:Instance template="LanguageSelector" name="LanguageSelector" style="flex-grow: 1;" />
-            </ui:VisualElement>
-        </ui:VisualElement>
-        <ui:TextField picking-mode="Ignore" multiline="true" name="Translation" style="height: 83px; flex-direction: column; flex-grow: 1; min-height: 83px; white-space: normal;" />
+        <Amilious.Core.Editor.VisualElements.KeyPathSelector name="KeyPathSelector" style="margin-left: -3px; margin-right: -3px; margin-bottom: 3px;" />
+        <Amilious.Core.Editor.VisualElements.RawFormattedTextBox name="DescriptionField" style="margin-bottom: 3px;" />
+        <Amilious.Core.Editor.VisualElements.LanguageSelector Value="English" focusable="false" name="LanguageSelector" style="margin-left: -3px; margin-right: -3px; margin-bottom: 3px;" />
+        <Amilious.Core.Editor.VisualElements.RawFormattedTextBox name="TranslationField" style="margin-bottom: 3px;" />
         <ui:Button text="Add" display-tooltip-when-elided="true" name="AddSave" />
     </ui:VisualElement>
 </ui:UXML>

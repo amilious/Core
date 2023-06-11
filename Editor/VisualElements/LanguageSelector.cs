@@ -15,10 +15,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using Amilious.Core.Extensions;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using Amilious.Core.Extensions;
 using Amilious.Core.Localization;
 
 namespace Amilious.Core.Editor.VisualElements {
@@ -28,7 +28,6 @@ namespace Amilious.Core.Editor.VisualElements {
     /// </summary>
     public class LanguageSelector : VisualElement {
         
-
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
                           
         private const string NEXT = "Next";
@@ -43,7 +42,19 @@ namespace Amilious.Core.Editor.VisualElements {
 
         public new class UxmlFactory : UxmlFactory<LanguageSelector,UxmlTraits> { }
 
-        public new class UxmlTraits : VisualElement.UxmlTraits { }
+        public new class UxmlTraits : VisualElement.UxmlTraits {
+            
+            private readonly UxmlStringAttributeDescription _valueDescription = new UxmlStringAttributeDescription() {
+                name = "Value", defaultValue = AmiliousLocalization.CurrentLanguage, 
+                restriction =new UxmlEnumeration() { values = AmiliousLocalization.Languages }
+            };
+            
+            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc) {
+                base.Init(ve, bag, cc);
+                if(ve is not LanguageSelector element) return;
+                element.Value = _valueDescription.GetValueFromBag(bag, cc);
+            }
+        }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

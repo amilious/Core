@@ -134,6 +134,7 @@ namespace Amilious.Core.UI.Graph {
             base.Awake();
         }
 
+        #if UNITY_EDITOR
         /// <summary>
         /// This method is called when inspector values are changed in the editor.
         /// </summary>
@@ -141,6 +142,7 @@ namespace Amilious.Core.UI.Graph {
             _updatedGrid = true;
             base.OnValidate();
         }
+        #endif
 
         /// <summary>
         /// This method is called on every frame.

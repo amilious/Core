@@ -29,14 +29,14 @@ namespace Amilious.Core.IO {
     /// This class is used to read and write to a csv file.
     /// </summary>
     public static class CsvHelper { 
-
+        
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
         private static readonly Regex ValueMatcher = new Regex(@"(?<=^|,)\s*""((?:[^""\\]|\\.)*)""(?=,|$)");
         private static readonly Encoding Encoding = Encoding.UTF8;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        
         #region Delegates //////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
@@ -46,10 +46,38 @@ namespace Amilious.Core.IO {
         /// <param name="key">The duplicate key.</param>
         public delegate void DuplicateKeyDelegate(string path, string key);
 
+        /// <summary>
+        /// This method is called when a read or write error occurs.
+        /// </summary>
+        /// <param name="path">The path of the file where the error occured.</param>
+        /// <param name="methodName">The name of the method where the error occured.</param>
+        /// <param name="exception">The exception that was thrown.</param>
         public delegate void ReadWriteErrorDelegate(string path, string methodName, Exception exception);
+
+        /// <summary>
+        /// This method is used to return the correct value for the duplicate key.
+        /// </summary>
+        /// <param name="key">The key that has duplicate values.</param>
+        /// <param name="value1">One of the key's values.</param>
+        /// <param name="value2">The next key value.</param>
+        /// <returns>The correct value for the key.</returns>
+        public delegate string ChooseValueDelegate(string key, string value1, string value2);
+
+        /// <summary>
+        /// This delegate is used for the method that will be called when reading key value pairs.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public delegate void ReadKeyValueDelegate(string key, string value);
+
+        /// <summary>
+        /// This delegate is used for the method that will be called when the values from a line are loaded.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        public delegate void ReadValuesDelegate(IEnumerable<string> values);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        
         #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
@@ -94,6 +122,31 @@ namespace Amilious.Core.IO {
         }
 
         /// <summary>
+        /// This method is used to try load values from a <see cref="TextAsset"/>.
+        /// </summary>
+        /// <param name="asset">The <see cref="TextAsset"/> that you want to load the values from.</param>
+        /// <param name="readValues">The method that will be called for each line of values.</param>
+        /// <returns>True if the asset is not null and it was successfully read, otherwise false.</returns>
+        public static bool TryLoadValues(TextAsset asset,ReadValuesDelegate readValues) {
+            if(asset == null) {
+                return false;
+            }
+            try {
+                using var memoryStream = new MemoryStream(asset.bytes);
+                using var streamReader = new StreamReader(memoryStream, Encoding);
+                while(!streamReader.EndOfStream) {
+                    readValues?.Invoke(GetLineValues(streamReader.ReadLine()).ToArray());
+                }
+                streamReader.Close();
+                memoryStream.Close();
+            } catch(Exception e) {
+                OnReadWriteError?.Invoke($"asset:{asset.name}",nameof(TryLoadValues),e);
+                return false;
+            }
+            return true;
+        }
+        
+        /// <summary>
         /// This method is used to try load key values from a <see cref="TextAsset"/>.
         /// </summary>
         /// <param name="asset">The <see cref="TextAsset"/> that you want to load the key values from.</param>
@@ -125,6 +178,36 @@ namespace Amilious.Core.IO {
         }
         
         /// <summary>
+        /// This method is used to try load key values from a <see cref="TextAsset"/>.
+        /// </summary>
+        /// <param name="asset">The <see cref="TextAsset"/> that you want to load the key values from.</param>
+        /// <param name="readKeyValue">The method that will be called for each key value pair.</param>
+        /// <param name="skipMissingValues">If true keys with no values will be skipped, otherwise they will use
+        /// string.Empty.</param>
+        /// <returns>True if the asset is not null and it was successfully read, otherwise false.</returns>
+        public static bool TryLoadKeyValuePairs(TextAsset asset, ReadKeyValueDelegate readKeyValue, 
+            bool skipMissingValues = false) {
+            if(asset == null) return false;
+            try {
+                using var memoryStream = new MemoryStream(asset.bytes);
+                using var streamReader = new StreamReader(memoryStream, Encoding);
+                while(!streamReader.EndOfStream) {
+                    var line = streamReader.ReadLine();
+                    var tmp = GetLineValues(line).ToArray();
+                    if(tmp.Length<1) continue; //no values on this line
+                    if(skipMissingValues&&tmp.Length<2) continue;
+                    readKeyValue?.Invoke(tmp[0], tmp.Length > 1 ? tmp[1] : string.Empty);
+                }
+                streamReader.Close();
+                memoryStream.Close();
+            } catch(Exception e) {
+                OnReadWriteError?.Invoke($"asset:{asset.name}",nameof(TryLoadKeyValuePairs),e);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// This method is used to try load values from the given path.
         /// </summary>
         /// <param name="path">The path you want to read values from.</param>
@@ -149,6 +232,29 @@ namespace Amilious.Core.IO {
                 return false;
             }
             values = tmpVals.ToArray();
+            return true;
+        }
+        
+        /// <summary>
+        /// This method is used to try load values from the given path.
+        /// </summary>
+        /// <param name="path">The path you want to read values from.</param>
+        /// <param name="readValues">The method that will be called for each line of values.</param>
+        /// <returns>True if the path is valid and it was successfully read, otherwise false.</returns>
+        public static bool TryLoadValues(string path,ReadValuesDelegate readValues) {
+            if(!File.Exists(path)) {
+                return false;
+            }
+            try {
+                using var streamReader = new StreamReader(path, Encoding);
+                while(!streamReader.EndOfStream) {
+                    readValues?.Invoke(GetLineValues(streamReader.ReadLine()).ToArray());
+                }
+                streamReader.Close();
+            }catch(Exception e) {
+                OnReadWriteError?.Invoke(path,nameof(TryLoadValues),e);
+                return false;
+            }
             return true;
         }
 
@@ -178,6 +284,34 @@ namespace Amilious.Core.IO {
             }catch(Exception e) {
                 OnReadWriteError?.Invoke(path,nameof(TryLoadKeyValuePairs),e);
                 values = null;
+                return false;
+            }
+            return true;
+        }
+        
+        /// <summary>
+        /// This method is used to try load key pair values from the given path.
+        /// </summary>
+        /// <param name="path">The path that you want to read key values from.</param>
+        /// <param name="readKeyValue">The method that will be called for each key value pair.</param>
+        /// <param name="skipMissingValues">If true keys with no values will be skipped, otherwise they will use
+        /// string.Empty.</param>
+        /// <returns>True if the path is valid and it was successfully read, otherwise false.</returns>
+        public static bool TryLoadKeyValuePairs(string path, ReadKeyValueDelegate readKeyValue,
+            bool skipMissingValues = false) {
+            if(!File.Exists(path)) return false;
+            try {
+                using var streamReader = new StreamReader(path, Encoding);
+                while(!streamReader.EndOfStream) {
+                    var line = streamReader.ReadLine();
+                    var tmp = GetLineValues(line).ToArray();
+                    if(tmp.Length<1) continue; //no values on this line
+                    if(skipMissingValues&&tmp.Length<2) continue;
+                    readKeyValue?.Invoke(tmp[0],tmp.Length>1?tmp[1] : string.Empty);
+                }
+                streamReader.Close();
+            }catch(Exception e) {
+                OnReadWriteError?.Invoke(path,nameof(TryLoadKeyValuePairs),e);
                 return false;
             }
             return true;
@@ -347,6 +481,43 @@ namespace Amilious.Core.IO {
             }
             return true;
         }
+
+        /// <summary>
+        /// This method is used to try clean up duplicate key values.
+        /// </summary>
+        /// <param name="path">The path of the file that you want to clean up.</param>
+        /// <param name="chooseDuplicateValue">The method to handle duplicates.</param>
+        /// <returns>True if able to clean up the duplicate keys, otherwise false.</returns>
+        public static bool TryCleanDuplicateKeys(string path, ChooseValueDelegate chooseDuplicateValue) {
+            var values = new Dictionary<string, string>();
+            if(!File.Exists(path)) return false;
+            var hasDuplicates = false;
+            try {
+                using var streamReader = new StreamReader(path, Encoding);
+                while(!streamReader.EndOfStream) {
+                    var line = streamReader.ReadLine();
+                    if(TryGetLineKeyValue(line, out var key, out var value)) continue;
+                    if(values.TryGetValueFix(key, out var oldValue)) {
+                        values[key] = chooseDuplicateValue(key, oldValue, value);
+                        hasDuplicates = true;
+                    } else {
+                        values[key] = value;
+                    }
+                }
+                streamReader.Close();
+                if(!hasDuplicates) return true;
+                using var writer = new StreamWriter(path, false, Encoding);
+                //add the values
+                foreach(var line in values) {
+                    writer.WriteLine(FormatLine(line.Key,line.Value));
+                }
+                writer.Close();
+            } catch(Exception e) {
+                OnReadWriteError?.Invoke(path, nameof(TryCleanDuplicateKeys), e);
+                return false;
+            }
+            return true;
+        }
         
         /// <summary>
         /// This method is used to try edit the value of a key value pair.
@@ -394,6 +565,50 @@ namespace Amilious.Core.IO {
         }
 
         /// <summary>
+        /// This method is used to try rename the key of a key value pair.
+        /// </summary>
+        /// <param name="path">The path of the file.</param>
+        /// <param name="oldKeyName">The key that you want to edit.</param>
+        /// <param name="newKeyName">The new key name of the key value pair.</param>
+        /// <returns>True if the file was edited, otherwise false.</returns>
+        public static bool TryEditKeyName(string path, string oldKeyName, string newKeyName) {
+            var dir = Path.GetDirectoryName(path);
+            if(!File.Exists(path)||!Directory.Exists(dir)) return false;
+            var tmpPath = Path.Combine(dir, Path.GetFileName(path) + ".tmp");
+            var edited = false;
+            try {
+                // create a temporary file
+                using var writer = new StreamWriter(tmpPath, false, Encoding);
+                // read from the original file and write to the temporary file, excluding the line with the key
+                using var reader = new StreamReader(path, Encoding.Unicode);
+                while(!reader.EndOfStream) {
+                    var line = reader.ReadLine();
+                    if(TryGetLineKeyValue(line,out var lineKey, out var lineValue) && lineKey == oldKeyName) {
+                        writer.WriteLine(FormatLine(newKeyName, lineValue));
+                        edited = true;
+                    }
+                    else writer.WriteLine(line);
+                }
+                reader.Close();
+                writer.Close();
+                if(edited) {
+                    // overwrite the original file with the temporary file
+                    File.Delete(path);
+                    File.Move(tmpPath, path);
+                }
+                else {
+                    //delete the temp file
+                    File.Delete(tmpPath);
+                }
+            }
+            catch(Exception e) {
+                OnReadWriteError?.Invoke(path,nameof(TryEditKeyName), e);
+                return false;
+            }
+            return edited;
+        }
+
+        /// <summary>
         /// This method is used to try edit a key if it exists otherwise it adds the key to the end of the file.
         /// </summary>
         /// <param name="path">The path of the file.</param>
@@ -418,6 +633,25 @@ namespace Amilious.Core.IO {
             foreach (Match match in ValueMatcher.Matches(line)) {
                 yield return DesanitizeValue(match.Groups[1].Value.Trim('"'));
             }
+        }
+
+        /// <summary>
+        /// This method is used to get the key and value for the given line if it exists.
+        /// </summary>
+        /// <param name="line">The line that you want to get the key and value from.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>True if the line contains a key, otherwise false.</returns>
+        private static bool TryGetLineKeyValue(string line, out string key, out string value) {
+            var values = GetLineValues(line).ToArray();
+            if(values.Length < 1) {
+                key = null;
+                value = null;
+                return false;
+            }
+            key = values[0];
+            value = values.Length > 1 ? values[1] : string.Empty;
+            return true;
         }
 
         /// <summary>

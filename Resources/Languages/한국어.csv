@@ -1,6 +1,4 @@
-﻿"test1", ""
-"test1", ""
-"amilious/localization/editor/delete_title", "키 삭제: {0}"
+﻿"amilious/localization/editor/delete_title", "키 삭제: {0}"
 "amilious/localization/editor/copy_tooltip", "클립 보드에 복사"
 "amilious/localization/editor/description", "설명:"
 "amilious/localization/editor/translation", "번역:"
@@ -50,3 +48,4 @@
 "amilious/localization/editor/clear_all_cancel", ""
 "amilious/localization/editor/clear_all_title", ""
 "amilious/localization/editor/menu_add_language", ""
+"amilious/localization/test", ""

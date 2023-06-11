@@ -314,7 +314,7 @@ namespace Amilious.Core.Editor.Windows {
 
         private void OnPathChanged(string path) => RestValues();
 
-        protected void Initialize() {
+        protected virtual void Initialize() {
             if(_initialized) return;
             _initialized = true;
             //get the visual element
@@ -322,34 +322,27 @@ namespace Amilious.Core.Editor.Windows {
             _localGroup = new LocalizedGroup(E.LOCAL_BROWSER_GROUP);
             var texture = Resources.Load<Texture>("Icons/translate2");
             titleContent = new GUIContent("Amilious Localization",texture);
+            
+            _itemsPerPage = BasicSave.ReadData(ITEMS_PER_PAGE, 10);
+            
             this.Q(ACTION_MENU,out _actionMenu);
             this.Q(SHOW_PATH, out _showPath);
             this.Q(SHOW_USAGE, out _showUsage);
             this.Q(SHOW_DESCRIPTION, out _showDescription);
             this.Q(SHOW_TRANSLATION, out _showTranslation);
             this.Q(SORT_BY_MENU, out _sortByMenu);
-            
-            var holder = rootVisualElement.Q<VisualElement>("LanguageSelectorHolder");
-            _languageSelector = new LanguageSelector();
-            holder.Clear();
-            holder.Add(_languageSelector);
-            _languageSelector.style.flexGrow = new StyleFloat(1);
-            
-            var holder2 = rootVisualElement.Q<VisualElement>("PathSelectorHolder");
-            _pathSelector = new KeyPathSelector();
-            holder2.Clear();
-            holder2.Add(_pathSelector);
-            _pathSelector.style.flexGrow = new StyleFloat(1);
-            
             this.Q(FIND_BUTTON, out _findButton);
             this.Q(SEARCH, out _search);
             this.Q(SCROLL_VIEW, out _scrollView);
             
-            _itemsPerPage = BasicSave.ReadData(ITEMS_PER_PAGE, 10);
-            var holder3 = rootVisualElement.Q<VisualElement>("PageControlHolder");
+            _languageSelector = new LanguageSelector { style = { flexGrow = new StyleFloat(1) } };
+            this.ReplaceContent("LanguageSelectorHolder", _languageSelector);
+            
+            _pathSelector = new KeyPathSelector { style = { flexGrow = new StyleFloat(1) } };
+            this.ReplaceContent("PathSelectorHolder", _pathSelector);
+
             _pageControl = new PageControl(ItemsPerPage);
-            holder3.Clear();
-            holder3.Add(_pageControl);
+            this.ReplaceContent("PageControlHolder", _pageControl);
             
         }
 

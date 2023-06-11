@@ -17,6 +17,8 @@
 using UnityEngine;
 using Amilious.Core.IO;
 using System.Reflection;
+using System.Diagnostics; //used when ran locally
+using Debug = UnityEngine.Debug;
 
 namespace Amilious.Core.Extensions {
     

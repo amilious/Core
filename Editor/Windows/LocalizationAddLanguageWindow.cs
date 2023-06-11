@@ -57,7 +57,6 @@ namespace Amilious.Core.Editor.Windows {
         /// <summary>
         /// This method is used to display the add language dialogue.
         /// </summary>
-        [MenuItem("Amilious/Localization/Add Language")]
         public static void Open() {
             var window = CreateWindow<LocalizationAddLanguageWindow>();
             window.ShowModal();

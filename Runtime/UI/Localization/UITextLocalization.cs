@@ -21,6 +21,8 @@ namespace Amilious.Core.UI.Localization {
             UpdateText();
         }
 
+        #if UNITY_EDITOR
+        
         private void OnEnable() {
             AmiliousLocalization.OnLanguageChanged += OnLanguageChanged;
             AmiliousLocalization.OnTranslationUpdated += OnTranslationUpdated;
@@ -39,7 +41,6 @@ namespace Amilious.Core.UI.Localization {
         /// <inheritdoc cref="AmiliousLocalization.LanguageChangedDelegate"/>
         private void OnLanguageChanged(string previous, string current) => UpdateText();
 
-        #if UNITY_EDITOR
         private void OnValidate() => UpdateText();
         #endif
         

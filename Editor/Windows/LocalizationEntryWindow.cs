@@ -1,7 +1,6 @@
 ﻿
 using UnityEditor;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.UIElements;
 using Amilious.Core.Extensions;
 using Amilious.Core.Localization;
@@ -18,15 +17,12 @@ namespace Amilious.Core.Editor.Windows {
         private const string KEY = "Key";
         private const string KEY_LABEL = "KeyLabel";
         private const string ADD_SAVE = "AddSave";
-        private const string LOCATION_LABEL = "LocationLabel";
-        private const string LOCATION = "LocationDropdown";
-        private const string LANGUAGE = "Language";
-        private const string DESCRIPTION = "Description";
-        private const string DESCRIPTION_LABEL = "DescriptionLabel";
-        private const string TRANSLATION = "Translation";
-        private const string TRANSLATION_LABEL = "TranslationLabel";
-        private const string KEY_VALIDATION_ELEMENT = "KeyValidationElement";
         private const string VALIDATION_FIELD = "ValidationField";
+        private const string TRANSLATION_FIELD = "TranslationField";
+        private const string DESCRIPTION_FIELD = "DescriptionField";
+        private const string RESTORE_KEY_BUTTON = "RestoreKeyButton";
+        private const string LANGUAGE_SELECTOR = "LanguageSelector";
+        private const string KEY_PATH_SELECTOR = "KeyPathSelector";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -46,17 +42,15 @@ namespace Amilious.Core.Editor.Windows {
         private static VisualTreeAsset WindowAsset;
         
         private TextField _keyField;
-        private Label _locationLabel;
+        private RawFormattedTextBox _translationField;
+        private RawFormattedTextBox _descriptionField;
         private LanguageSelector _languageSelector;
+        private KeyPathSelector _pathSelector;
         private Label _validationField;
-        private VisualElement _keyValidationElement;
         private Label _keyLabel;
-        private Label _descriptionLabel;
-        private Label _translationLabel;
         private Button _actionButton;
-        private TextField _descriptionField;
-        private TextField _translationField;
-        private DropdownField _locationDropdown;
+        private Button _restoreKeyButton;
+        //private TextField _translationField;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -65,49 +59,74 @@ namespace Amilious.Core.Editor.Windows {
         public void CreateGUI() {
             _initialized = false;
             LoadValues();
-            Initialize(); 
+            Initialize();
+            if(_adding) {
+                _descriptionField.EditMode = true;
+                _translationField.EditMode = true;
+            }
             //add button triggers
+            _actionButton.clicked -= OnActionButtonClicked;
             _actionButton.clicked += OnActionButtonClicked;
+            _restoreKeyButton.clicked -= OnRestoreKeyButtonClicked;
+            _restoreKeyButton.clicked += OnRestoreKeyButtonClicked;
             //update text
             _languageSelector.Value = _language;
             _keyField.value = _key;
-            _keyField.SetEnabled(false);
-            _locationDropdown.value = AmiliousLocalization.GetLocationName(_path);
-            _descriptionField.value = _description;
-            _translationField.value = _translations[_language];
+            _descriptionField.Value = _description;
+            _translationField.Value = _translations[_language];
             AmiliousLocalization.OnKeysUpdated -= KeysUpdated;
-            AmiliousLocalization.OnLanguageChanged -= LanguageChanged;
-            AmiliousLocalization.OnTranslationUpdated -= TranslationUpdated;
             AmiliousLocalization.OnKeysUpdated += KeysUpdated;
+            AmiliousLocalization.OnLanguageChanged -= LanguageChanged;
             AmiliousLocalization.OnLanguageChanged += LanguageChanged;
+            AmiliousLocalization.OnTranslationUpdated -= TranslationUpdated;
             AmiliousLocalization.OnTranslationUpdated += TranslationUpdated;
             _languageSelector.OnValueChanged -= OnLanguageChanged;
             _languageSelector.OnValueChanged += OnLanguageChanged;
+            _keyField.UnregisterValueChangedCallback(OnKeyValueChanged);
+            _keyField.RegisterValueChangedCallback(OnKeyValueChanged);
             UpdateLocalizationText();
         }
 
+        private void OnRestoreKeyButtonClicked() {
+            _keyField.value = _key;
+            ValidateKey();
+        }
+
+        private void OnKeyValueChanged(ChangeEvent<string> evt) => ValidateKey();
+
+        private void ValidateKey() {
+            var key = _keyField.text;
+            if(key == _key) {
+                _validationField.text = string.Empty;
+                _actionButton.SetEnabled(true);
+            } else {
+                if(AmiliousLocalization.HasKey(key)) {
+                    _validationField.text = "<color=red>already exists</color>";
+                    _actionButton.SetEnabled(false);
+                }else {
+                    _validationField.text = "<color=green>new key name available</color>";
+                    _actionButton.SetEnabled(true);
+                }  
+            }
+            
+            
+        }
+
         private void OnLanguageChanged(string language) {
-            _translations[_language] = _translationField.value;
+            _translations[_language] = _translationField.Value;
             if(!_translations.TryGetValueFix(language, out var translation))
                 _translations[language] = translation = string.Empty;
-            _translationField.value = translation;
+            _translationField.Value = translation;
             _language = language;
         }
 
         private void UpdateLocalizationText() {
             Initialize();
-            if(_adding) {
-                _actionButton.text = _localGroup[E.LOCAL_ENTRY_ADD_BUTTON];
-                _locationDropdown.value = AmiliousLocalization.GetLocationName(_path);
-            } else {
-                _actionButton.text = _localGroup[E.LOCAL_ENTRY_SAVE_BUTTON];
-                _locationDropdown.value = AmiliousLocalization.GetLocationName(_path);
-            }
-            _locationLabel.text = _localGroup[E.LOCAL_ENTRY_LOCATION_LABEL];
-            _descriptionLabel.text = _localGroup[E.LOCAL_ENTRY_DESCRIPTION_LABEL];
-            _translationLabel.text = _localGroup[E.LOCAL_ENTRY_TRANSLATION_LABEL];
+            _actionButton.text = _adding ? _localGroup[E.LOCAL_ENTRY_ADD_BUTTON] : 
+                _localGroup[E.LOCAL_ENTRY_SAVE_BUTTON];
+            _descriptionField.Label = _localGroup[E.LOCAL_ENTRY_DESCRIPTION_LABEL];
+            _translationField.Label = _localGroup[E.LOCAL_ENTRY_TRANSLATION_LABEL];
             _keyLabel.text = _localGroup[E.LOCAL_ENTRY_KEY_LABEL];
-            _locationDropdown.choices = AmiliousLocalization.KeyFileNames.ToList();
         }
         
         private void KeysUpdated() {
@@ -125,7 +144,7 @@ namespace Amilious.Core.Editor.Windows {
             AmiliousLocalization.ResumeCounting();
             _translations[language] = trans;
             if(_language != language) return;
-            _translationField.value = trans;
+            _translationField.Value = trans;
         }
 
         public static void Open(string key, string keyPath = null) {
@@ -149,14 +168,23 @@ namespace Amilious.Core.Editor.Windows {
         /// </summary>
         private void OnActionButtonClicked() {
             //fix values
-            _translations[_language] = _translationField.value;
-            var updateDescription = _description != _descriptionField.value;
-            if(updateDescription)_description = _descriptionField.value;
+            _translations[_language] = _translationField.Value;
+            var updateDescription = _description != _descriptionField.Value;
+            if(updateDescription)_description = _descriptionField.Value;
             //update values
-            if(_adding) AmiliousLocalization.AddKey(_key,_description,_path);
-            else {
-                if(AmiliousLocalization.GetLocationName(_path)!=_locationDropdown.value)
-                    AmiliousLocalization.TryMoveKey(_key, _locationDropdown.value);
+            if(_adding) {
+                _key = _keyField.value;
+                AmiliousLocalization.AddKey(_key,_description,_path);
+            }else {
+                if(_keyField.value != _key) {
+                    var tmp = new Dictionary<string, string>(_translations);
+                    AmiliousLocalization.RemoveKey(_key);
+                    _key = _keyField.value;
+                    _translations = tmp;
+                    AmiliousLocalization.AddKey(_key,_description,_path);
+                }
+                if(AmiliousLocalization.GetLocationName(_path)!=_pathSelector.Value)
+                    AmiliousLocalization.TryMoveKey(_key, _pathSelector.Value);
                 if(updateDescription)AmiliousLocalization.TryEditDescription(_key,_description);
             }
             _settingLanguage = true;
@@ -195,17 +223,13 @@ namespace Amilious.Core.Editor.Windows {
             //get the fields
             this.Q(KEY, out _keyField);
             this.Q(KEY_LABEL, out _keyLabel);
-            this.Q(LOCATION_LABEL, out _locationLabel);
-            this.Q(DESCRIPTION_LABEL, out _descriptionLabel);
-            this.Q(TRANSLATION_LABEL, out _translationLabel);
-            this.Q(DESCRIPTION, out _descriptionField);
-            this.Q(KEY_VALIDATION_ELEMENT, out _keyValidationElement);
+            this.Q(DESCRIPTION_FIELD, out _descriptionField);
             this.Q(VALIDATION_FIELD, out _validationField);
-            this.Q(TRANSLATION, out _translationField);
+            this.Q(TRANSLATION_FIELD, out _translationField);
             this.Q(ADD_SAVE, out _actionButton);
-            this.Q(LOCATION, out _locationDropdown);
-            _languageSelector = new LanguageSelector(_language);
-            this.ReplaceContent("LanguageSelectorHolder", _languageSelector);
+            this.Q(RESTORE_KEY_BUTTON, out _restoreKeyButton);
+            this.Q(LANGUAGE_SELECTOR, out _languageSelector);
+            this.Q(KEY_PATH_SELECTOR, out _pathSelector);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

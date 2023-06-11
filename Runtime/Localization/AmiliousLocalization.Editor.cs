@@ -86,7 +86,6 @@ namespace Amilious.Core.Localization {
         [UnityEditor.MenuItem(LOG_UNLOAD_NAME,priority = 6)] 
         private static void ToggleLogUnload() => LogUnload = !LogUnload;
         
-        
         /// <summary>
         /// This method is used to add a key.
         /// </summary>
@@ -109,6 +108,30 @@ namespace Amilious.Core.Localization {
             OnKeyAdded?.Invoke(key);
             return true;
         }
+        
+        /// <summary>
+        /// This method is used to remove a key.
+        /// </summary>
+        /// <param name="key">The key that you want to remove.</param>
+        /// <param name="removeValues">If true the values will also be removed.</param>
+        /// <returns>True if the key was removed, otherwise false.</returns>
+        /// <remarks>This method is only available in the editor.</remarks>
+        public static bool RemoveKey(string key, bool removeValues = true) {
+            if(!KeyData.TryGetValueFix(key, out var keyInfo)) {
+                OnUnknownKey?.Invoke(key);
+                return false;
+            }
+            if(!CsvHelper.TryRemoveKeys(keyInfo.Path, key)) return false;
+            KeyData.Remove(key);
+            foreach(var lang in Data.Keys) {
+                if(removeValues && TryRemoveTranslation(lang, keyInfo)) continue;
+                Data[lang].Remove(key);
+            }
+            foreach(var lang in OverrideData.Values) lang.Remove(key);
+            OnKeysUpdated?.Invoke();
+            OnKeyRemoved?.Invoke(key);
+            return true;
+        }
 
         public static bool TryMoveKey(string key, string path) {
             path = GetLocationPath(path);
@@ -128,7 +151,7 @@ namespace Amilious.Core.Localization {
             OnKeyMoved?.Invoke(key,KeyData[key]);
             return false;
         }
-        
+
         public static IEnumerable<string> GetValidKeys(params string[] validPaths) {
             var paths = new List<string>();
             foreach(var valid in validPaths) {
@@ -166,30 +189,6 @@ namespace Amilious.Core.Localization {
                 if(keyVal.Value == keyPath) return keyVal.Key;
             }
             return DefaultKeyPathName;
-        }
-
-        /// <summary>
-        /// This method is used to remove a key.
-        /// </summary>
-        /// <param name="key">The key that you want to remove.</param>
-        /// <param name="removeValues">If true the values will also be removed.</param>
-        /// <returns>True if the key was removed, otherwise false.</returns>
-        /// <remarks>This method is only available in the editor.</remarks>
-        public static bool RemoveKey(string key, bool removeValues = true) {
-            if(!KeyData.TryGetValueFix(key, out var keyInfo)) {
-                OnUnknownKey?.Invoke(key);
-                return false;
-            }
-            if(!CsvHelper.TryRemoveKeys(keyInfo.Path, key)) return false;
-            KeyData.Remove(key);
-            foreach(var lang in Data.Keys) {
-                if(removeValues && TryRemoveTranslation(lang, keyInfo)) continue;
-                Data[lang].Remove(key);
-            }
-            foreach(var lang in OverrideData.Values) lang.Remove(key);
-            OnKeysUpdated?.Invoke();
-            OnKeyRemoved?.Invoke(key);
-            return true;
         }
 
         /// <summary>

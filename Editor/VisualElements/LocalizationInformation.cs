@@ -143,7 +143,24 @@ namespace Amilious.Core.Editor.VisualElements {
         
         #region UXML Requirement ///////////////////////////////////////////////////////////////////////////////////////
         
-        public new class UxmlFactory : UxmlFactory<LocalizationInformation>{}
+        public new class UxmlFactory : UxmlFactory<LocalizationInformation, UxmlTraits>{}
+
+        public new class UxmlTraits : VisualElement.UxmlTraits {
+
+            private readonly UxmlStringAttributeDescription _keyDescription = 
+                new UxmlStringAttributeDescription() { name = "Key", defaultValue = "amilious/localization/test"};
+
+            private readonly UxmlStringAttributeDescription _languageDescription =
+                new UxmlStringAttributeDescription() { name = "Display Language" };
+
+            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc) {
+                base.Init(ve, bag, cc);
+                if(ve is not LocalizationInformation element) return;
+                var key = _keyDescription.GetValueFromBag(bag, cc);
+                var lang = _languageDescription.GetValueFromBag(bag, cc);
+                element.Setup(key,lang);
+            }
+        }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

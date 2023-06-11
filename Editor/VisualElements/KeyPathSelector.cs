@@ -22,6 +22,7 @@ using UnityEngine.UIElements;
 using Amilious.Core.Extensions;
 using Amilious.Core.Localization;
 using Amilious.Core.Editor.Extensions;
+using UnityEngine;
 
 namespace Amilious.Core.Editor.VisualElements {
     
@@ -43,9 +44,25 @@ namespace Amilious.Core.Editor.VisualElements {
         
         #region UXML Requirement ///////////////////////////////////////////////////////////////////////////////////////
 
-        public new class UxmlFactory : UxmlFactory<LanguageSelector,UxmlTraits> { }
+        public new class UxmlFactory : UxmlFactory<KeyPathSelector,UxmlTraits> { }
 
-        public new class UxmlTraits : VisualElement.UxmlTraits { }
+        public new class UxmlTraits : VisualElement.UxmlTraits {
+
+            private readonly UxmlStringAttributeDescription _valueDescription = new UxmlStringAttributeDescription() {
+                name = "Value", defaultValue = "Full"
+            };
+
+            private readonly UxmlBoolAttributeDescription _includeAllDescription = new UxmlBoolAttributeDescription() {
+                name = "Include All"
+            };
+
+            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc) {
+                base.Init(ve, bag, cc);
+                if(ve is not KeyPathSelector element) return;
+                element.Value = _valueDescription.GetValueFromBag(bag, cc);
+                element.IncludeAll = _includeAllDescription.GetValueFromBag(bag, cc);
+            }
+        }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -53,7 +70,7 @@ namespace Amilious.Core.Editor.VisualElements {
 
         private Label _valueLabel;
         private bool _initialized;
-        private readonly bool _includeAll;
+        private bool _includeAll;
         private ToolbarMenu _toolbarMenu;
         private ToolbarButton _nextButton;
         private ToolbarButton _previousButton;
@@ -79,10 +96,19 @@ namespace Amilious.Core.Editor.VisualElements {
             get => _valueLabel.text;
             set {
                 if(_valueLabel.text == value) return;
-                if(!(AmiliousLocalization.HasKeyPathName(value)||(_includeAll&&value=="All"))) return;
+                if(!(AmiliousLocalization.HasKeyPathName(value)||(IncludeAll&&value=="All"))) return;
                 _valueLabel.text = value;
                 PathsUpdated();
                 OnValueChanged?.Invoke(value);
+            }
+        }
+
+        public bool IncludeAll {
+            get => _includeAll;
+            set {
+                _includeAll = value;
+                PathsUpdated();
+                if(Value == "Full"&&!_includeAll) Value = AmiliousLocalization.DefaultKeyPathName;
             }
         }
 
@@ -91,16 +117,16 @@ namespace Amilious.Core.Editor.VisualElements {
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
 
         public KeyPathSelector() {
-            _includeAll = true;
             Initialize();
+            IncludeAll = true;
         }
 
         /// <summary>
         /// This is the default constructor that takes in no values.
         /// </summary>
         public KeyPathSelector(bool includeAll) {
-            _includeAll = includeAll;
             Initialize();
+            IncludeAll = includeAll;
         }
 
         /// <summary>
@@ -108,8 +134,8 @@ namespace Amilious.Core.Editor.VisualElements {
         /// </summary>
         /// <param name="selectedPath">The initial value;</param>
         public KeyPathSelector(string selectedPath, bool includeAll) {
-            _includeAll = includeAll;
             Initialize();
+            IncludeAll = includeAll;
             //update without triggering the event
             Value = selectedPath;
         }
@@ -134,7 +160,7 @@ namespace Amilious.Core.Editor.VisualElements {
             _previousButton.clicked += PreviousButtonClicked;
             _nextButton.clicked -= NextButtonClicked;
             _nextButton.clicked += NextButtonClicked;
-            _valueLabel.text = _includeAll ? "All" : AmiliousLocalization.DefaultKeyPathName;
+            _valueLabel.text = IncludeAll ? "All" : AmiliousLocalization.DefaultKeyPathName;
             PathsUpdated();
         }
 
@@ -143,7 +169,7 @@ namespace Amilious.Core.Editor.VisualElements {
         /// </summary>
         private void PathsUpdated() {
             _toolbarMenu.ClearMenu();
-            if(_includeAll)_toolbarMenu.menu.AppendAction("All", UpdatePathSelection, UpdateMenuChecks);
+            if(IncludeAll)_toolbarMenu.menu.AppendAction("All", UpdatePathSelection, UpdateMenuChecks);
             foreach(var path in AmiliousLocalization.KeyFileNames) {
                 _toolbarMenu.menu.AppendAction(path, UpdatePathSelection, UpdateMenuChecks);
             }
@@ -164,7 +190,7 @@ namespace Amilious.Core.Editor.VisualElements {
         /// </summary>
         /// <param name="obj">The object.</param>
         private void UpdatePathSelection(DropdownMenuAction obj) {
-            if(AmiliousLocalization.KeyFileNames.Contains(obj.name)||(_includeAll&&obj.name=="All"))
+            if(AmiliousLocalization.KeyFileNames.Contains(obj.name)||(IncludeAll&&obj.name=="All"))
                 Value = obj.name;
         }
 
@@ -172,7 +198,7 @@ namespace Amilious.Core.Editor.VisualElements {
         /// This method is called when the next button is clicked.
         /// </summary>
         private void NextButtonClicked() {
-            Value = _includeAll ? AmiliousLocalization.KeyFileNames.GetNext(Value, "All")
+            Value = IncludeAll ? AmiliousLocalization.KeyFileNames.GetNext(Value, "All")
                 : AmiliousLocalization.KeyFileNames.GetNext(Value);
         }
 
@@ -180,7 +206,7 @@ namespace Amilious.Core.Editor.VisualElements {
         /// This method is called when the previous button is clicked.
         /// </summary>
         private void PreviousButtonClicked() {
-            Value = _includeAll ? AmiliousLocalization.KeyFileNames.GetPrevious(Value, "All")
+            Value = IncludeAll ? AmiliousLocalization.KeyFileNames.GetPrevious(Value, "All")
                 : AmiliousLocalization.KeyFileNames.GetPrevious(Value);
         }
 

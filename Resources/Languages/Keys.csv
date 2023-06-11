@@ -16,7 +16,7 @@
 "amilious/localization/editor/display_language", "This text will be used as the label for the language selection dropdown on the Amilious Localization editor window."
 "amilious/localization/editor/delete_title", "{0}\tThe name of the key."
 "amilious/localization/editor/location", "This text is used for the description label on the <b>Amilious Localization<b> editor window."
-"amilious/localization/editor/copy", "This text is used for the <i>copy to clipboad<i> button."
+"amilious/localization/editor/copy", "This text is used for the <i>copy to clipboard<i> button."
 "amilious/localization/editor/menu_copy", "This value is used for the <i>copy to clip board</i> menu item."
 "amilious/localization/editor/menu_edit", "This value is used for the <i>edit</i> menu item."
 "amilious/localization/editor/menu_delete", "This value is used for the <i>delete</i> menu item."
@@ -49,3 +49,4 @@
 "amilious/localization/editor/clear_all_cancel", "This is the text that will appear on the cancel button when trying to clear the usage count of all keys."
 "amilious/localization/editor/clear_all_title", "This text will be used as the title of the confirmation window when trying to clear all the keys usage counts."
 "amilious/localization/editor/menu_add_language", "This text will be used in the menu to add a language."
+"amilious/localization/test", "This value is used as a test localization value."
