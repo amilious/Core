@@ -22,12 +22,14 @@ using FishNet.Transporting;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
+using Amilious.Core.FishNet.Authentication;
 using Amilious.Core.Identity.User;
 using FishNet.Object.Synchronizing;
 
 namespace Amilious.Core.FishNet.Users {
     
-    public class UserIdentityManager : NetworkBehaviour, IUserIdentityManager {
+    [AddComponentMenu("Amilious/Networking/Fishnet/FishNet User Identity Manager")]
+    public class FishNetUserIdentityManager : NetworkBehaviour, IUserIdentityManager {
 
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 

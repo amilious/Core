@@ -25,6 +25,7 @@ namespace Amilious.Core.Identity.Group {
     /// This class is used to access, store, and edit information.
     /// </summary>
     [AmiHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
+    [AddComponentMenu("Amilious/Network/Group Identity Data Manager")]
     public class GroupIdentityDataManager : AmiliousBehavior {
         
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////

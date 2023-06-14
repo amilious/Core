@@ -44,7 +44,7 @@ namespace Amilious.Core.FishNet.Display {
 
         [SerializeField, AmiBool(true)] private bool rememberLastUserName = true;
         [SerializeField, AmiBool(true)] private bool rememberLastPassword = true;
-        [SerializeField] private AmiliousAuthenticator authenticator;
+        [SerializeField] private FishNetAmiliousAuthenticator authenticator;
         [Tooltip("What connections to automatically start on play.")]
         [SerializeField] private AutoStartType autoStartType = AutoStartType.Disabled;
         

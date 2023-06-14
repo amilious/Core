@@ -26,6 +26,7 @@ namespace Amilious.Core.Identity.User {
     /// This class is used to access, store, and edit information.
     /// </summary>
     [AmiHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
+    [AddComponentMenu("Amilious/Networking/User Identity Data Manager")]
     public class UserIdentityDataManager : AmiliousBehavior {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////

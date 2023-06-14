@@ -15,6 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
+using System.Diagnostics;
 using UnityEditor;
 using Amilious.Core.Editor.Drawers;
 
@@ -56,6 +57,10 @@ namespace Amilious.Core.Editor {
         #endregion
         
         #region Menu Buttons ///////////////////////////////////////////////////////////////////////////////////////////
+        
+        [MenuItem(AmiliousCore.DOC_MENU_PATH+"Core", false,0)]
+        public static void OpenCoreDocumentation() => Process.Start(AmiliousCore.DOCUMENTATION_URL);
+        
         
         /// <inheritdoc cref="AmiliousPropertyDrawer.ReInitialize"/>
         [MenuItem("Amilious/Editor/Reinitialize Property Drawers", false, AmiliousCore.EDITOR_ID+10)]

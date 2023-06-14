@@ -36,7 +36,9 @@ namespace Amilious.Core.FishNet.Authentication {
     //TODO: add a mode that can be used to login without a user name or password.  This mode should generate a device identifier and a server identifier.
     //TODO: build a custom editor that will display different options based on the selected mode.
     
-    public class AmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
+    
+    [AddComponentMenu("Amilious/Networking/FishNet/FishNet Amilious Authenticator")]
+    public class FishNetAmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
         
         #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -80,7 +82,7 @@ namespace Amilious.Core.FishNet.Authentication {
             new Dictionary<NetworkConnection, AuthenticationRequest>();
 
         private int _nextRequest = int.MinValue;
-        private UserIdentityManager _userIdentityManager;
+        private FishNetUserIdentityManager _userIdentityManager;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

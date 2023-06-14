@@ -15,6 +15,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
+using System.Diagnostics;
+using UnityEngine.WSA;
+
 // ReSharper disable MemberCanBePrivate.Global
 
 namespace Amilious.Core {
@@ -23,6 +26,10 @@ namespace Amilious.Core {
     /// This class is used to contain global values and methods.
     /// </summary>
     public static class AmiliousCore {
+
+        public const string DOC_MENU_PATH = "Amilious/Documentation/";
+
+        public const string DOCUMENTATION_URL = "https://amilious.gitbook.io/core";
 
         public const string NO_EXECUTOR = "No Amilious Executor exists in the scene.  Actions will not be invoked!";
 
@@ -47,17 +54,16 @@ namespace Amilious.Core {
         #region Menu Buttons ///////////////////////////////////////////////////////////////////////////////////////////
         #if UNITY_EDITOR
 
-        public const int AMILIOUS_SCRIPTABLE_OBJECT_ID = 1000;
-        public const int EDITOR_ID = 2000;
-        
+        public const int EDITOR_ID = 5000;
+        public const int PACKAGE_ID = 1000;
         /// <inheritdoc cref="AmiliousScriptableObject.FixDuplicateIds"/>
-        [UnityEditor.MenuItem("Amilious/Amilious Scriptable Objects/Fix Duplicate Ids", false,
-            AMILIOUS_SCRIPTABLE_OBJECT_ID)]
+        [UnityEditor.MenuItem("Amilious/Core/Amilious Scriptable Objects/Fix Duplicate Ids", false, 
+            PACKAGE_ID)]
         private static void FixDuplicateIds() => AmiliousScriptableObject.FixDuplicateIds();
         
         /// <inheritdoc cref="AmiliousScriptableObject.RegenerateIds"/>
-        [UnityEditor.MenuItem("Amilious/Amilious Scriptable Objects/Regenerate Ids", false,
-            AMILIOUS_SCRIPTABLE_OBJECT_ID+1)]
+        [UnityEditor.MenuItem("Amilious/Core/Amilious Scriptable Objects/Regenerate Ids", false,
+            PACKAGE_ID+1)]
         private static void RegenerateIds() => AmiliousScriptableObject.RegenerateIds();
 
         #endif

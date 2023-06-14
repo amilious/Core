@@ -49,7 +49,7 @@ namespace Amilious.Core.FishNet {
         /// <param name="con">The connection that you want to assign to the user id to.</param>
         /// <param name="userId">The user id for the connection.</param>
         /// <remarks>This method should only be used by the
-        /// <see cref="AmiliousAuthenticator"/>.</remarks>
+        /// <see cref="FishNetAmiliousAuthenticator"/>.</remarks>
         public static void AssignUserId(this NetworkConnection con, int userId) {
             ConnectionToUserId[con.ClientId] = userId;
             UserIdToConnection[userId] = con;
@@ -62,7 +62,7 @@ namespace Amilious.Core.FishNet {
         /// <param name="userId">The user id associated with the connection.</param>
         /// <returns>True if a user id has been assigned for the connection, otherwise false.</returns>
         /// <remarks>This method should only be used on the server and only when using the
-        /// <see cref="AmiliousAuthenticator"/>.</remarks>
+        /// <see cref="FishNetAmiliousAuthenticator"/>.</remarks>
         public static bool TryGetUserId(this NetworkConnection con, out int userId) {
             return ConnectionToUserId.TryGetValueFix(con.ClientId, out userId);
         }
@@ -76,7 +76,7 @@ namespace Amilious.Core.FishNet {
         /// <returns>True if the <see cref="UserIdentity"/> has a connection assigned to it,
         /// otherwise false.</returns>
         /// <remarks>This method should only be used on the server and only when using the
-        /// <see cref="AmiliousAuthenticator"/>.</remarks>
+        /// <see cref="FishNetAmiliousAuthenticator"/>.</remarks>
         public static bool TryGetConnection(this UserIdentity identity, NetworkManager manager, out NetworkConnection connection) {
             var result = UserIdToConnection.TryGetValueFix(identity.Id, out connection);
             if(result&&connection.NetworkManager == null&&manager.IsLocalUser(identity.Id)) {
@@ -92,8 +92,8 @@ namespace Amilious.Core.FishNet {
         /// </summary>
         /// <param name="serverManager">The server manager.</param>
         /// <returns>The authenticator for the server if it is an amilious authenticator, otherwise null. </returns>
-        public static AmiliousAuthenticator GetAmiliousAuthenticator(this ServerManager serverManager) {
-            var authenticator = serverManager.GetAuthenticator() as AmiliousAuthenticator;
+        public static FishNetAmiliousAuthenticator GetAmiliousAuthenticator(this ServerManager serverManager) {
+            var authenticator = serverManager.GetAuthenticator() as FishNetAmiliousAuthenticator;
             if(authenticator==null) 
                 Debug.LogWarning("Unable to get the Amilious Authenticator from the Server Manager!");
             return authenticator;

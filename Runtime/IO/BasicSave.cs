@@ -126,7 +126,7 @@ namespace Amilious.Core.IO {
         /// This method is used to load the console data.
         /// </summary>
         #if UNITY_EDITOR
-        [MenuItem(MENU_NAME+"/Reload Data",priority = 0)]
+        [MenuItem(MENU_NAME+"/Reload Data",false,AmiliousCore.PACKAGE_ID)]
         #endif
         public static void Load() {
             //create new save data
@@ -147,7 +147,7 @@ namespace Amilious.Core.IO {
         }
 
         #if UNITY_EDITOR
-        [MenuItem(MENU_NAME+"/Reset Data", priority = 2)]
+        [MenuItem(MENU_NAME+"/Reset Data",false,AmiliousCore.PACKAGE_ID+2)]
         public static void Reset() {
             var sure = EditorUtility.DisplayDialog($"Reset {FILE_NAME.ToUpperFirst()} Save Data",
                 "Are you sure that you want to delete the currently saved data?"
@@ -174,7 +174,7 @@ namespace Amilious.Core.IO {
         /// This method is used to save the console data.
         /// </summary>
         #if UNITY_EDITOR
-        [MenuItem(MENU_NAME+"/Force Save",priority = 1)]
+        [MenuItem(MENU_NAME+"/Force Save",false,AmiliousCore.PACKAGE_ID+1)]
         #endif
         public static void Save() {
             OnBeforeSave?.Invoke();
