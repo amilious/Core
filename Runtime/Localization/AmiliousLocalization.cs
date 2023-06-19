@@ -36,7 +36,7 @@ namespace Amilious.Core.Localization {
         private const string LOG_LOAD_NAME = "Amilious/Localization/Log Load";
         private const string LOG_UNLOAD_NAME = "Amilious/Localization/Log Unload";
         private const string AUTO_UNLOAD_NAME = "Amilious/Localization/Auto Unload Languages";
-        private const string MESSAGE_HEADER = "<b><color=#0080ff>Amilious Localization:</color></b> ";
+        private const string MESSAGE_HEADER = "<b><color=#0080ff>[Amilious Localization]</color></b> ";
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

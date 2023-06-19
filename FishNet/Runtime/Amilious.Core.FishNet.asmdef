@@ -4,7 +4,8 @@
     "references": [
         "FishNet.Runtime",
         "Amilious.Core",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Cysharp.Text"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

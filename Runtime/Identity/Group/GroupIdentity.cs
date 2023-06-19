@@ -48,6 +48,11 @@ namespace Amilious.Core.Identity.Group {
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This property contains the group's identity manager.
+        /// </summary>
+        public static IGroupIdentityManager Manager { get; private set; }
+        
         public int Id => _id ?? int.MinValue;
 
         public string Name => _name ?? "Default Group";
@@ -70,6 +75,18 @@ namespace Amilious.Core.Identity.Group {
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// This method is used to set the group identity manger for group identities.
+        /// </summary>
+        /// <param name="manager">The group identity manager.</param>
+        /// <returns>True if the manager was set, otherwise false if the manager has already been set.</returns>
+        /// <remarks>This should only be called by the group identity manager.</remarks>
+        public static bool SetIdentityManager(IGroupIdentityManager manager) {
+            if(Manager != null) return false;
+            Manager = manager;
+            return true;
+        }
         
     }
     

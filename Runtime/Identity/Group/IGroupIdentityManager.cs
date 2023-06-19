@@ -14,9 +14,28 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System.Collections.Generic;
+
 namespace Amilious.Core.Identity.Group {
     
     public interface IGroupIdentityManager {
+        
+        #region Client & Server Properties /////////////////////////////////////////////////////////////////////////////
+                           
+        /// <summary>
+        /// This property is used to get the group identity for the given id.
+        /// </summary>
+        /// <param name="userId">The group's id.</param>
+        public GroupIdentity this[int userId] { get; }
+        
+        /// <summary>
+        /// This property is used to get a collection of groups.
+        /// </summary>
+        IEnumerable<GroupIdentity> Identities { get; }
+        
+        #endregion
+
+        #region Methods ////////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
         /// This method is used to check if the given identities id is part of the given group.
@@ -40,7 +59,7 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="groupId">The group's id.</param>
         /// <param name="groupIdentity">The group info.</param>
         /// <returns>True if the group id is valid, otherwise false.</returns>
-        bool TryGetGroupInfo(int groupId, out GroupIdentity groupIdentity);
+        bool TryGetGroupIdentity(int groupId, out GroupIdentity groupIdentity);
 
         /// <summary>
         /// This method is used to create a new group.
@@ -70,6 +89,8 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if the user was not in the group but now is, otherwise false.</returns>
         bool TryJoinGroup(int groupId, int identityId, string password = null);
 
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
     }
     
 }

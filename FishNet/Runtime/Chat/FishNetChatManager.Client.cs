@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,13 +14,37 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using UnityEditor;
-using Amilious.Core.Editor.Editors;
-using Amilious.Core.FishNet.Authentication;
+using FishNet.Object;
+using FishNet.Connection;
 
-namespace Amilious.Core.FishNet.Editor {
+namespace Amilious.Core.FishNet.Chat {
     
-    [CustomEditor(typeof(FishNetAmiliousAuthenticator),editorForChildClasses:true,isFallback = true)]
-    public class AmiliousAuthenticatorEditor : AmiliousEditor { }
+    public partial class FishNetChatManager {
+
+        #region Client Rpcs ////////////////////////////////////////////////////////////////////////////////////////////
+        
+        [ObserversRpc]
+        private void Clients_ReceiveGlobalMessage(int senderId, string message) =>
+            OnReceiveGlobalMessage?.Invoke(senderId, message);
+
+        [TargetRpc]
+        private void Client_ReceiveGroupMessage(NetworkConnection con, int senderId, int groupId, string message) =>
+            OnReceiveGroupMessage?.Invoke(senderId, groupId, message);
+
+        [TargetRpc]
+        private void Client_ReceivePrivateMessage(NetworkConnection con, int senderId, string message) =>
+            OnReceivePrivateMessage?.Invoke(senderId, message);
+
+        [TargetRpc]
+        private void Client_ReceiveServerMessage(NetworkConnection con, string message) =>
+            OnReceiveServerMessage?.Invoke(message);
+
+        [ObserversRpc]
+        private void Clients_ReceiveServerMessages(string message) => 
+            OnReceiveServerMessage?.Invoke(message);
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+    }
     
 }

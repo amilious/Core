@@ -15,8 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using System.Diagnostics;
-using UnityEngine.WSA;
+using UnityEngine;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -27,35 +26,44 @@ namespace Amilious.Core {
     /// </summary>
     public static class AmiliousCore {
 
-        public const string DOC_MENU_PATH = "Amilious/Documentation/";
-
-        public const string DOCUMENTATION_URL = "https://amilious.gitbook.io/core";
-
-        public const string NO_EXECUTOR = "No Amilious Executor exists in the scene.  Actions will not be invoked!";
-
-        public const string MAIN_CONTEXT_MENU = "Amilious/";
-
-        public const string THREADING_CONTEXT_MENU = MAIN_CONTEXT_MENU + "Threading/";
-
-        public const string UI_CONTEXT_MENU = MAIN_CONTEXT_MENU + "UI/";
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
+        public const int EDITOR_ID = 5000;
+        public const int PACKAGE_ID = 1000;
+        public const string DOC_MENU_PATH = "Amilious/Documentation/";
+        public const string DOCUMENTATION_URL = "https://amilious.gitbook.io/core";
+        public const string NO_EXECUTOR = "No Amilious Executor exists in the scene.  Actions will not be invoked!";
+        public const string MAIN_CONTEXT_MENU = "Amilious/";
+        public const string THREADING_CONTEXT_MENU = MAIN_CONTEXT_MENU + "Threading/";
+        public const string UI_CONTEXT_MENU = MAIN_CONTEXT_MENU + "UI/";
         public const string TAB_CONTEXT_MENU = UI_CONTEXT_MENU + "Tabs/";
-
         public const string GRAPH_CONTEXT_MENU = UI_CONTEXT_MENU + "Graph/";
-
         public const string PROGRESS_CONTEXT_MENU = UI_CONTEXT_MENU + "Progress/";
-
         public const string INVALID_SUCCESS = "The value property is not available unless state is Success.";
-
         public const string INVALID_ERROR = "The error property is not available unless state is Error.";
-
         public const string INVALID_PENDING = "Cannot process a future that isn't in the Pending state.";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #region Instance Variables /////////////////////////////////////////////////////////////////////////////////////
+        
+        private static int? _instanceId;
+        private static bool _checkedForInstanceId;
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// This property is true when the application is quitting otherwise false.
+        /// </summary>
+        public static bool IsQuitting { get; private set; }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         #region Menu Buttons ///////////////////////////////////////////////////////////////////////////////////////////
         #if UNITY_EDITOR
 
-        public const int EDITOR_ID = 5000;
-        public const int PACKAGE_ID = 1000;
         /// <inheritdoc cref="AmiliousScriptableObject.FixDuplicateIds"/>
         [UnityEditor.MenuItem("Amilious/Core/Amilious Scriptable Objects/Fix Duplicate Ids", false, 
             PACKAGE_ID)]
@@ -70,10 +78,7 @@ namespace Amilious.Core {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Arg Methods ////////////////////////////////////////////////////////////////////////////////////////////
-
-        private static int? _instanceId;
-        private static bool _checkedForInstanceId;
-        
+      
         /// <summary>
         /// This method is used to try the instance id from the command line arguments.
         /// </summary>
@@ -99,6 +104,16 @@ namespace Amilious.Core {
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
+        public static void RemoveDuplicateMessage(MonoBehaviour obj){
+            Debug.LogWarningFormat("Removing duplicate <color={2}>{0}</color> from the <color={3}>{1}</color> gameobject!",
+                obj.GetType().Name, obj.name, "#0080ff", "#00FF00");
+        }
+        
+        [RuntimeInitializeOnLoadMethod]
+        private static void RunOnStart() {
+            IsQuitting = false;
+            Application.quitting += () => IsQuitting = true;
+        }
     }
     
 }

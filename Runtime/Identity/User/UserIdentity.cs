@@ -199,10 +199,12 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to set the identity manger for user identities.
         /// </summary>
         /// <param name="manager">The identity manager.</param>
+        /// <returns>True if the manager was set, otherwise false if the manager has already been set.</returns>
         /// <remarks>This should only be called by the identity manager.</remarks>
-        public static void SetIdentityManager(IUserIdentityManager manager) {
-            if(Manager != null) return;
+        public static bool SetIdentityManager(IUserIdentityManager manager) {
+            if(Manager != null) return false;
             Manager = manager;
+            return true;
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -15,12 +15,26 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using UnityEditor;
-using Amilious.Core.Editor.Editors;
-using Amilious.Core.FishNet.Authentication;
+using Amilious.Core.Editor;
 
 namespace Amilious.Core.FishNet.Editor {
     
-    [CustomEditor(typeof(FishNetAmiliousAuthenticator),editorForChildClasses:true,isFallback = true)]
-    public class AmiliousAuthenticatorEditor : AmiliousEditor { }
-    
+    public static class SpawnMenuManager {
+        
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        public const string ROOT = "GameObject/Amilious/Core/FishNet/";
+        public const string IDENTITY_MANAGERS = "Prefabs/Amilious/Identity Managers (FishNet)";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Spawn Menu Methods /////////////////////////////////////////////////////////////////////////////////////
+       
+        [MenuItem(ROOT + "Identity Managers", false, -100)]
+        public static void SpawnIdentityManagers() =>
+            Spawn.SpawnPrefab(IDENTITY_MANAGERS, FishNetExtensions.IDENTITY_MANAGERS_GAME_OBJECT_NAME, true);
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+    }
 }

@@ -16,29 +16,23 @@
 
 using System;
 using UnityEngine;
+using Amilious.Core.IO;
 using Amilious.Core.Attributes;
 using System.Collections.Generic;
-using Amilious.Core.IO;
 
 namespace Amilious.Core.Identity.User {
     
     /// <summary>
     /// This class is used to access, store, and edit information.
     /// </summary>
-    [AmiHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
-    [AddComponentMenu("Amilious/Networking/User Identity Data Manager")]
-    public class UserIdentityDataManager : AmiliousBehavior {
+    [DisallowMultipleComponent]
+    [DefaultExecutionOrder(short.MinValue)]
+    public abstract class AbstractUserDataManager : AmiliousBehavior {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
-        
-        private const string HELP_BOX_TEXT =
-            "This singleton data manager is used for saving and loading user information.";
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        private static UserIdentityDataManager _instance;
+        protected const string HELP_BOX_TEXT =
+            "This singleton data manager is used for saving and loading user information.";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -47,38 +41,6 @@ namespace Amilious.Core.Identity.User {
         // ReSharper disable once InconsistentNaming
         public event Action Client_OnStoredCredentialsUpdated;
         
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// This property contains the singleton instance of the class.
-        /// </summary>
-        public static UserIdentityDataManager Instance {
-            get {
-                if(_instance != null) return _instance;
-                _instance = FindObjectOfType<UserIdentityDataManager>();
-                _instance ??= new GameObject("User Identity Data Manager").AddComponent<UserIdentityDataManager>();
-                return _instance;
-            }
-        }
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region MonoBehavior Methods ///////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This method is called when the script is being loaded.
-        /// </summary>
-        private void Awake() {
-            //make singleton
-            if(_instance != null && _instance != this) {
-                Destroy(this);
-                return;
-            }
-            _instance = this;
-        }
-
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Server Data ////////////////////////////////////////////////////////////////////////////////////////////

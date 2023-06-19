@@ -23,7 +23,7 @@ namespace Amilious.Core.Authentication {
     /// This interface is used for all variations of the Amilious Authenticator
     /// </summary>
     public interface IAmiliousAuthenticator {
-        
+
         /// <summary>
         /// This event is triggered when the local client was rejected connection to the server.
         /// </summary>
@@ -37,7 +37,7 @@ namespace Amilious.Core.Authentication {
         /// <summary>
         /// This property is used to get the authenticator's data manager.
         /// </summary>
-        public UserIdentityDataManager DataManager { get; }
+        public AbstractUserDataManager UserDataManager { get; }
 
     }
     

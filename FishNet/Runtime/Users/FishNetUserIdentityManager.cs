@@ -15,8 +15,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
+using FishNet;
 using UnityEngine;
 using FishNet.Object;
+using FishNet.Managing;
 using FishNet.Connection;
 using FishNet.Transporting;
 using Amilious.Core.Attributes;
@@ -28,7 +30,9 @@ using FishNet.Object.Synchronizing;
 
 namespace Amilious.Core.FishNet.Users {
     
-    [AddComponentMenu("Amilious/Networking/Fishnet/FishNet User Identity Manager")]
+    [DisallowMultipleComponent]
+    [DefaultExecutionOrder(short.MinValue+98)]
+    [AddComponentMenu("Amilious/Networking/FishNet/FishNet User Identity Manager")]
     public class FishNetUserIdentityManager : NetworkBehaviour, IUserIdentityManager {
 
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +40,7 @@ namespace Amilious.Core.FishNet.Users {
         [SerializeField,AmiBool(true)]
         [Tooltip("If true friendships must be accepted, otherwise no acceptance is needed.")]
         private bool friendshipsRequireAcceptance = true;
+        [SerializeField] private NetworkManager networkManager;
         
         #endregion
         
@@ -62,6 +67,8 @@ namespace Amilious.Core.FishNet.Users {
         /// This list is used to store all of the user's blocked users on the client.
         /// </summary>
         private readonly List<int> _blocked = new List<int>();
+
+        private FishNetUserDataManager _userDataManager;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -104,8 +111,20 @@ namespace Amilious.Core.FishNet.Users {
 
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
-        public static UserIdentityDataManager UserIdDataManager => UserIdentityDataManager.Instance;
+        /// <summary>
+        /// This can be used to get the instance of the first <see cref="NetworkManager"/>, otherwise you can get the
+        /// instance from the <see cref="NetworkManager"/>.
+        /// </summary>
+        public static FishNetUserIdentityManager Instance => InstanceFinder.GetInstance<FishNetUserIdentityManager>();
         
+        public FishNetUserDataManager UserIdDataManager {
+            get {
+                if(_userDataManager != null) return _userDataManager;
+                _userDataManager = NetworkManager.GetUserDataManager();
+                return _userDataManager;
+            }
+        }
+
         /// <summary>
         /// This property is used to get the server identifier.
         /// </summary>
@@ -211,6 +230,15 @@ namespace Amilious.Core.FishNet.Users {
         #region Monobehavior Methods ///////////////////////////////////////////////////////////////////////////////////
         
         private void Awake() {
+            /*networkManager ??= NetworkManager;
+            networkManager ??= GetComponent<NetworkManager>();
+            networkManager ??= InstanceFinder.NetworkManager;
+            networkManager ??= FindObjectOfType<NetworkManager>();
+            if(!networkManager.TryRegisterInstance(this)) {
+                AmiliousCore.RemoveDuplicateMessage(this);
+                Destroy(this);
+                return;
+            }*/
             _online.OnChange += OnlineChanged;
             UserIdentity.SetIdentityManager(this);
             if(!IsServer) return; //load on server only
@@ -218,7 +246,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
+        
         #region Interface Methods //////////////////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc />
@@ -244,7 +272,6 @@ namespace Amilious.Core.FishNet.Users {
 
         /// <inheritdoc />
         public bool IsOnline(UserIdentity identity) => IsOnline(identity.Id);
-
 
         /// <inheritdoc />
         public virtual UserIdentity Client_GetIdentity() {
@@ -310,6 +337,11 @@ namespace Amilious.Core.FishNet.Users {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region FishNet Only Methods ///////////////////////////////////////////////////////////////////////////////////
+        
+        public override void OnStartNetwork() {
+            base.OnStartNetwork();
+            NetworkManager.TryRegisterInstance(this);
+        }
         
         private void OnlineChanged(SyncHashSetOperation op, int item, bool server) {
             if(server) return;

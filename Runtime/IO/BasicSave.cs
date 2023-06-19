@@ -30,9 +30,9 @@ namespace Amilious.Core.IO {
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
 
         private const string SAVE_NAME = "BasicSave";
+        private const string LABEL_COLOR = "#FFA500";
         private const string MENU_NAME = "Amilious/Core/Basic Save";
         private const string FILE_NAME = "basic";
-        private const string LABEL_COLOR = "#FFA500";
         private const string CURRENT_VERSION_STRING = "1.0.0.0";
         //don't edit below here ////////////////////////////////////////////////////////////////////////////////////////
         private const string BUILT_SAVE_FILE = FILE_NAME+".data";
@@ -40,7 +40,7 @@ namespace Amilious.Core.IO {
         private const string DEVELOPER_SAVE_FILE = FILE_NAME+".developer.data";
         private const string DEVELOPER_X_SAVE_FILE = FILE_NAME+".developer{0}.data";
         private const string VERSION_KEY = "**save_version**";
-        private const string TITLE = "<b><color="+LABEL_COLOR+">"+SAVE_NAME+":</color></b>";
+        private const string TITLE = "<b><color="+LABEL_COLOR+">["+SAVE_NAME+"]</color></b>";
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

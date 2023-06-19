@@ -14,65 +14,33 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System.Collections.Generic;
-using Amilious.Core.Attributes;
-using Amilious.Core.IO;
 using UnityEngine;
+using Amilious.Core.IO;
+using Amilious.Core.Attributes;
+using System.Collections.Generic;
 
 namespace Amilious.Core.Identity.Group {
 
     /// <summary>
     /// This class is used to access, store, and edit information.
     /// </summary>
-    [AmiHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
-    [AddComponentMenu("Amilious/Network/Group Identity Data Manager")]
-    public class GroupIdentityDataManager : AmiliousBehavior {
+    [DisallowMultipleComponent]
+    [DefaultExecutionOrder(short.MinValue)]
+    public abstract class AbstractGroupDataManager : AmiliousBehavior {
         
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
-        
-        private const string HELP_BOX_TEXT =
+
+        protected const string HELP_BOX_TEXT =
             "This singleton data manager is used for saving and loading group information.";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        private static GroupIdentityDataManager _instance;
+        private static AbstractGroupDataManager RawInstance;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// This property contains the singleton instance of the class.
-        /// </summary>
-        public static GroupIdentityDataManager Instance {
-            get {
-                if(_instance != null) return _instance;
-                _instance = FindObjectOfType<GroupIdentityDataManager>();
-                _instance ??= new GameObject("Group Identity Data Manager").AddComponent<GroupIdentityDataManager>();
-                return _instance;
-            }
-        }
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region MonoBehavior Methods ///////////////////////////////////////////////////////////////////////////////////
-        
-        /// <summary>
-        /// This method is called when the script is being loaded.
-        /// </summary>
-        private void Awake() {
-            //make singleton
-            if(_instance != null && _instance != this) {
-                Destroy(this);
-                return;
-            }
-            _instance = this;
-        }
-
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
         #region Server Methods /////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>

@@ -93,7 +93,7 @@ namespace Amilious.Core.FishNet.Display {
         /// <summary>
         /// This property is a shortcut to get the UserIdentityDataManager instance.
         /// </summary>
-        private static UserIdentityDataManager DataManager => UserIdentityDataManager.Instance;
+        private AbstractUserDataManager DataManager => NetworkManager.GetUserDataManager();
 
         /// <summary>
         /// This property is used to get and cache the network manager.
@@ -133,7 +133,7 @@ namespace Amilious.Core.FishNet.Display {
         private void OnDisable() {
             clientButton.onClick.RemoveListener(OnClick_Client);
             serverButton.onClick.RemoveListener(OnClick_Server);
-            DataManager.Client_OnStoredCredentialsUpdated -= OnStoreCredentialsUpdated;
+            if(DataManager!=null) DataManager.Client_OnStoredCredentialsUpdated -= OnStoreCredentialsUpdated;
             if (NetworkManager == null) return;
             NetworkManager.ServerManager.OnServerConnectionState -= ServerManager_OnServerConnectionState;
             NetworkManager.ClientManager.OnClientConnectionState -= ClientManager_OnClientConnectionState;

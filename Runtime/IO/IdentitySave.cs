@@ -35,6 +35,8 @@ namespace Amilious.Core.IO {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
+        private const string SAVE_NAME = "IdentitySave";
+        private const string LABEL_COLOR = "#FFA500";
         private const string CURRENT_VERSION_STRING = "1.0.0.0";
         private const string BUILT_SAVE_FILE = "identity.data";
         private const string EDITOR_SAVE_FILE = "identity.editor.data";
@@ -53,6 +55,7 @@ namespace Amilious.Core.IO {
         private const string CLIENT_USER_NAME = "**client_user_name**";
         private const string CLIENT_PASSWORD = "**client_password**";
         private const string CLIENT_REPLY_IDENTITY = "**reply_identity";
+        private const string TITLE = "<b><color="+LABEL_COLOR+">["+SAVE_NAME+"]</color></b>";
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -182,7 +185,7 @@ namespace Amilious.Core.IO {
             if(!_data.TryGetCastValue(SERVER_GROUP_MEMBERS, out _serverGroupMembers))
                 _serverGroupMembers = new Dictionary<int, List<int>>();
             if(ShowSaveAndLoadLogs)
-                Debug.Log("<b><color=#FFA500>IdentitySave:</color></b> <color=#00FF00>Loaded the save data!</color>");
+                Debug.Log($"{TITLE} <color=#00FF00>Loaded the save data!</color>");
             OnAfterLoad?.Invoke();
         }
 
@@ -217,7 +220,7 @@ namespace Amilious.Core.IO {
             _data[SERVER_GROUP_MEMBERS] = _serverGroupMembers;
             OnResetting?.Invoke();
             DataChanged = true;
-            Debug.Log("<b><color=#FFA500>IdentitySave:</color></b> <color=#FF0000>Reset the save data!</color>");
+            Debug.Log($"{TITLE}  <color=#FF0000>Reset the save data!</color>");
             Save();
         }
 
@@ -231,7 +234,7 @@ namespace Amilious.Core.IO {
             OnBeforeSave?.Invoke();
             if(!DataChanged) return;
             if(!Application.isPlaying) {
-                Debug.Log("<b><color=#FFA500>IdentitySave:</color></b> <color=#00FF00>Can only save when the game is running!</color>");
+                Debug.Log($"{TITLE} <color=#00FF00>Can only save when the game is running!</color>");
                 return;
             }
             using(var fileStream = File.Open(SavePath, FileMode.Create)) {
@@ -241,7 +244,7 @@ namespace Amilious.Core.IO {
             }
             DataChanged = false;
             if(ShowSaveAndLoadLogs)
-                Debug.Log("<b><color=#FFA500>IdentitySave:</color></b> <color=#00FF00>Saved the save data!</color>");
+                Debug.Log($"{TITLE} <color=#00FF00>Saved the save data!</color>");
         }
 
         /// <summary>
