@@ -14,11 +14,11 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System.Collections.Generic;
-using System.Diagnostics;
-using Amilious.Core.Extensions;
 using UnityEditor;
 using UnityEngine;
+using System.Diagnostics;
+using Amilious.Core.Extensions;
+using System.Collections.Generic;
 
 namespace Amilious.Core.Editor.Windows {
     
@@ -29,16 +29,16 @@ namespace Amilious.Core.Editor.Windows {
     /// </summary>
     public class FindMissingScripts : EditorWindow {
         
-        private static int _goCount = 0, _componentsCount = 0, _missingCount = 0;
+        private static int GoCount, ComponentsCount, MissingCount;
         private static readonly Dictionary<string, MissingInfo> MissingScripts = new Dictionary<string, MissingInfo>();
-        private static Vector2 _scroll = new Vector2(0,0);
-        private static FindMissingScripts _instance;
+        private static Vector2 Scroll = new Vector2(0,0);
+        private static FindMissingScripts Instance;
         private static readonly Stopwatch Stopwatch = new Stopwatch();
 
         [MenuItem("Amilious/Editor/Find Missing Scripts")]
         public static void ShowWindow() {
-            if(_instance==null) _instance = GetWindow<FindMissingScripts>(false, "Find Missing Scripts");
-            _instance.Focus();
+            if(Instance==null) Instance = GetWindow<FindMissingScripts>(false, "Find Missing Scripts");
+            Instance.Focus();
         }
 
         public void OnGUI() {
@@ -47,15 +47,15 @@ namespace Amilious.Core.Editor.Windows {
             if(GUILayout.Button("Find All", EditorStyles.toolbarButton))FindAll();
             GUILayout.FlexibleSpace();
             GUILayout.Label($"Time: {Stopwatch.Elapsed.ToEasyReadString(abbreviations:true)}", EditorStyles.toolbarButton);
-            GUILayout.Label($"Objects: {_goCount}", EditorStyles.toolbarButton);
-            GUILayout.Label($"Components: {_componentsCount}", EditorStyles.toolbarButton);
-            GUILayout.Label($"Missing: {_missingCount}", EditorStyles.toolbarButton);
+            GUILayout.Label($"Objects: {GoCount}", EditorStyles.toolbarButton);
+            GUILayout.Label($"Components: {ComponentsCount}", EditorStyles.toolbarButton);
+            GUILayout.Label($"Missing: {MissingCount}", EditorStyles.toolbarButton);
             EditorGUILayout.EndHorizontal();
             
             GUILayout.Label("Click \"Find In Selected\" or \"Find All\" to search for missing scripts.\n"
                 +"Click on the blue links to open the game object in the inspector!", EditorStyles.helpBox);   
             
-            _scroll = EditorGUILayout.BeginScrollView(_scroll);
+            Scroll = EditorGUILayout.BeginScrollView(Scroll);
             foreach(var missing in MissingScripts) {
                 if(GUILayout.Button($"  {missing.Key} ({missing.Value.Missing.Count})", EditorStyles.linkLabel)) {
                     Selection.activeGameObject = missing.Value.GameObject;
@@ -67,9 +67,9 @@ namespace Amilious.Core.Editor.Windows {
         }
 
         private static void FindAll() {
-            _componentsCount = 0;
-            _goCount = 0;
-            _missingCount = 0;
+            ComponentsCount = 0;
+            GoCount = 0;
+            MissingCount = 0;
             MissingScripts.Clear();
             Stopwatch.Restart();
             var assetsPaths = AssetDatabase.GetAllAssetPaths();
@@ -84,16 +84,16 @@ namespace Amilious.Core.Editor.Windows {
             Stopwatch.Stop();
         }
 
-        public static IEnumerable<Object> LoadAllAssetsAtPath(string assetPath) {
+        private static IEnumerable<Object> LoadAllAssetsAtPath(string assetPath) {
             return typeof(SceneAsset) == AssetDatabase.GetMainAssetTypeAtPath(assetPath) ?
                 new[] {AssetDatabase.LoadMainAssetAtPath(assetPath)} : AssetDatabase.LoadAllAssetsAtPath(assetPath);
         }
 
         private static void FindInSelected() {
             var go = Selection.gameObjects;
-            _goCount = 0;
-            _componentsCount = 0;
-            _missingCount = 0;
+            GoCount = 0;
+            ComponentsCount = 0;
+            MissingCount = 0;
             MissingScripts.Clear();
             Stopwatch.Restart();
             foreach (var g in go) FindInGo(g);
@@ -101,12 +101,12 @@ namespace Amilious.Core.Editor.Windows {
         }
 
         private static void FindInGo(GameObject g) {
-            _goCount++;
+            GoCount++;
             var components = g.GetComponents<Component>();
             for (var i = 0; i < components.Length; i++) {
-                _componentsCount++;
+                ComponentsCount++;
                 if(components[i] != null) continue;
-                _missingCount++;
+                MissingCount++;
                 var s = g.name;
                 var t = g.transform;
                 while (t.parent != null)                    {
