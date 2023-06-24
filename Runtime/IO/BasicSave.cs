@@ -30,7 +30,7 @@ namespace Amilious.Core.IO {
         
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
 
-        private const string SAVE_NAME = "BasicSave";
+        private const string SAVE_NAME = "Basic Save";
         private const string LABEL_COLOR = "#FFA500";
         private const string MENU_NAME = "Amilious/Core/Basic Save";
         private const string FILE_NAME = "basic";
