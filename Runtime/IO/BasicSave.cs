@@ -19,9 +19,9 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using Amilious.Core.Extensions;
+using Amilious.Core.Definitions;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
-using Amilious.Core.Definitions;
 
 namespace Amilious.Core.IO {
     
@@ -102,7 +102,7 @@ namespace Amilious.Core.IO {
         /// <summary>
         /// If this property is true the data has been updated since the last time it was loaded.
         /// </summary>
-        public static bool DataChanged { get; private set; } = false;
+        public static bool DataChanged { get; private set; }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -204,6 +204,7 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="oldVersion">The version that was loaded.</param>
         /// <param name="data">The loaded data that needs to be modified.</param>
+        // ReSharper disable twice UnusedParameter.Local
         private static void UpgradeData(Version oldVersion, Dictionary<string, object> data) {}
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
