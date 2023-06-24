@@ -15,7 +15,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using UnityEditor;
-using UnityEngine;
 using Amilious.Core.IO;
 using UnityEngine.UIElements;
 
@@ -44,7 +43,6 @@ namespace Amilious.Core.Editor.Extensions {
                 assetPath = AssetDatabase.GetAssetPath(monoScript);
                 assetPath = FileHelper.GetSiblingFile(assetPath, targetType.Name + ".uxml");
             }
-            Debug.Log(assetPath);
             //get asset
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(assetPath);
             if(asset == null) return false;
