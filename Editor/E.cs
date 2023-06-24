@@ -7,7 +7,7 @@
 
         //localization groups
         public const string LOCAL_INFO_GROUP = "amilious/localization/editor/";
-        public const string LOCAL_INFO_UXML = "Assets/Amilious/Core/Editor/VisualElements/LocalizationInformation.uxml";
+        public const string LOCAL_INFO_UXML = "Assets/Amilious/Localization/Editor/VisualElements/LocalizationInformation.uxml";
         public const string LOCAL_INFO_LOCATION = "location";
         public const string LOCAL_INFO_DESCRIPTION = "description";
         public const string LOCAL_INFO_TRANSLATION = "translation";

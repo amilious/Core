@@ -36,6 +36,8 @@ namespace Amilious.Core.IO {
         /// </summary>
         private static readonly bool UseBackSlash;
 
+        private static readonly string RootPath;
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Static Constructor /////////////////////////////////////////////////////////////////////////////////////
@@ -45,6 +47,7 @@ namespace Amilious.Core.IO {
         /// </summary>
         static FileHelper() {
             UseBackSlash = Application.streamingAssetsPath.Contains("\\");
+            RootPath = TrimEndDirectories(Application.dataPath, 1);
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +142,17 @@ namespace Amilious.Core.IO {
         /// <returns>The full path.</returns>
         public static string GetFullPathFromAssetPath(string assetPath) {
             return CreatePath(Application.dataPath,assetPath.Substring(7));
+        }
+
+        /// <summary>
+        /// This method is used to get the asset path from the full path
+        /// </summary>
+        /// <param name="fullPath">The full path.</param>
+        /// <returns>The asset path.</returns>
+        public static string GetAssetPathFromFullPath(string fullPath) {
+            fullPath = FixPath(fullPath).Replace(RootPath,"");
+            Debug.Log(fullPath);
+            return fullPath.Replace("\\","/");
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

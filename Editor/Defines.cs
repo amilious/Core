@@ -18,7 +18,11 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Amilious.Core.IO;
+using UnityEditorInternal;
 using Amilious.Core.Extensions;
+using Amilious.Core.Definitions;
+using System.Collections.Generic;
 using Amilious.Core.Editor.Extensions;
 
 namespace Amilious.Core.Editor {
@@ -26,7 +30,7 @@ namespace Amilious.Core.Editor {
     /// <summary>
     /// This class is used to manage define symbols.
     /// </summary>
-    public static class Defines {
+    public class Defines : AssetPostprocessor {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -39,6 +43,10 @@ namespace Amilious.Core.Editor {
         /// This constant is used as the message displayed when a define is added.
         /// </summary>
         private const string ADD_DEFINE_MESSAGE = "Added {0} {1} Define Symbols to the {2} target group!";
+
+        private const string REGISTER_ASSET = "<b><color={0}>[{1}]</color></b> Registered the {2} asset as {1}!";
+        
+        private const string REMOVING_MISSING_MESSAGE = "<b><color={0}>[{1}]</color></b> The {1} asset was removed!  Removing define symbols...";
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -76,7 +84,13 @@ namespace Amilious.Core.Editor {
             var definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup).Trim();
             var defines = definesString.Split(';');
             var changed = false;
+            BasicSave.TryGetDefineInfo(name, out var defineInfo);
+            var defineInfoChanged = false;
             foreach(var define in defineSymbols) {
+                if(defineInfo is not null &&!defineInfo.defines.Contains(define)) {
+                    defineInfo.defines.Add(define);
+                    defineInfoChanged = true;
+                }
                 if(defines.Contains(define)) continue;
                 if(!definesString.EndsWith(";", StringComparison.InvariantCulture)) definesString += ";";
                 definesString += define;
@@ -86,6 +100,8 @@ namespace Amilious.Core.Editor {
             if(!changed) return added;
             PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, definesString);
             Debug.Log(Amilious.MakeHeader(ADD_DEFINE_MESSAGE,added,name,targetGroup));
+            if(defineInfo is not null && defineInfoChanged) 
+                BasicSave.TryAddDefineInfo(name,defineInfo, true,true);
             return added;
         }
 
@@ -104,6 +120,21 @@ namespace Amilious.Core.Editor {
         }
 
         /// <summary>
+        /// This method is used to register an amilious asset.
+        /// </summary>
+        /// <param name="name">The name of the asset.</param>
+        /// <param name="color">The asset header color.</param>
+        public static void RegisterAsset(string name, string color) {
+            var path = System.Reflection.Assembly.GetCallingAssembly().GetDefinitionAssetPath();
+            var exists = BasicSave.TryGetDefineInfo(name, out var defineInfo);
+            if(exists&&defineInfo.assemblyDefinitionPath==path&&defineInfo.color==color) return;
+            defineInfo.assemblyDefinitionPath = path;
+            defineInfo.color = color;
+            BasicSave.TryAddDefineInfo(name, defineInfo, true, true);
+            Debug.LogFormat(REGISTER_ASSET,color,name,path);
+        }
+
+        /// <summary>
         /// This method is used to make sure that the give define symbols are not present.
         /// </summary>
         /// <param name="targetGroup">The target group that you want to remove the symbols from.</param>
@@ -119,7 +150,13 @@ namespace Amilious.Core.Editor {
             var definesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(targetGroup).Trim();
             var defines = definesString.Split(';');
             var changed = false;
+            BasicSave.TryGetDefineInfo(name, out var defineInfo);
+            var defineInfoChanged = false;
             foreach(var define in defines) {
+                if(defineInfo is not null&&defineInfo.defines.Contains(define)) {
+                    defineInfo.defines.Remove(define);
+                    defineInfoChanged = true;
+                }
                 if(defineSymbols.Contains(define)) {
                     changed = true;
                     removed++;
@@ -130,6 +167,8 @@ namespace Amilious.Core.Editor {
             if(!changed) return removed;
             PlayerSettings.SetScriptingDefineSymbolsForGroup(targetGroup, stringBuilder.ToStringAndReturnToPool());
             Debug.Log(Amilious.MakeHeader(REMOVE_DEFINE_MESSAGE,removed,name,targetGroup));
+            if(defineInfo is not null&&defineInfoChanged) 
+                BasicSave.TryAddDefineInfo(name, defineInfo, true, true);
             return removed;
         }
         
@@ -158,6 +197,28 @@ namespace Amilious.Core.Editor {
         private static void AddCoreDefineSymbols() {
             TryRemoveAll("Amilious Core", RemoveSymbols);
             TryAddAll("Amilious Core", DefineSymbols);
+            FixAssetDefineSymbols();
+        }
+
+        /// <summary>
+        /// This method is used to remove asset defines for any missing assets.
+        /// </summary>
+        private static void FixAssetDefineSymbols() {
+            //remove defines if invalid
+            var removeList = new List<DefineInfo>();
+            foreach (var defineInfo in BasicSave.GetAllDefineInfo()) {
+                var assemblyDefinition = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(defineInfo.assemblyDefinitionPath);
+                if(assemblyDefinition != null) {
+                    //make sure that the defines have not been removed manually
+                    TryAddAll(defineInfo.name, defineInfo.defines.ToArray());
+                    continue;
+                }
+                Debug.LogFormat(REMOVING_MISSING_MESSAGE,defineInfo.color,defineInfo.name);
+                //the definition was removed so remove the define symbols
+                TryRemoveAll(defineInfo.name, defineInfo.defines.ToArray());
+                removeList.Add(defineInfo);
+            }
+            foreach(var defineInfo in removeList) BasicSave.TryRemoveDefineInfo(defineInfo.name);
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

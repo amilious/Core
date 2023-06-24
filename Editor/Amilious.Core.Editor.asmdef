@@ -2,7 +2,8 @@
     "name": "Amilious.Core.Editor",
     "rootNamespace": "Amilious.Core.Editor",
     "references": [
-        "Amilious.Core"
+        "Amilious.Core",
+        "Amilious.Localization"
     ],
     "includePlatforms": [
         "Editor"

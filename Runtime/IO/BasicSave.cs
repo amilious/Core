@@ -21,6 +21,7 @@ using UnityEngine;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
+using Amilious.Core.Definitions;
 
 namespace Amilious.Core.IO {
     
@@ -41,7 +42,9 @@ namespace Amilious.Core.IO {
         private const string DEVELOPER_X_SAVE_FILE = FILE_NAME+".developer{0}.data";
         private const string VERSION_KEY = "**save_version**";
         private const string TITLE = "<b><color="+LABEL_COLOR+">["+SAVE_NAME+"]</color></b>";
-
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        private const string DEFINE_INFO = "**define_info**";
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +52,9 @@ namespace Amilious.Core.IO {
         /// <summary>
         /// This dictionary contains all of the save data.
         /// </summary>
-        private static Dictionary<string, object> _data = new Dictionary<string, object>();
+        private static Dictionary<string, object> Data = new Dictionary<string, object>();
+        
+        private static Dictionary<string,DefineInfo> DefineInfo = new Dictionary<string,DefineInfo>();
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -134,14 +139,16 @@ namespace Amilious.Core.IO {
             //load existing data
             using(var fileStream = File.Open(SavePath, FileMode.Open)) {
                 var formatter = new BinaryFormatter();
-                _data = (Dictionary<string, object>)formatter.Deserialize(fileStream);
+                Data = (Dictionary<string, object>)formatter.Deserialize(fileStream);
             }
             //get the version
-            if(_data.TryGetCastValue(VERSION_KEY, out string versionText)) {
+            if(Data.TryGetCastValue(VERSION_KEY, out string versionText)) {
                 var version = new Version(versionText);
-                if(version != Version) UpgradeData(version, _data);
+                if(version != Version) UpgradeData(version, Data);
             }
             //load
+            DefineInfo = Data.TryGetCastValue(DEFINE_INFO, out Dictionary<string, DefineInfo> info)? 
+                info:new Dictionary<string, DefineInfo>();
             if(ShowSaveAndLoadLogs) Debug.Log($"{TITLE} <color=#00FF00>Loaded the {FILE_NAME} save data!</color>");
             OnAfterLoad?.Invoke();
         }
@@ -162,7 +169,9 @@ namespace Amilious.Core.IO {
         /// <param name="areYouSure">If true the data will be reset.</param>
         public static void Reset(bool areYouSure) {
             if(!areYouSure) return;
-            _data.Clear();
+            Data.Clear();
+            DefineInfo.Clear();
+            Data[DEFINE_INFO] = DefineInfo;
             //data containers
             OnResetting?.Invoke();
             DataChanged = true;
@@ -179,9 +188,11 @@ namespace Amilious.Core.IO {
         public static void Save() {
             OnBeforeSave?.Invoke();
             if(!DataChanged) return;
+            //make sure the define info is added
+            Data[DEFINE_INFO] = DefineInfo;
             using(var fileStream = File.Open(SavePath, FileMode.Create)) {
                 var formatter = new BinaryFormatter();
-                formatter.Serialize(fileStream, _data);
+                formatter.Serialize(fileStream, Data);
                 fileStream.Close();
             }
             DataChanged = false;
@@ -208,8 +219,8 @@ namespace Amilious.Core.IO {
         /// <typeparam name="T">The type of data being stored.</typeparam>
         public static void StoreData<T>(string key, T value, bool forceSave = false) {
             //we do not need to save the data if it has not changed.
-            if(_data.TryGetCastValue(key,out T value2)&&value2.Equals(value)) return;
-            _data[key] = value;
+            if(Data.TryGetCastValue(key,out T value2)&&value2.Equals(value)) return;
+            Data[key] = value;
             DataChanged = true;
             if(SaveWhenUpdated||!Application.isPlaying||forceSave) Save();
         }
@@ -222,7 +233,7 @@ namespace Amilious.Core.IO {
         /// <typeparam name="T">The type of data being stored.</typeparam>
         /// <returns>True if the data exists and is the correct type, otherwise false.</returns>
         public static bool TryReadData<T>(string key, out T value) {
-            return _data.TryGetCastValue(key, out value);
+            return Data.TryGetCastValue(key, out value);
         }
 
         /// <summary>
@@ -234,9 +245,32 @@ namespace Amilious.Core.IO {
         /// <typeparam name="T">The type of data being stored.</typeparam>
         /// <returns>The value of the given key or the default value.</returns>
         public static T ReadData<T>(string key, T defaultValue = default, bool forceSave = false) {
-            if(_data.TryGetCastValue<T>(key, out var value)) return value;
+            if(Data.TryGetCastValue<T>(key, out var value)) return value;
             StoreData(key,defaultValue,forceSave);
             return defaultValue;
+        }
+
+        public static bool TryGetDefineInfo(string name, out DefineInfo info) {
+            return DefineInfo.TryGetValueFix(name, out info);
+        }
+
+        public static bool TryAddDefineInfo(string name, DefineInfo info, bool replace, bool forceSave = false) {
+            if(!replace && DefineInfo.ContainsKey(name)) return false;
+            DefineInfo[name] = info;
+            DataChanged = true;
+            if(SaveWhenUpdated||!Application.isPlaying||forceSave) Save();
+            return true;
+        }
+
+        public static bool TryRemoveDefineInfo(string name, bool forceSave = false) {
+            var result = DefineInfo.Remove(name);
+            if(result) DataChanged = true;
+            if(SaveWhenUpdated||!Application.isPlaying||forceSave) Save();
+            return result;
+        }
+        
+        public static IEnumerable<DefineInfo> GetAllDefineInfo() {
+            return DefineInfo.Values;
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
