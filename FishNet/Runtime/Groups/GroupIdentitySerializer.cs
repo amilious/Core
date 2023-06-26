@@ -15,12 +15,13 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using FishNet.Serializing;
+using Amilious.Core.Authentication;
 using Amilious.Core.Identity.Group;
 
 namespace Amilious.Core.FishNet.Groups {
     
     /// <summary>
-    /// This class is used by the <see cref="FishNet"/> serializerMethods when sending user id's to the client.
+    /// This class is used by the <see cref="FishNet"/> serializerMethods when sending group id's to the client.
     /// </summary>
     public static class GroupIdentitySerializer {
         
@@ -34,6 +35,7 @@ namespace Amilious.Core.FishNet.Groups {
         public static void WriteGroupIdentity(this Writer writer, GroupIdentity identity) {
             writer.WriteByte((byte)identity.GroupType);
             writer.WriteInt32(identity.Id);
+            writer.WriteByte((byte)identity.AuthType);
             writer.WriteString(identity.Name);
         }
 
@@ -45,6 +47,7 @@ namespace Amilious.Core.FishNet.Groups {
         public static GroupIdentity ReadGroupIdentity(this Reader reader) {
             var type = (GroupType)reader.ReadByte();
             var id = reader.ReadInt32();
+            var auth = (AuthType)reader.ReadByte();
             var name = reader.ReadString();
             return new GroupIdentity(id, name, type);
         }
