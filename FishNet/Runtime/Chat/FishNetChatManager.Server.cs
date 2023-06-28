@@ -94,12 +94,12 @@ namespace Amilious.Core.FishNet.Chat {
         private void Server_ReceiveGroupMessage(int groupId, string message, NetworkConnection con = null) {
             UserIdentityManager.TryGetIdentity(con, out var sender);
             //make sure the channel exists
-            if(!GroupIdentityManager.TryGetMemberIds(groupId, out var members)) {
+            if(!GroupIdentityManager.TryGetMembers(groupId, out var members)) {
                 Client_ReceiveServerMessage(con,"Message sent to an invalid channel.");
                 return;
             }
             //make sure the sender is in the channel
-            if(!members.Contains(sender.Id)) { 
+            if(!members.Contains(sender)) { 
                 Client_ReceiveServerMessage(con,"You can't send a message to that group because you are not a member.");
                 return;
             }

@@ -14,8 +14,6 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using Amilious.Core.Identity;
-
 namespace Amilious.Core.Identity.Group {
     
     /// <summary>
@@ -34,8 +32,10 @@ namespace Amilious.Core.Identity.Group {
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
         private readonly int? _id;
+        private readonly int? _owner;
         private readonly string _name;
         private readonly GroupType? _groupType;
+        private readonly GroupAuthType? _authType;
         public readonly string _link;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,51 +43,80 @@ namespace Amilious.Core.Identity.Group {
         #region Static Instances ///////////////////////////////////////////////////////////////////////////////////////
 
         public static readonly GroupIdentity Default = default;
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
-        /// <summary>
-        /// This property contains the group's identity manager.
-        /// </summary>
-        public static IGroupIdentityManager Manager { get; private set; }
-        
         public int Id => _id ?? int.MinValue;
+
+        public int OwnerId => _owner ?? int.MinValue;
 
         public string Name => _name ?? "Default Group";
 
-        public GroupType GroupType => _groupType ?? GroupType.Global;
+        public GroupType Type => _groupType ?? GroupType.Global;
+
+        public GroupAuthType AuthType => _authType ?? GroupAuthType.None;
 
         public string Link => _link ?? Name;
 
         public IdentityType IdentityType => IdentityType.Group;
         
+        public IGroupIdentityManager Manager { get; }
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
-        public GroupIdentity(int id, string name, GroupType groupType) {
+        public GroupIdentity(IGroupIdentityManager manager, int id, string name, GroupType groupType, 
+            int owner = int.MinValue, GroupAuthType authType = GroupAuthType.None) {
             _id = id;
             _name = name;
             _groupType = groupType;
+            _authType = authType;
+            _owner = owner;
             _link = $"<link=group|{id}>{name}</link>";
+            Manager = manager;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
+        #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
-        /// This method is used to set the group identity manger for group identities.
+        /// This method is used to get the rank of the given user within the group.
         /// </summary>
-        /// <param name="manager">The group identity manager.</param>
-        /// <returns>True if the manager was set, otherwise false if the manager has already been set.</returns>
-        /// <remarks>This should only be called by the group identity manager.</remarks>
-        public static bool SetIdentityManager(IGroupIdentityManager manager) {
-            if(Manager != null) return false;
-            Manager = manager;
-            return true;
-        }
+        /// <param name="user">The user that you want to get the rank of.</param>
+        /// <returns>The user's rank or <see cref="short.MinValue"/> if the user does not exist or is not within the
+        /// group.</returns>
+        public short GetRank(int user) => Manager.GetRank(Id,user);
+
+        /// <summary>
+        /// This method is used to check if the given user is a member of the group.
+        /// </summary>
+        /// <param name="user">The user that you want to check.</param>
+        /// <returns>True if the user is a member in the group, otherwise false.</returns>
+        public bool IsMember(int user) => Manager.IsMember(Id, user);
+
+        /// <summary>
+        /// This method is used to get the user's status within the group.
+        /// </summary>
+        /// <param name="user">The user that you want to check.</param>
+        /// <returns>The status of the user within the group or <see cref="MemberStatus.None"/> if not in the group.
+        /// </returns>
+        public MemberStatus GetStatus(int user) => Manager.GetStatus(Id, user);
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Operators //////////////////////////////////////////////////////////////////////////////////////////////
+        
+        /// <summary>
+        /// Converts the <see cref="GroupIdentity"/> to an int.
+        /// </summary>
+        /// <param name="identity">The <see cref="GroupIdentity"/> instance.</param>
+        public static implicit operator int(GroupIdentity identity) { return identity.Id; }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
-    
 }

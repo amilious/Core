@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,41 +14,40 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
-
 namespace Amilious.Core.Identity.Group {
     
-    /// <summary>
-    /// This enum is used to represent the type of a group.
-    /// </summary>
-    [Serializable]
-    public enum GroupType : byte {
+    public enum MemberStatus : byte {
         
         /// <summary>
-        /// This value represents a global group.
+        /// The user is not in the group.
         /// </summary>
-        Global = 0,
+        None = 0,
         
         /// <summary>
-        /// This value represents a location group.
+        /// The user is a member
         /// </summary>
-        Location = 1,
+        Member = 1,
         
         /// <summary>
-        /// This value represents a party group.
+        /// The user has been invited.
         /// </summary>
-        Party = 2,
+        Invited = 2,
         
         /// <summary>
-        /// This value represents a guild group.
+        /// The user is pending approval.
         /// </summary>
-        Guild = 3,
+        Applying = 3,
         
         /// <summary>
-        /// This value represents a chat group.
+        /// The user has been kicked from the group.
         /// </summary>
-        Chat = 4
+        Kicked = 4,
+        
+        /// <summary>
+        /// The user has left the group.
+        /// </summary>
+        Left = 5
         
     }
     
-}
+} 

@@ -258,6 +258,12 @@ namespace Amilious.Core.Identity.User {
             //higher value means less authority
             return identity2._authority <= identity._authority;
         }
+        
+        /// <summary>
+        /// Converts the <see cref="UserIdentity"/> to an int.
+        /// </summary>
+        /// <param name="identity">The <see cref="UserIdentity"/> instance.</param>
+        public static implicit operator int(UserIdentity identity) { return identity.Id; }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

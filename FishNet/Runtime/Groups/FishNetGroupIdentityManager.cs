@@ -1,101 +1,123 @@
 ﻿
-using FishNet;
+using System;
 using UnityEngine;
 using FishNet.Object;
-using FishNet.Managing;
 using System.Collections.Generic;
 using Amilious.Core.Identity.Group;
+using Amilious.Core.Identity.User;
+using Amilious.Core.Identity.Group.GroupEventArgs;
 
 namespace Amilious.Core.FishNet.Groups {
     
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(short.MinValue+99)]
     [AddComponentMenu("Amilious/Networking/FishNet/FishNet Group Identity Manager")]
-    public class FishNetGroupIdentityManager : NetworkBehaviour, IGroupIdentityManager {
+    public partial class FishNetGroupIdentityManager : NetworkBehaviour, IGroupIdentityManager {
+        
+        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        private FishNetGroupDataManager _groupDataManager;
+        private IUserIdentityManager _userManager;
+        private AbstractGroupDataManager _dataManager;
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
-        /// <summary>
-        /// This can be used to get the instance of the first <see cref="NetworkManager"/>, otherwise you can get the
-        /// instance from the <see cref="NetworkManager"/>.
-        /// </summary>
-        public static FishNetGroupIdentityManager Instance => InstanceFinder.GetInstance<FishNetGroupIdentityManager>();
-        
-        public AbstractGroupDataManager GroupIdDataManager {
-            get {
-                if(_groupDataManager != null) return _groupDataManager;
-                _groupDataManager = NetworkManager.GetGroupDataManager();
-                return _groupDataManager;
-            }
-        }
-
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        #region Client & Server Properties /////////////////////////////////////////////////////////////////////////////
-        
         /// <inheritdoc />
-        public GroupIdentity this[int userId] {
-            get {
-                TryGetGroupIdentity(userId, out var groupIdentity);
-                return groupIdentity;
-            }
-        }
+        public GroupIdentity this[int userId] => throw new NotImplementedException();
 
         /// <inheritdoc />
         public IEnumerable<GroupIdentity> Identities { get; }
 
+        /// <inheritdoc />
+        public AbstractGroupDataManager DataManager {
+            get {
+                if(_dataManager is not null) return _dataManager;
+                _dataManager = this.GetGroupDataManager();
+                return _dataManager;
+            }
+        }
+
+        /// <inheritdoc />
+        public IUserIdentityManager UserManager {
+            get {
+                if(_userManager != null) return _userManager;
+                _userManager = this.GetUserManager();
+                return _userManager;
+            }
+        }
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        #region MonoBehavior Methods ///////////////////////////////////////////////////////////////////////////////////
+        #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
         
-        private void Awake() {
-            /*if(!NetworkManager.TryRegisterInstance(this)) {
-                AmiliousCore.RemoveDuplicateMessage(this);
-                Destroy(this);
-                return;
-            }*/
-            GroupIdentity.SetIdentityManager(this);
+        /// <inheritdoc />
+        public event EventHandler<CreatingGroupEventArgs> OnCreating;
+        
+        /// <inheritdoc />
+        public event EventHandler<ChangingOwnerGroupEventArgs> OnChangingOwner;
+        
+        /// <inheritdoc />
+        public event EventHandler<JoiningGroupEventArgs> OnJoining;
+        
+        /// <inheritdoc />
+        public event EventHandler<InvitingGroupEventArgs> OnInviting;
+        
+        /// <inheritdoc />
+        public event EventHandler<ApprovingJoinGroupEventArgs> OnApproving;
+        
+        /// <inheritdoc />
+        public event EventHandler<RankingGroupEventArgs> OnRanking;
+        
+        /// <inheritdoc />
+        public event EventHandler<LeavingGroupEventArgs> OnLeaving;
+        
+        /// <inheritdoc />
+        public event EventHandler<KickingGroupEventArgs> OnKicking;
+        
+        /// <inheritdoc />
+        public event EventHandler<DisbandingGroupEventArgs> OnDisbanding;
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Server And Client Methods //////////////////////////////////////////////////////////////////////////////
+        
+        /// <inheritdoc />
+        public bool IsMember(int group, int user) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public bool IsInvited(int group, int user) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public bool HasApplied(int group, int user) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public short GetRank(int group, int user) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public MemberStatus GetStatus(int group, int user) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public bool TryGetMembers(int group, out UserIdentity[] members) {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public bool TryGetGroup(int groupId, out GroupIdentity groupIdentity) {
+            throw new NotImplementedException();
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        public override void OnStartNetwork() {
-            base.OnStartNetwork();
-            NetworkManager.TryRegisterInstance(this);
-        }
-
-        /// <inheritdoc />
-        public virtual bool IsMember(int groupId, int identityId) {
-            throw new System.NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public virtual bool TryGetMemberIds(int groupId, out int[] members) {
-            throw new System.NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public virtual bool TryGetGroupIdentity(int groupId, out GroupIdentity groupIdentity) {
-            throw new System.NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public virtual bool CreateGroup(string name, int identityId, GroupType groupType, out int groupId, 
-            string password = null) {
-            throw new System.NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public virtual bool TryLeaveGroup(int groupId, int identityId) {
-            throw new System.NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public virtual bool TryJoinGroup(int groupId, int identityId, string password = null) {
-            throw new System.NotImplementedException();
-        }
         
     }
 }

@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,40 +14,33 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
+using Amilious.Core.Events;
 
-namespace Amilious.Core.Identity.Group {
+namespace Amilious.Core.Identity.Group.GroupEventArgs {
     
-    /// <summary>
-    /// This enum is used to represent the type of a group.
-    /// </summary>
-    [Serializable]
-    public enum GroupType : byte {
+    public class AbstractGroupEventArgs : AbstractServerClientEventArgs {
+    
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This value represents a global group.
+        /// This property contains the group that the event is for.
         /// </summary>
-        Global = 0,
+        public GroupIdentity Group { get; }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This value represents a location group.
+        /// This constructor is used to create a new <see cref="AbstractGroupEventArgs"/>.
         /// </summary>
-        Location = 1,
+        /// <param name="group">The group that the event is for.</param>
+        /// <param name="server">True if executing for the server, otherwise false for the client.</param>
+        protected AbstractGroupEventArgs(GroupIdentity group, bool server) : base(server) {
+            Group = group;
+        }
         
-        /// <summary>
-        /// This value represents a party group.
-        /// </summary>
-        Party = 2,
-        
-        /// <summary>
-        /// This value represents a guild group.
-        /// </summary>
-        Guild = 3,
-        
-        /// <summary>
-        /// This value represents a chat group.
-        /// </summary>
-        Chat = 4
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
     

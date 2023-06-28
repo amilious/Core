@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,41 +14,27 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
+using Amilious.Core.Identity.User;
 
-namespace Amilious.Core.Identity.Group {
+namespace Amilious.Core.Identity.Group.GroupEventArgs {
     
     /// <summary>
-    /// This enum is used to represent the type of a group.
+    /// This class is used for the <see cref="IGroupIdentityManager.OnJoining"/> event.
     /// </summary>
-    [Serializable]
-    public enum GroupType : byte {
+    public class JoiningGroupEventArgs : AbstractGroupMemberEventArgs {
+
+        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This value represents a global group.
+        /// This constructor is used to create a new <see cref="JoiningGroupEventArgs"/>.
         /// </summary>
-        Global = 0,
-        
-        /// <summary>
-        /// This value represents a location group.
-        /// </summary>
-        Location = 1,
-        
-        /// <summary>
-        /// This value represents a party group.
-        /// </summary>
-        Party = 2,
-        
-        /// <summary>
-        /// This value represents a guild group.
-        /// </summary>
-        Guild = 3,
-        
-        /// <summary>
-        /// This value represents a chat group.
-        /// </summary>
-        Chat = 4
+        /// <param name="group">The group that the event is for.</param>
+        /// <param name="user">The user that is trying to join the group.</param>
+        /// <param name="server">True if executing for the server, otherwise false for the client.</param>
+        public JoiningGroupEventArgs(GroupIdentity group, UserIdentity user, bool server) :
+            base(group, user, server) { }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
-    
 }

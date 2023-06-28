@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,41 +14,51 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
+using Amilious.Core.Identity.User;
 
-namespace Amilious.Core.Identity.Group {
+namespace Amilious.Core.Identity.Group.GroupEventArgs {
     
     /// <summary>
-    /// This enum is used to represent the type of a group.
+    /// This class is used for the <see cref="IGroupIdentityManager.OnRanking"/> event.
     /// </summary>
-    [Serializable]
-    public enum GroupType : byte {
+    public class RankingGroupEventArgs : AbstractGroupMemberEventArgs {
+
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This value represents a global group.
+        /// This property is used to get the user's current rank in the group.
         /// </summary>
-        Global = 0,
+        public short CurrentRank => Group.GetRank(User);
         
         /// <summary>
-        /// This value represents a location group.
+        /// The user that is requesting the rank change.
         /// </summary>
-        Location = 1,
+        public UserIdentity Requester { get; }
         
         /// <summary>
-        /// This value represents a party group.
+        /// The new rank that is being requested for the user.
         /// </summary>
-        Party = 2,
+        public short NewRank { get; }
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This value represents a guild group.
+        /// This constructor is used to create a new <see cref="RankingGroupEventArgs"/>.
         /// </summary>
-        Guild = 3,
+        /// <param name="group">The group that the event is for.</param>
+        /// <param name="requester">The user that is requesting the rank change.</param>
+        /// <param name="user">The user that the rank change is for.</param>
+        /// <param name="rank">The new rank that you want to give the user.</param>
+        /// <param name="server">True if executing for the server, otherwise false for the client.</param>
+        public RankingGroupEventArgs(GroupIdentity group, UserIdentity requester, UserIdentity user, short rank,
+            bool server) : base(group, user, server) {
+            Requester = requester;
+            NewRank = rank;
+        }
         
-        /// <summary>
-        /// This value represents a chat group.
-        /// </summary>
-        Chat = 4
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
-    
 }

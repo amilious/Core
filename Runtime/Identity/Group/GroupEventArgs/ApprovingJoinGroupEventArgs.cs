@@ -1,4 +1,4 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+﻿/*//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                    //
 //    _____            .__ .__   .__                             _________  __              .___.__                   //
 //   /  _  \    _____  |__||  |  |__|  ____   __ __  ______     /   _____/_/  |_  __ __   __| _/|__|  ____   ______   //
@@ -14,41 +14,39 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System;
+using Amilious.Core.Identity.User;
 
-namespace Amilious.Core.Identity.Group {
+namespace Amilious.Core.Identity.Group.GroupEventArgs {
     
     /// <summary>
-    /// This enum is used to represent the type of a group.
+    /// This class is used for the <see cref="IGroupIdentityManager.OnApproving"/> event.
     /// </summary>
-    [Serializable]
-    public enum GroupType : byte {
+    public class ApprovingJoinGroupEventArgs : AbstractGroupMemberEventArgs {
+        
+        #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This value represents a global group.
+        /// This property contains the approver.
         /// </summary>
-        Global = 0,
+        public UserIdentity Approver { get; }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This value represents a location group.
+        /// This constructor is used to create a new <see cref="ApprovingJoinGroupEventArgs"/>.
         /// </summary>
-        Location = 1,
+        /// <param name="group">The group the event is for.</param>
+        /// <param name="approver">The user that is doing the approving.</param>
+        /// <param name="user">The user that is being approved.</param>
+        /// <param name="server">True if executing for the server, otherwise false for the client.</param>
+        public ApprovingJoinGroupEventArgs(GroupIdentity group, UserIdentity approver, UserIdentity user, bool server) :
+            base(group, user, server) {
+            Approver = approver;
+        }
         
-        /// <summary>
-        /// This value represents a party group.
-        /// </summary>
-        Party = 2,
-        
-        /// <summary>
-        /// This value represents a guild group.
-        /// </summary>
-        Guild = 3,
-        
-        /// <summary>
-        /// This value represents a chat group.
-        /// </summary>
-        Chat = 4
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
-    
 }
