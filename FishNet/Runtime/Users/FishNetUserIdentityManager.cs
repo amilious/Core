@@ -33,7 +33,7 @@ namespace Amilious.Core.FishNet.Users {
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(short.MinValue+98)]
     [AddComponentMenu("Amilious/Networking/FishNet/FishNet User Identity Manager")]
-    public class FishNetUserIdentityManager : NetworkBehaviour, IUserIdentityManager {
+    public partial class FishNetUserIdentityManager : NetworkBehaviour, IUserIdentityManager {
 
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -287,13 +287,13 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         /// <inheritdoc />
-        public void Client_RemoveFriend(int friendId) => UpdateFriendsOnServer(friendId,false);
+        public void Client_RemoveFriend(int friendId) => Server_ReceiveFriendUpdate(friendId,false);
 
         /// <inheritdoc />
         public void Client_RemoveFriend(UserIdentity friend) => Client_RemoveFriend(friend.Id);
 
         /// <inheritdoc />
-        public void Client_AddFriend(int friendId) => UpdateFriendsOnServer(friendId,true);
+        public void Client_AddFriend(int friendId) => Server_ReceiveFriendUpdate(friendId,true);
 
         /// <inheritdoc />
         public void Client_AddFriend(UserIdentity friend) => Client_AddFriend(friend.Id);
@@ -302,13 +302,13 @@ namespace Amilious.Core.FishNet.Users {
         public void Client_BlockUser(UserIdentity user) => Client_BlockUser(user.Id);
 
         /// <inheritdoc />
-        public void Client_BlockUser(int userId) => UpdateBlockedOnServer(userId, true);
+        public void Client_BlockUser(int userId) => Server_ReceiveBlockedUpdate(userId, true);
 
         /// <inheritdoc />
         public void Client_UnblockUser(UserIdentity user) => Client_UnblockUser(user.Id);
 
         /// <inheritdoc />
-        public void Client_UnblockUser(int userId)  => UpdateBlockedOnServer(userId, false);
+        public void Client_UnblockUser(int userId)  => Server_ReceiveBlockedUpdate(userId, false);
 
         /// <inheritdoc />
         public bool Client_IsFriend(UserIdentity identity) => Client_IsFriend(identity.Id);
@@ -361,7 +361,7 @@ namespace Amilious.Core.FishNet.Users {
 
         public override void OnStartClient() {
             base.OnStartClient();
-            RequestUniqueData();
+            Server_ReceiveUniqueDataRequest();
         }
 
         private void OnRemoteConnectionState(NetworkConnection con, RemoteConnectionStateArgs args) {
@@ -480,163 +480,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        #region RPCs ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendFriendsToClient(NetworkConnection con, int[] friendIds) {
-            _friends.Clear();
-            foreach(var id in friendIds)_friends.Add(id);
-            Client_OnFriendListUpdated?.Invoke();
-        }
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendPendingFriendsToClient(NetworkConnection con, int[] pendingFriends) {
-            _pendingFriends.Clear();
-            foreach(var id in pendingFriends) _pendingFriends.Add(id);
-            Client_OnPendingFriendListUpdated?.Invoke();
-        }
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendRequestingFriendsToClient(NetworkConnection con, int[] requestingFriends) {
-            _requestingFriends.Clear();
-            foreach(var id in requestingFriends) _requestingFriends.Add(id);
-            Client_OnRequestingFriendListUpdated?.Invoke();
-        }
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendBlockedToClient(NetworkConnection con, int[] blockedIds) {
-            _blocked.Clear();
-            foreach(var id in blockedIds)_blocked.Add(id);
-            Client_OnBlockedListUpdated?.Invoke();
-        }
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendBlockedUpdated(NetworkConnection con, int userId, bool isBlocked) {
-            if(isBlocked && !_blocked.Contains(userId)) _blocked.Add(userId);
-            if(!isBlocked && _blocked.Contains(userId)) _blocked.Remove(userId);
-            Client_OnBlockedListUpdated?.Invoke();
-        }
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendFriendUpdated(NetworkConnection con, int userId, bool isFriend) {
-            if(isFriend&&!_friends.Contains(userId)) _friends.Add(userId);
-            if(!isFriend && _friends.Contains(userId)) _friends.Remove(userId);
-            Client_OnFriendListUpdated?.Invoke();
-        }
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendPendingFriendUpdated(NetworkConnection con, int userId, bool isPending) {
-            if(isPending&&!_pendingFriends.Contains(userId)) _pendingFriends.Add(userId);
-            if(!isPending && _pendingFriends.Contains(userId)) _pendingFriends.Remove(userId);
-            Client_OnPendingFriendListUpdated?.Invoke();
-        }
-
-        [TargetRpc]
-        // ReSharper disable once UnusedParameter.Local
-        private void SendRequestingFriendUpdated(NetworkConnection con, int userId, bool isRequesting) {
-            if(isRequesting&&!_requestingFriends.Contains(userId)) _requestingFriends.Add(userId);
-            if(!isRequesting && _requestingFriends.Contains(userId)) _requestingFriends.Remove(userId);
-            Client_OnRequestingFriendListUpdated?.Invoke();
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void RequestUniqueData(NetworkConnection con = null) {
-            if(con == null) con = LocalConnection;
-            if(!con.TryGetUserId(out var userId)) return;
-            if(FriendsNeedAcceptance) {
-                var approved = UserIdDataManager.Server_GetApprovedFriends(userId).ToArray();
-                var notApproved = UserIdDataManager.Server_GetNotApprovedFriends(userId).ToArray();
-                var requesting = UserIdDataManager.Server_GetRequestingFriends(userId).ToArray();
-                SendFriendsToClient(con,approved);
-                SendPendingFriendsToClient(con,notApproved);
-                SendRequestingFriendsToClient(con,requesting);
-            }else {
-                var friends = UserIdDataManager.Server_GetFriends(userId).ToArray();
-                //send friends
-                SendFriendsToClient(con,friends);
-            }
-            //send blocked
-            SendBlockedToClient(con,UserIdDataManager.Server_GetBlockedUsers(userId).ToArray());
-        }
         
-        [ServerRpc(RequireOwnership = false)]
-        private void UpdateFriendsOnServer(int userId, bool isFriend, NetworkConnection con = null) {
-            if(!con.TryGetUserId(out var id)) return;
-            if(!UserIdDataManager.Server_IsUserIdValid(userId)) return;
-            if(isFriend == UserIdDataManager.Server_HasFriended(id, userId)) return;
-            //unblock if blocked and adding friend
-            if(isFriend && UserIdDataManager.Server_HasBlocked(id, userId)) {
-                UserIdDataManager.Server_UnblockUser(id,userId);
-                SendBlockedUpdated(con,userId,false);
-            }
-            //add friend
-            if(isFriend)UserIdDataManager.Server_FriendUser(id,userId);
-            else UserIdDataManager.Server_UnfriendUser(id,userId);
-            if(!friendshipsRequireAcceptance) {
-                SendFriendUpdated(con,userId,isFriend);
-                return;
-            }
-            //acceptance is required
-            TryGetConnection(userId, out var friendCon);
-            //request is pending
-            if(isFriend && UserIdDataManager.Server_HasApprovedFriendship(id, userId)) {
-                //update friends info
-                if(friendCon != null&&friendCon.IsActive) {
-                    SendPendingFriendUpdated(friendCon, id, false);
-                    SendFriendUpdated(friendCon, id, true);
-                }
-                //update your info
-                SendFriendUpdated(con,userId, true);
-                SendRequestingFriendUpdated(con,userId,false);
-                return;
-            }
-            if(!isFriend) {
-                if(friendCon != null && friendCon.IsActive) {
-                    SendPendingFriendUpdated(friendCon, id, true);
-                    SendFriendUpdated(friendCon, id, false);
-                }
-                SendFriendUpdated(con,userId, false);
-                SendRequestingFriendUpdated(con,userId,true);
-            }
-            //no pending request
-            if(friendCon != null && friendCon.IsActive)
-                SendRequestingFriendUpdated(friendCon,id,true);
-            SendPendingFriendUpdated(con,userId,true);
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void UpdateBlockedOnServer(int userId, bool isBlocked, NetworkConnection con = null) {
-            if(!con.TryGetUserId(out var id)) return;
-            if(!UserIdDataManager.Server_IsUserIdValid(userId)) return;
-            if(isBlocked == UserIdDataManager.Server_HasBlocked(id, userId)) return;
-            if(isBlocked&&!friendshipsRequireAcceptance && UserIdDataManager.Server_HasFriended(id, userId)) {
-                UserIdDataManager.Server_UnfriendUser(id,userId);
-                SendFriendUpdated(con,userId,false);
-            }
-            if(isBlocked&&friendshipsRequireAcceptance && UserIdDataManager.Server_HasFriended(id, userId)) {
-                TryGetConnection(userId, out var friendCon);
-                UserIdDataManager.Server_UnfriendUser(id,userId);
-                if(friendCon != null && friendCon.IsActive) {
-                    SendFriendUpdated(friendCon, id, false);
-                    SendPendingFriendUpdated(friendCon, id, true);
-                }
-                SendFriendUpdated(con,userId,false);
-            }
-            if(isBlocked) UserIdDataManager.Server_BlockUser(id,userId);
-            else UserIdDataManager.Server_UnblockUser(id,userId);
-            SendBlockedUpdated(con,userId,isBlocked);
-        }
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
     }
     
 }
