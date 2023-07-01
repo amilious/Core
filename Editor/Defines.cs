@@ -127,6 +127,7 @@ namespace Amilious.Core.Editor {
         public static void RegisterAsset(string name, string color) {
             var path = System.Reflection.Assembly.GetCallingAssembly().GetDefinitionAssetPath();
             var exists = BasicSave.TryGetDefineInfo(name, out var defineInfo);
+            defineInfo ??= new DefineInfo(name, path);
             if(exists&&defineInfo.assemblyDefinitionPath==path&&defineInfo.color==color) return;
             defineInfo.assemblyDefinitionPath = path;
             defineInfo.color = color;
