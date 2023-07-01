@@ -37,14 +37,14 @@ namespace Amilious.Core.Chat {
         /// </summary>
         /// <param name="sender">The id of the message sender.</param>
         /// <param name="message">The message that was sent.</param>
-        public delegate void ReceiveGlobalMessageDelegate(int sender, string message);
+        public delegate void ReceiveGlobalMessageDelegate(uint sender, string message);
         
         /// <summary>
         /// This delegate is used for the <see cref="IChatManager.OnReceivePrivateMessage"/> event.
         /// </summary>
         /// <param name="sender">The id of the message sender.</param>
         /// <param name="message">The message that was sent.</param>
-        public delegate void ReceivePrivateMessageDelegate(int sender, string message);
+        public delegate void ReceivePrivateMessageDelegate(uint sender, string message);
         
         /// <summary>
         /// This delegate is used for the <see cref="IChatManager.OnReceiveGroupMessage"/> event.
@@ -52,7 +52,7 @@ namespace Amilious.Core.Chat {
         /// <param name="sender">The id of the message sender.</param>
         /// <param name="group">The id of the group that the message was sent to.</param>
         /// <param name="message">The message that was sent.</param>
-        public delegate void ReceiveGroupMessageDelegate(int sender, int group, string message);
+        public delegate void ReceiveGroupMessageDelegate(uint sender, uint group, string message);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -107,7 +107,7 @@ namespace Amilious.Core.Chat {
         /// <param name="groupId">The id of the group that you want to receive the message.</param>
         /// <param name="message">The message that you want to send to the group.</param>
         /// <remarks>This method should only be called by the client and not a server.</remarks>
-        public void SendGroupMessage(int groupId, string message);
+        public void SendGroupMessage(uint groupId, string message);
 
         /// <summary>
         /// This method is used to send a private message.
@@ -123,7 +123,7 @@ namespace Amilious.Core.Chat {
         /// <param name="recipientId">The id of the user that you want to receive the message.</param>
         /// <param name="message">The message that you want to send to the recipient.</param>
         /// <remarks>This method should only be called by the client and not a server.</remarks>
-        public void SendPrivateMessage(int recipientId, string message);
+        public void SendPrivateMessage(uint recipientId, string message);
 
         /// <summary>
         /// This method is used to send a server message to the given recipient.
@@ -139,7 +139,7 @@ namespace Amilious.Core.Chat {
         /// <param name="recipientId">The id of the user that you want to receive the message.</param>
         /// <param name="message">The message that you want the recipient to receive.</param>
         /// <remarks>This method should only be called by the server not a client.</remarks>
-        public void SendMessageToClient(int recipientId, string message);
+        public void SendMessageToClient(uint recipientId, string message);
 
         /// <summary>
         /// This method is used to send a message to all of the clients.

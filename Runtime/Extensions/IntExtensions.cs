@@ -43,6 +43,14 @@ namespace Amilious.Core.Extensions {
             return $"{i} {singular}s";
         }
 
+        /// <summary>
+        /// This method is used to pack two int values into a long.
+        /// </summary>
+        /// <param name="value1">The first value.</param>
+        /// <param name="value2">The second value.</param>
+        /// <returns>The two values packed as a long.</returns>
+        public static long PackWith(this int value1, int value2) => ((long)value1) << 32 | ((long)value2 & 0xFFFFFFFF);
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

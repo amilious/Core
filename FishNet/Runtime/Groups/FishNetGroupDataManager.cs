@@ -3,16 +3,14 @@ using UnityEngine;
 using FishNet.Managing;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
-using Amilious.Core.FishNet.Chat;
-using Amilious.Core.Identity.Group;
-using FishNet;
+using Amilious.Core.Identity.Group.Data;
 
 namespace Amilious.Core.FishNet.Groups {
     
     [RequireComponent(typeof(NetworkManager))]
     [AmiHelpBox(HELP_BOX_TEXT,HelpBoxType.Info)]
     [AddComponentMenu("Amilious/Networking/FishNet/FishNet Group Data Manager")]
-    public class FishNetGroupDataManager : AbstractGroupDataManager {
+    public class FishNetGroupDataManager : DefaultGroupDataManager {
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         

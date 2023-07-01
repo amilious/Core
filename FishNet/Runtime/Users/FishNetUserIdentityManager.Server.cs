@@ -25,7 +25,7 @@ namespace Amilious.Core.FishNet.Users {
         }
         
         [ServerRpc(RequireOwnership = false)]
-        private void Server_ReceiveFriendUpdate(int userId, bool isFriend, NetworkConnection con = null) {
+        private void Server_ReceiveFriendUpdate(uint userId, bool isFriend, NetworkConnection con = null) {
             if(!con.TryGetUserId(out var id)) return;
             if(!UserIdDataManager.Server_IsUserIdValid(userId)) return;
             if(isFriend == UserIdDataManager.Server_HasFriended(id, userId)) return;
@@ -70,7 +70,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void Server_ReceiveBlockedUpdate(int userId, bool isBlocked, NetworkConnection con = null) {
+        private void Server_ReceiveBlockedUpdate(uint userId, bool isBlocked, NetworkConnection con = null) {
             if(!con.TryGetUserId(out var id)) return;
             if(!UserIdDataManager.Server_IsUserIdValid(userId)) return;
             if(isBlocked == UserIdDataManager.Server_HasBlocked(id, userId)) return;

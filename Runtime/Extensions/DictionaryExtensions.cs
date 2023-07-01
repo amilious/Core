@@ -149,6 +149,112 @@ namespace Amilious.Core.Extensions {
             var keys = dictionary.Keys.ToList();
             return keys.GetPrevious(currentKey, extraKeys);
         }
+
+        /// <summary>
+        /// This method is used to check if the dictionary contains a value for the given keys.
+        /// </summary>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>True if the dictionary contains the given key pair, otherwise false.</returns>
+        public static bool ContainsKeys<TValue>(this IDictionary<long, TValue> dictionary, int key1, int key2) {
+            return dictionary.ContainsKey(key1.PackWith(key2));
+        }
+
+        /// <summary>
+        /// This method is used to try get the value for the given key pair.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to get the value from.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <param name="value">The value.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>True if the value exists, otherwise false.</returns>
+        public static bool TryGetValue<TValue>(this IDictionary<long, TValue> dictionary, int key1, int key2, out TValue value) {
+            return dictionary.TryGetValueFix(key1.PackWith(key2), out value);
+        }
+
+        /// <summary>
+        /// This method is used to add a new value to the dictionary with the give key pair.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to add the value to.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <param name="value">The value.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>Returns true if the value was added, otherwise false if the key pair was already in use.</returns>
+        public static bool Add<TValue>(this IDictionary<long, TValue> dictionary, int key1, int key2, TValue value) {
+            var key = key1.PackWith(key2);
+            if(dictionary.ContainsKey(key)) return false;
+            dictionary.Add(key, value);
+            return true;
+        }
+
+        /// <summary>
+        /// This method is used to remove an entry from a dictionary using the given key pair.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to remove the value from.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>True if a value was removed, otherwise false.</returns>
+        public static bool Remove<TValue>(this IDictionary<long, TValue> dictionary, int key1, int key2) {
+            return dictionary.Remove(key1.PackWith(key2));
+        }
+        
+        /// <summary>
+        /// This method is used to check if the dictionary contains a value for the given keys.
+        /// </summary>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>True if the dictionary contains the given key pair, otherwise false.</returns>
+        public static bool ContainsKeys<TValue>(this IDictionary<ulong, TValue> dictionary, uint key1, uint key2) {
+            return dictionary.ContainsKey(key1.PackWith(key2));
+        }
+
+        /// <summary>
+        /// This method is used to try get the value for the given key pair.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to get the value from.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <param name="value">The value.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>True if the value exists, otherwise false.</returns>
+        public static bool TryGetValue<TValue>(this IDictionary<ulong, TValue> dictionary, uint key1, uint key2, out TValue value) {
+            return dictionary.TryGetValueFix(key1.PackWith(key2), out value);
+        }
+
+        /// <summary>
+        /// This method is used to add a new value to the dictionary with the give key pair.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to add the value to.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <param name="value">The value.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>Returns true if the value was added, otherwise false if the key pair was already in use.</returns>
+        public static bool Add<TValue>(this IDictionary<ulong, TValue> dictionary, uint key1, uint key2, TValue value) {
+            var key = key1.PackWith(key2);
+            if(dictionary.ContainsKey(key)) return false;
+            dictionary.Add(key, value);
+            return true;
+        }
+
+        /// <summary>
+        /// This method is used to remove an entry from a dictionary using the given key pair.
+        /// </summary>
+        /// <param name="dictionary">The dictionary that you want to remove the value from.</param>
+        /// <param name="key1">The first key.</param>
+        /// <param name="key2">The second key.</param>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <returns>True if a value was removed, otherwise false.</returns>
+        public static bool Remove<TValue>(this IDictionary<ulong, TValue> dictionary, uint key1, uint key2) {
+            return dictionary.Remove(key1.PackWith(key2));
+        }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

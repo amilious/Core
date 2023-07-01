@@ -20,7 +20,7 @@ namespace Amilious.Core.FishNet.Authentication {
     
     public struct AuthenticationBroadcast : IBroadcast {
         public string UserName;
-        public int UserId;
+        public uint UserId;
     }
 
     public struct PasswordRequestBroadcast : IBroadcast {
@@ -38,7 +38,7 @@ namespace Amilious.Core.FishNet.Authentication {
     public struct AuthenticationResultBroadcast : IBroadcast {
         public bool Passed;
         public bool NewUser;
-        public int UserId;
+        public uint UserId;
         public string ServerIdentifier;
         public string UserName;
         public string Response;

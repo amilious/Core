@@ -62,7 +62,7 @@ namespace Amilious.Core.FishNet.Chat {
             Server_ReceiveGroupMessage(group.Id,message);
 
         /// <inheritdoc />
-        public void SendGroupMessage(int groupId, string message) => 
+        public void SendGroupMessage(uint groupId, string message) => 
             Server_ReceiveGroupMessage(groupId, message);
 
         /// <inheritdoc />
@@ -70,7 +70,7 @@ namespace Amilious.Core.FishNet.Chat {
             Server_ReceivePrivateMessage(recipient.Id, message);
 
         /// <inheritdoc />
-        public void SendPrivateMessage(int recipientId, string message) =>
+        public void SendPrivateMessage(uint recipientId, string message) =>
             Server_ReceivePrivateMessage(recipientId, message);
 
         /// <inheritdoc />
@@ -84,7 +84,7 @@ namespace Amilious.Core.FishNet.Chat {
         }
         
         /// <inheritdoc />
-        public void SendMessageToClient(int recipientId, string message) {
+        public void SendMessageToClient(uint recipientId, string message) {
             if(!IsServer) {
                 Debug.LogWarning("Only the server can send messages to clients!");
                 return;

@@ -51,22 +51,22 @@ namespace Amilious.Core.FishNet.Users {
         /// <summary>
         /// This list is used to store all of the user's friends on the client.
         /// </summary>
-        private readonly List<int> _friends = new List<int>();
+        private readonly List<uint> _friends = new List<uint>();
 
         /// <summary>
         /// This list is used to store all of the user's friendships that are currently pending.
         /// </summary>
-        private readonly List<int> _pendingFriends = new List<int>();
+        private readonly List<uint> _pendingFriends = new List<uint>();
         
         /// <summary>
         /// This list is used to store all of the user's friendship requests.
         /// </summary>
-        private readonly List<int> _requestingFriends = new List<int>();
+        private readonly List<uint> _requestingFriends = new List<uint>();
         
         /// <summary>
         /// This list is used to store all of the user's blocked users on the client.
         /// </summary>
-        private readonly List<int> _blocked = new List<int>();
+        private readonly List<uint> _blocked = new List<uint>();
 
         private FishNetUserDataManager _userDataManager;
         
@@ -97,12 +97,12 @@ namespace Amilious.Core.FishNet.Users {
         /// This dictionary is used to store all of the user's identities.
         /// </summary>
         [SyncObject] 
-        private readonly SyncDictionary<int, UserIdentity> _userLookup = new SyncDictionary<int, UserIdentity>();
+        private readonly SyncDictionary<uint, UserIdentity> _userLookup = new SyncDictionary<uint, UserIdentity>();
         
         /// <summary>
         /// This hash set is used to store all of the online user ids.
         /// </summary>
-        [SyncObject] private readonly SyncHashSet<int> _online = new SyncHashSet<int>();
+        [SyncObject] private readonly SyncHashSet<uint> _online = new SyncHashSet<uint>();
 
         [SyncVar(Channel = Channel.Reliable)] 
         private string _serverIdentifier;
@@ -183,7 +183,7 @@ namespace Amilious.Core.FishNet.Users {
         public IEnumerable<UserIdentity> Identities => _userLookup.Values;
 
         /// <inheritdoc />
-        public UserIdentity this[int userId] {
+        public UserIdentity this[uint userId] {
             get {
                 TryGetIdentity(userId, out var userIdentity);
                 return userIdentity;
@@ -250,7 +250,7 @@ namespace Amilious.Core.FishNet.Users {
         #region Interface Methods //////////////////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc />
-        public virtual bool TryGetIdentity(int id, out UserIdentity identity) {
+        public virtual bool TryGetIdentity(uint id, out UserIdentity identity) {
             var found = _userLookup.TryGetValueFix(id, out identity);
             if(!found) identity = UserIdentity.DefaultUser;
             return found;
@@ -268,7 +268,7 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         /// <inheritdoc />
-        public bool IsOnline(int id) => _online.Contains(id);
+        public bool IsOnline(uint id) => _online.Contains(id);
 
         /// <inheritdoc />
         public bool IsOnline(UserIdentity identity) => IsOnline(identity.Id);
@@ -280,20 +280,20 @@ namespace Amilious.Core.FishNet.Users {
         }
 
         /// <inheritdoc />
-        public virtual bool Server_CanSendMessage(int sender, int recipient) {
+        public virtual bool Server_CanSendMessage(uint sender, uint recipient) {
             return !UserIdDataManager.Server_HasBlocked(sender, recipient) && 
                    !UserIdDataManager.Server_HasBlocked(recipient, sender) && 
                    _online.Contains(recipient);
         }
 
         /// <inheritdoc />
-        public void Client_RemoveFriend(int friendId) => Server_ReceiveFriendUpdate(friendId,false);
+        public void Client_RemoveFriend(uint friendId) => Server_ReceiveFriendUpdate(friendId,false);
 
         /// <inheritdoc />
         public void Client_RemoveFriend(UserIdentity friend) => Client_RemoveFriend(friend.Id);
 
         /// <inheritdoc />
-        public void Client_AddFriend(int friendId) => Server_ReceiveFriendUpdate(friendId,true);
+        public void Client_AddFriend(uint friendId) => Server_ReceiveFriendUpdate(friendId,true);
 
         /// <inheritdoc />
         public void Client_AddFriend(UserIdentity friend) => Client_AddFriend(friend.Id);
@@ -302,37 +302,37 @@ namespace Amilious.Core.FishNet.Users {
         public void Client_BlockUser(UserIdentity user) => Client_BlockUser(user.Id);
 
         /// <inheritdoc />
-        public void Client_BlockUser(int userId) => Server_ReceiveBlockedUpdate(userId, true);
+        public void Client_BlockUser(uint userId) => Server_ReceiveBlockedUpdate(userId, true);
 
         /// <inheritdoc />
         public void Client_UnblockUser(UserIdentity user) => Client_UnblockUser(user.Id);
 
         /// <inheritdoc />
-        public void Client_UnblockUser(int userId)  => Server_ReceiveBlockedUpdate(userId, false);
+        public void Client_UnblockUser(uint userId)  => Server_ReceiveBlockedUpdate(userId, false);
 
         /// <inheritdoc />
         public bool Client_IsFriend(UserIdentity identity) => Client_IsFriend(identity.Id);
 
         /// <inheritdoc />
-        public bool Client_IsFriend(int id) => _friends.Contains(id);
+        public bool Client_IsFriend(uint id) => _friends.Contains(id);
 
         /// <inheritdoc />
         public bool Client_IsBlocked(UserIdentity identity) => Client_IsBlocked(identity.Id);
 
         /// <inheritdoc />
-        public bool Client_IsBlocked(int id) => _blocked.Contains(id);
+        public bool Client_IsBlocked(uint id) => _blocked.Contains(id);
 
         /// <inheritdoc />
         public bool Client_IsRequestingFriendship(UserIdentity identity) => Client_IsRequestingFriendship(identity.Id);
 
         /// <inheritdoc />
-        public bool Client_IsRequestingFriendship(int id) => _requestingFriends.Contains(id);
+        public bool Client_IsRequestingFriendship(uint id) => _requestingFriends.Contains(id);
 
         /// <inheritdoc />
         public bool Client_IsPendingFriendship(UserIdentity identity) => Client_IsPendingFriendship(identity.Id);
 
         /// <inheritdoc />
-        public bool Client_IsPendingFriendship(int id) => _pendingFriends.Contains(id);
+        public bool Client_IsPendingFriendship(uint id) => _pendingFriends.Contains(id);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -343,7 +343,7 @@ namespace Amilious.Core.FishNet.Users {
             NetworkManager.TryRegisterInstance(this);
         }
         
-        private void OnlineChanged(SyncHashSetOperation op, int item, bool server) {
+        private void OnlineChanged(SyncHashSetOperation op, uint item, bool server) {
             if(server) return;
             var online = op != SyncHashSetOperation.Remove;
             if(!TryGetIdentity(item, out var identity)) return;
@@ -378,7 +378,7 @@ namespace Amilious.Core.FishNet.Users {
         /// </summary>
         /// <param name="id">The updated identity id.</param>
         [Server]
-        public void UpdateIdentity(int id) {
+        public void UpdateIdentity(uint id) {
             if(!UserIdDataManager.Server_TryGetUserIdentity(id, out var identity)) {
                 _userLookup.Remove(id); 
                 return;
@@ -428,7 +428,7 @@ namespace Amilious.Core.FishNet.Users {
         /// <returns>True if able to find a connection for the given identity id, otherwise false.</returns>
         /// <remarks>This method should only be called from the server!</remarks>
         [Server]
-        public virtual bool TryGetConnection(int identityId, out NetworkConnection connection) {
+        public virtual bool TryGetConnection(uint identityId, out NetworkConnection connection) {
             if(TryGetIdentity(identityId, out var identity)) 
                 return identity.TryGetConnection(NetworkManager,out connection);
             connection = null;
@@ -456,7 +456,7 @@ namespace Amilious.Core.FishNet.Users {
 
         /// <inheritdoc />
         [Server]
-        public virtual bool Server_TrySetAuthority(int userId, int value) {
+        public virtual bool Server_TrySetAuthority(uint userId, int value) {
             if(!UserIdDataManager.Server_IsUserIdValid(userId)) return false;
             UserIdDataManager.Server_StoreUserData(userId,UserIdentity.AUTHORITY_KEY,value);
             UpdateIdentity(userId);
@@ -470,7 +470,7 @@ namespace Amilious.Core.FishNet.Users {
         
         /// <inheritdoc />
         [Server]
-        public virtual bool Server_TryUpdateUserName(int userId, string userName) {
+        public virtual bool Server_TryUpdateUserName(uint userId, string userName) {
             if(!UserIdDataManager.Server_IsUserIdValid(userId)) return false;
             //make sure the user name is not being used
             if(UserIdDataManager.Server_TryGetIdFromUserName(userName, out _)) return false;

@@ -33,13 +33,12 @@ namespace Amilious.Core.Identity.User {
         public const string PASSWORD_KEY = "_password_";
         public const string LAST_DISCONNECTED_KEY = "_last_disconnected_";
         public const string LAST_CONNECTED_KEY = "_last_connected_";
-        public const int RESERVED_ID = int.MinValue;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
-        private readonly int? _id;
+        private readonly uint? _id;
         private readonly string _userName;
         private readonly string _link;
         private readonly int? _authority;
@@ -76,7 +75,7 @@ namespace Amilious.Core.Identity.User {
         /// <summary>
         /// This property contains the user's identification number.
         /// </summary>
-        public int Id => _id ?? int.MinValue;
+        public uint Id => _id ?? 0;
 
         /// <summary>
         /// This property contains the user's user name.
@@ -104,7 +103,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="id">The id of the user.</param>
         /// <param name="userName">The display name of the user.</param>
-        public UserIdentity(int id, string userName) {
+        public UserIdentity(uint id, string userName) {
             _id = id;
             _userName = userName;
             _authority = null;
@@ -118,7 +117,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="id">The id of the user.</param>
         /// <param name="userName">The display name of the user.</param>
         /// <param name="authority">The user's server authority.</param>
-        public UserIdentity(int id, string userName, int authority) {
+        public UserIdentity(uint id, string userName, int authority) {
             _id = id;
             _userName = userName;
             _authority = authority;
@@ -132,7 +131,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="displayName">The display name.</param>
         /// <param name="userType">The identity type.</param>
         private UserIdentity(string displayName, UserType userType) {
-            _id = RESERVED_ID;
+            _id = 0;
             _userName = displayName;
             _authority = null;
             _link = displayName;
@@ -263,7 +262,7 @@ namespace Amilious.Core.Identity.User {
         /// Converts the <see cref="UserIdentity"/> to an int.
         /// </summary>
         /// <param name="identity">The <see cref="UserIdentity"/> instance.</param>
-        public static implicit operator int(UserIdentity identity) { return identity.Id; }
+        public static implicit operator uint(UserIdentity identity) { return identity.Id; }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group;
 using System.Runtime.Serialization.Formatters.Binary;
+using Amilious.Core.Identity.Group.Data;
 
 // ReSharper disable MemberCanBePrivate.Global
 namespace Amilious.Core.IO {
@@ -49,41 +50,43 @@ namespace Amilious.Core.IO {
         private const string SERVER_USER_FRIENDS = "**server_user_friends**";
         private const string SERVER_NEXT_IDENTITY_ID = "**server_next_identity_id**";
         private const string SERVER_NEXT_GROUP_ID = "**server_next_channel_id**";
-        private const string SERVER_GROUP_DATA = "**server_group_data**";
-        private const string SERVER_GROUP_MEMBERS = "**server_group_members**";
         private const int SERVER_IDENTIFIER_LENGTH = 24;
         private const string CLIENT_USER_NAME = "**client_user_name**";
         private const string CLIENT_PASSWORD = "**client_password**";
         private const string CLIENT_REPLY_IDENTITY = "**reply_identity";
         private const string TITLE = "<b><color="+LABEL_COLOR+">["+SAVE_NAME+"]</color></b>";
 
+        private const string SERVER_DATA_GROUP_MEMBERS = "**group_member_data**";
+        private const string SERVER_DATA_GROUPS = "**server_data_groups**";
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+                   
         /// <summary>
         /// This dictionary contains all of the save data.
         /// </summary>
-        private static Dictionary<string, object> _data = new Dictionary<string, object>();
+        private static Dictionary<string, object> Data = new Dictionary<string, object>();
         
         /// <summary>
         /// This dictionary is used to store all of the user data.
         /// </summary>
-        private static Dictionary<int, Dictionary<string, object>> _serverUserData = 
-            new Dictionary<int, Dictionary<string, object>>();
+        private static Dictionary<uint, Dictionary<string, object>> ServerUserData = 
+            new Dictionary<uint, Dictionary<string, object>>();
         
         /// <summary>
         /// This dictionary is used to store all of the users that other users have blocked.
         /// </summary>
-        private static Dictionary<int, List<int>> _serverUserBlocked = new Dictionary<int, List<int>>();
+        private static Dictionary<uint, List<uint>> ServerUserBlocked = new Dictionary<uint, List<uint>>();
         
         /// <summary>
         /// This dictionary is used to store all of the users that other users have friended.
         /// </summary>
-        private static Dictionary<int, List<int>> _serverUserFriends = new Dictionary<int, List<int>>();
+        private static Dictionary<uint, List<uint>> ServerUserFriends = new Dictionary<uint, List<uint>>();
 
-        private static Dictionary<int, List<int>> _serverGroupMembers = new Dictionary<int, List<int>>();
+        
+        private static Dictionary<uint, GroupData> GroupData = new Dictionary<uint, GroupData>();
 
-        private static Dictionary<int, Dictionary<string, object>> _serverGroupData = 
-            new Dictionary<int, Dictionary<string, object>>();
+        private static Dictionary<uint, Dictionary<uint, GroupMemberData>> GroupMemberData =
+            new Dictionary<uint, Dictionary<uint, GroupMemberData>>();
         
         #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -126,7 +129,7 @@ namespace Amilious.Core.IO {
         /// </summary>
         public static bool ShowSaveAndLoadLogs { get; set; } = true;
 
-        public static bool DataChanged { get; private set; } = false;
+        public static bool DataChanged { get; private set; }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -166,24 +169,24 @@ namespace Amilious.Core.IO {
             //load existing data
             using(var fileStream = File.Open(SavePath, FileMode.Open)) {
                 var formatter = new BinaryFormatter();
-                _data = (Dictionary<string, object>)formatter.Deserialize(fileStream);
+                Data = (Dictionary<string, object>)formatter.Deserialize(fileStream);
             }
             //get the version
-            if(_data.TryGetCastValue(IDENTITY_SAVE_VERSION_KEY, out string versionText)) {
+            if(Data.TryGetCastValue(IDENTITY_SAVE_VERSION_KEY, out string versionText)) {
                 var version = new Version(versionText);
-                if(version != Version) UpgradeData(version, _data);
+                if(version != Version) UpgradeData(version, Data);
             }
             //load
-            if(!_data.TryGetCastValue(SERVER_USER_DATA, out _serverUserData))
-                _serverUserData = new Dictionary<int, Dictionary<string, object>>();
-            if(!_data.TryGetCastValue(SERVER_USER_BLOCKED, out _serverUserBlocked))
-                _serverUserBlocked = new Dictionary<int, List<int>>();
-            if(!_data.TryGetCastValue(SERVER_USER_FRIENDS, out _serverUserFriends))
-                _serverUserFriends = new Dictionary<int, List<int>>();
-            if(!_data.TryGetCastValue(SERVER_GROUP_DATA, out _serverGroupData))
-                _serverGroupData = new Dictionary<int, Dictionary<string, object>>();
-            if(!_data.TryGetCastValue(SERVER_GROUP_MEMBERS, out _serverGroupMembers))
-                _serverGroupMembers = new Dictionary<int, List<int>>();
+            if(!Data.TryGetCastValue(SERVER_USER_DATA, out ServerUserData))
+                ServerUserData = new Dictionary<uint, Dictionary<string, object>>();
+            if(!Data.TryGetCastValue(SERVER_USER_BLOCKED, out ServerUserBlocked))
+                ServerUserBlocked = new Dictionary<uint, List<uint>>();
+            if(!Data.TryGetCastValue(SERVER_USER_FRIENDS, out ServerUserFriends))
+                ServerUserFriends = new Dictionary<uint, List<uint>>();
+            if(!Data.TryGetCastValue(SERVER_DATA_GROUPS, out GroupData))
+                GroupData = new Dictionary<uint, GroupData>();
+            if(!Data.TryGetCastValue(SERVER_DATA_GROUP_MEMBERS, out GroupMemberData))
+                GroupMemberData = new Dictionary<uint, Dictionary<uint, GroupMemberData>>();
             if(ShowSaveAndLoadLogs)
                 Debug.Log($"{TITLE} <color=#00FF00>Loaded the save data!</color>");
             OnAfterLoad?.Invoke();
@@ -206,18 +209,18 @@ namespace Amilious.Core.IO {
         public static void Reset(bool areYouSure) {
             if(!areYouSure) return;
             //clear data
-            _serverUserData.Clear();
-            _serverUserBlocked.Clear();
-            _serverUserFriends.Clear();
-            _serverGroupData.Clear();
-            _serverGroupMembers.Clear();
-            _data.Clear();
+            ServerUserData.Clear();
+            ServerUserBlocked.Clear();
+            ServerUserFriends.Clear();
+            GroupData.Clear();
+            GroupMemberData.Clear();
+            Data.Clear();
             //data containers
-            _data[SERVER_USER_DATA] = _serverUserData;
-            _data[SERVER_USER_BLOCKED] = _serverUserBlocked;
-            _data[SERVER_USER_FRIENDS] = _serverUserFriends;
-            _data[SERVER_GROUP_DATA] = _serverGroupData;
-            _data[SERVER_GROUP_MEMBERS] = _serverGroupMembers;
+            Data[SERVER_USER_DATA] = ServerUserData;
+            Data[SERVER_USER_BLOCKED] = ServerUserBlocked;
+            Data[SERVER_USER_FRIENDS] = ServerUserFriends;
+            Data[SERVER_DATA_GROUPS] = GroupData;
+            Data[SERVER_DATA_GROUP_MEMBERS] = GroupMemberData;
             OnResetting?.Invoke();
             DataChanged = true;
             Debug.Log($"{TITLE}  <color=#FF0000>Reset the save data!</color>");
@@ -239,7 +242,7 @@ namespace Amilious.Core.IO {
             }
             using(var fileStream = File.Open(SavePath, FileMode.Create)) {
                 var formatter = new BinaryFormatter();
-                formatter.Serialize(fileStream, _data);
+                formatter.Serialize(fileStream, Data);
                 fileStream.Close();
             }
             DataChanged = false;
@@ -266,8 +269,8 @@ namespace Amilious.Core.IO {
         /// <typeparam name="T">The type of data being stored.</typeparam>
         public static void StoreData<T>(string key, T value) {
             //we do not need to save the data if it has not changed.
-            if(_data.TryGetCastValue(key,out T value2)&&value2.Equals(value)) return;
-            _data[key] = value;
+            if(Data.TryGetCastValue(key,out T value2)&&value2.Equals(value)) return;
+            Data[key] = value;
             DataChanged = true;
             if(SaveWhenUpdated) Save();
         }
@@ -280,7 +283,7 @@ namespace Amilious.Core.IO {
         /// <typeparam name="T">The type of data being stored.</typeparam>
         /// <returns>True if the data exists and is the correct type, otherwise false.</returns>
         public static bool TryReadData<T>(string key, out T value) {
-            return _data.TryGetCastValue(key, out value);
+            return Data.TryGetCastValue(key, out value);
         }
         
         /// <summary>
@@ -291,7 +294,7 @@ namespace Amilious.Core.IO {
         /// <typeparam name="T">The type of data being stored.</typeparam>
         /// <returns>The value of the given key or the default value.</returns>
         public static T ReadData<T>(string key, T defaultValue = default) {
-            if(_data.TryGetCastValue<T>(key, out var value)) return value;
+            if(Data.TryGetCastValue<T>(key, out var value)) return value;
             StoreData(key,defaultValue);
             return defaultValue;
         }
@@ -320,7 +323,7 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The user id that you want to check.</param>
         /// <returns>True if the given user id is valid, otherwise false.</returns>
-        public static bool Server_IsUserIdValid(int userId) => _serverUserData.ContainsKey(userId);
+        public static bool Server_IsUserIdValid(uint userId) => ServerUserData.ContainsKey(userId);
 
         /// <summary>
         /// This method is used to try get a user identity from the user's user id.
@@ -328,7 +331,7 @@ namespace Amilious.Core.IO {
         /// <param name="userId">The user's id.</param>
         /// <param name="identity">The user's identity.</param>
         /// <returns>True if the user exists, otherwise false.</returns>
-        public static bool Server_TryGetUserIdentity(int userId, out UserIdentity identity) {
+        public static bool Server_TryGetUserIdentity(uint userId, out UserIdentity identity) {
             //make sure the user id is valid
             if(!Server_IsUserIdValid(userId)) {
                 identity = default;
@@ -352,7 +355,7 @@ namespace Amilious.Core.IO {
         /// <param name="identity">The user's identity.</param>
         /// <returns>True if the user exists, otherwise false.</returns>
         public static bool Server_TryGetUserIdentity(string userName, out UserIdentity identity) {
-            if(Server_TryGetIdFromUserName(userName, out int id))
+            if(Server_TryGetIdFromUserName(userName, out uint id))
                 return Server_TryGetUserIdentity(id, out identity);
             identity = default;
             return false;
@@ -365,11 +368,11 @@ namespace Amilious.Core.IO {
         /// <param name="userId">The user id associated with the user id.</param>
         /// <param name="caseSensitive">True if the user name is case sensitive, otherwise false.</param>
         /// <returns>True if able to find a user with the given user name, otherwise false.</returns>
-        public static bool Server_TryGetIdFromUserName(string userName, out int userId, bool caseSensitive = false) {
+        public static bool Server_TryGetIdFromUserName(string userName, out uint userId, bool caseSensitive = false) {
             if(userName == null) { userId = 0; return false; }
             var culture = caseSensitive ? StringComparison.InvariantCulture : 
                 StringComparison.InvariantCultureIgnoreCase;
-            foreach(var data in _serverUserData) {
+            foreach(var data in ServerUserData) {
                 if(!data.Value.TryGetCastValue(UserIdentity.USER_NAME_KEY, out string storedName) || 
                    !userName.Equals(storedName,culture)) continue;
                 userId = data.Key;
@@ -387,9 +390,9 @@ namespace Amilious.Core.IO {
         /// <param name="value">The read value.</param>
         /// <typeparam name="T">The type of the value.</typeparam>
         /// <returns>True if the data exists, otherwise false.</returns>
-        public static bool Server_TryReadUserData<T>(int userId, string key, out T value) {
+        public static bool Server_TryReadUserData<T>(uint userId, string key, out T value) {
             value = default;
-            return _serverUserData.TryGetValueFix(userId, out var info) && 
+            return ServerUserData.TryGetValueFix(userId, out var info) && 
                    info.TryGetCastValue(key, out value);
         }
 
@@ -400,10 +403,10 @@ namespace Amilious.Core.IO {
         /// <param name="key">The key for the data that you want to store.</param>
         /// <param name="value">The value that you want to store for the given key.</param>
         /// <typeparam name="T">The type of the value.</typeparam>
-        public static void Server_StoreUserData<T>(int userId, string key, T value) {
-            if(!_serverUserData.TryGetValueFix(userId, out var info)) {
+        public static void Server_StoreUserData<T>(uint userId, string key, T value) {
+            if(!ServerUserData.TryGetValueFix(userId, out var info)) {
                 info = new Dictionary<string, object>();
-                _serverUserData[userId] = info;
+                ServerUserData[userId] = info;
             }
             //we do not need to mark the data dirty if there is no change
             if(info.TryGetCastValue(key,out T value2)&&value2.Equals(value)) return;
@@ -418,7 +421,7 @@ namespace Amilious.Core.IO {
         /// <param name="userName">The user name for the user.</param>
         /// <returns>The id for the new user.</returns>
         public static UserIdentity Server_AddUser(string userName = null) {
-            TryReadData(SERVER_NEXT_IDENTITY_ID, out int id); id++;
+            TryReadData(SERVER_NEXT_IDENTITY_ID, out uint id); id++;
             StoreData(SERVER_NEXT_IDENTITY_ID,id);
             if(string.IsNullOrWhiteSpace(userName)) userName = $"User{id}";
             Server_StoreUserData(id, UserIdentity.USER_NAME_KEY ,userName);
@@ -429,18 +432,18 @@ namespace Amilious.Core.IO {
         /// This method is used to get the id's for all of the registered users.
         /// </summary>
         /// <returns>The id's of the registered users.</returns>
-        public static IEnumerable<int> Server_GetStoredUserIds() => _serverUserData.Keys;
+        public static IEnumerable<uint> Server_GetStoredUserIds() => ServerUserData.Keys;
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="blocker">The user id of the user who is blocking another user.</param>
         /// <param name="blocked">The user id of the user that will be blocked.</param>
-        public static void Server_BlockUser(int blocker, int blocked) {
-            if(!_serverUserBlocked.ContainsKey(blocker)) _serverUserBlocked[blocker] = new List<int>();
-            if(_serverUserBlocked[blocker].Contains(blocked)) return;
+        public static void Server_BlockUser(uint blocker, uint blocked) {
+            if(!ServerUserBlocked.ContainsKey(blocker)) ServerUserBlocked[blocker] = new List<uint>();
+            if(ServerUserBlocked[blocker].Contains(blocked)) return;
             //we only need to save if the data has changed.
-            _serverUserBlocked[blocker].Add(blocked);
+            ServerUserBlocked[blocker].Add(blocked);
             DataChanged = true;
             if(SaveWhenUpdated) Save();
         }
@@ -450,12 +453,12 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="blocker">The user id of the user who is blocking another user.</param>
         /// <param name="blocked">The user id of the user that will be unblocked.</param>
-        public static void Server_UnblockUser(int blocker, int blocked) {
+        public static void Server_UnblockUser(uint blocker, uint blocked) {
             //if there is no list the user was not blocked
-            if(!_serverUserBlocked.ContainsKey(blocker)) return;
-            if(!_serverUserBlocked[blocker].Contains(blocked)) return;
+            if(!ServerUserBlocked.ContainsKey(blocker)) return;
+            if(!ServerUserBlocked[blocker].Contains(blocked)) return;
             //we only need to save if the data has changed.
-            _serverUserBlocked[blocker].Remove(blocked);
+            ServerUserBlocked[blocker].Remove(blocked);
             DataChanged = true;
             if(SaveWhenUpdated) Save();
         }
@@ -467,8 +470,8 @@ namespace Amilious.Core.IO {
         /// <param name="blocked">The user id of the user who was blocked.</param>
         /// <returns>True if the <paramref name="blocker"/> has blocked the <paramref name="blocked"/>, otherwise false.
         /// </returns>
-        public static bool Server_HasBlocked(int blocker, int blocked) {
-            return _serverUserBlocked.TryGetValueFix(blocker, out var hashSet)&&hashSet.Contains(blocked);
+        public static bool Server_HasBlocked(uint blocker, uint blocked) {
+            return ServerUserBlocked.TryGetValueFix(blocker, out var hashSet)&&hashSet.Contains(blocked);
         }
 
         /// <summary>
@@ -476,9 +479,9 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="blockerId">The id of the blocker.</param>
         /// <returns>A list of the user's currently blocked by the given user.</returns>
-        public static List<int> Server_GetBlockedUsers(int blockerId) {
-            return _serverUserBlocked.TryGetValueFix(blockerId, out var blocked) ? 
-                blocked.ToList() : new List<int>();
+        public static List<uint> Server_GetBlockedUsers(uint blockerId) {
+            return ServerUserBlocked.TryGetValueFix(blockerId, out var blocked) ? 
+                blocked.ToList() : new List<uint>();
         }
 
         /// <summary>
@@ -486,11 +489,11 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The user id of the user who is friending another user.</param>
         /// <param name="friendId">The user id of the user that will be friended.</param>
-        public static void Server_FriendUser(int userId, int friendId) {
-            if(!_serverUserFriends.ContainsKey(userId)) _serverUserFriends[userId] = new List<int>();
-            if(_serverUserFriends[userId].Contains(friendId)) return;
+        public static void Server_FriendUser(uint userId, uint friendId) {
+            if(!ServerUserFriends.ContainsKey(userId)) ServerUserFriends[userId] = new List<uint>();
+            if(ServerUserFriends[userId].Contains(friendId)) return;
             //we only need to save if the data has changed.
-            _serverUserFriends[userId].Add(friendId);
+            ServerUserFriends[userId].Add(friendId);
             DataChanged = true;
             if(SaveWhenUpdated) Save();
         }
@@ -500,12 +503,12 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The user id of the user who is unfriending another user.</param>
         /// <param name="friendId">The user id of the user that will be unfriended.</param>
-        public static void Server_UnfriendUser(int userId, int friendId) {
+        public static void Server_UnfriendUser(uint userId, uint friendId) {
             //if there is no list the user was not blocked
-            if(!_serverUserFriends.ContainsKey(userId)) return;
-            if(!_serverUserFriends[userId].Contains(friendId)) return;
+            if(!ServerUserFriends.ContainsKey(userId)) return;
+            if(!ServerUserFriends[userId].Contains(friendId)) return;
             //we only need to save if the data has changed.
-            _serverUserFriends[userId].Remove(friendId);
+            ServerUserFriends[userId].Remove(friendId);
             DataChanged = true;
             if(SaveWhenUpdated) Save();
         }
@@ -518,8 +521,8 @@ namespace Amilious.Core.IO {
         /// <returns>True if the <paramref name="userId"/> has friended the <paramref name="friendId"/>, otherwise
         /// false. This does not mean that the friendship has been approved.
         /// </returns>
-        public static bool Server_HasFriended(int userId, int friendId) {
-            return _serverUserFriends.TryGetValueFix(userId, out var friends)&&friends.Contains(friendId);
+        public static bool Server_HasFriended(uint userId, uint friendId) {
+            return ServerUserFriends.TryGetValueFix(userId, out var friends)&&friends.Contains(friendId);
         }
 
         /// <summary>
@@ -528,7 +531,7 @@ namespace Amilious.Core.IO {
         /// <param name="userId1">The first user.</param>
         /// <param name="userId2">The second user.</param>
         /// <returns>True if the two user's have an approved friendship together, otherwise false.</returns>
-        public static bool Server_HasApprovedFriendship(int userId1, int userId2) {
+        public static bool Server_HasApprovedFriendship(uint userId1, uint userId2) {
             return Server_HasFriended(userId1, userId2) && Server_HasFriended(userId2, userId1);
         }
 
@@ -537,9 +540,9 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's friends including unaccepted friends.</returns>
-        public static List<int> Server_GetFriends(int userId) {
-            return _serverUserFriends.TryGetValueFix(userId, out var friends) ? 
-                friends.ToList() : new List<int>();
+        public static List<uint> Server_GetFriends(uint userId) {
+            return ServerUserFriends.TryGetValueFix(userId, out var friends) ? 
+                friends.ToList() : new List<uint>();
         }
         
         /// <summary>
@@ -547,10 +550,10 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's friends excluding unaccepted friends.</returns>
-        public static List<int> Server_GetApprovedFriends(int userId) {
-            if(!_serverUserFriends.TryGetValueFix(userId, out var friends)) 
-                return new List<int>();
-            var friendList = new List<int>();
+        public static List<uint> Server_GetApprovedFriends(uint userId) {
+            if(!ServerUserFriends.TryGetValueFix(userId, out var friends)) 
+                return new List<uint>();
+            var friendList = new List<uint>();
             foreach(var friend in friends) 
                 if(Server_HasFriended(friend,userId))
                     friendList.Add(friend);
@@ -562,10 +565,10 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's friend requests that have not yet been approved.</returns>
-        public static List<int> Server_GetNotApprovedFriends(int userId) {
-            if(!_serverUserFriends.TryGetValueFix(userId, out var friends))
-                return new List<int>();
-            var notApproved = new List<int>();
+        public static List<uint> Server_GetNotApprovedFriends(uint userId) {
+            if(!ServerUserFriends.TryGetValueFix(userId, out var friends))
+                return new List<uint>();
+            var notApproved = new List<uint>();
             foreach(var friend in friends) 
                 if(!Server_HasFriended(friend,userId))
                     notApproved.Add(friend);
@@ -577,11 +580,11 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of user ids that are requesting friendship.</returns>
-        public static List<int> Server_GetRequestingFriends(int userId) {
-            if(!_serverUserFriends.TryGetValueFix(userId, out var friends)) 
-                return new List<int>();
-            var requestList = new List<int>();
-            foreach(var item in _serverUserFriends) {
+        public static List<uint> Server_GetRequestingFriends(uint userId) {
+            if(!ServerUserFriends.TryGetValueFix(userId, out var friends)) 
+                return new List<uint>();
+            var requestList = new List<uint>();
+            foreach(var item in ServerUserFriends) {
                 if(friends.Contains(item.Key)) continue; //already accepted
                 if(!item.Value.Contains(userId)) continue; //not requesting
                 requestList.Add(item.Key);
@@ -594,12 +597,17 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="userId">The user id of the user you want to check.</param>
         /// <returns>True if the user has set their password, otherwise false.</returns>
-        public static bool Server_HasUserSetPassword(int userId) {
+        public static bool Server_HasUserSetPassword(uint userId) {
             Server_TryReadUserData(userId, UserIdentity.PASSWORD_KEY, out string password);
             return !string.IsNullOrWhiteSpace(password);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        public static void MarkDataChanged(bool save = true) {
+            DataChanged = true;
+            if(save) Save();
+        }
 
         #region Client Save Methods ////////////////////////////////////////////////////////////////////////////////////
 
@@ -607,7 +615,7 @@ namespace Amilious.Core.IO {
         /// This method is used to store the reply identity id.
         /// </summary>
         /// <param name="id">The id that should be used for a reply.</param>
-        public static void Client_StoreReplyIdentity(int id) {
+        public static void Client_StoreReplyIdentity(uint id) {
             StoreData(CLIENT_REPLY_IDENTITY,id);
         }
 
@@ -616,7 +624,7 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="id">The reply identity id.</param>
         /// <returns>True if the reply id exists, otherwise false.</returns>
-        public static bool Client_TryGetReplyIdentity(out int id) {
+        public static bool Client_TryGetReplyIdentity(out uint id) {
             return TryReadData(CLIENT_REPLY_IDENTITY, out id);
         }
         
@@ -659,55 +667,6 @@ namespace Amilious.Core.IO {
         #region Group Server Methods ///////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// This method is used to get data for the group with the given id.
-        /// </summary>
-        /// <param name="id">The group's id.</param>
-        /// <param name="key">The key for the data.</param>
-        /// <param name="value">The value for the given key.</param>
-        /// <typeparam name="T">The type of the value.</typeparam>
-        /// <returns>True if able to read the data, otherwise false.</returns>
-        public static bool Server_TryReadGroupData<T>(int id, string key, out T value) {
-            if(_serverGroupData.TryGetValueFix(id, out var channelInfo))
-                return channelInfo.TryGetCastValue(key, out value);
-            value = default;
-            return false;
-        }
-
-        /// <summary>
-        /// This method is used to store data for the group with the given id.
-        /// </summary>
-        /// <param name="id">The group's id.</param>
-        /// <param name="key">The key for the data.</param>
-        /// <param name="value">The value for the given key.</param>
-        /// <param name="save">If true the data will be written to a file after updating the value.</param>
-        /// <typeparam name="T">The type of the value.</typeparam>
-        public static void Server_StoreGroupData<T>(int id, string key, T value, bool save = true) {
-            if(!_serverGroupData.TryGetValueFix(id, out var groupIdentity)) {
-                groupIdentity = new Dictionary<string, object>();
-            }
-            groupIdentity[key] = value;
-            if(save) Save();
-        }
-
-        /// <summary>
-        /// This method is used to add a user to a group.
-        /// </summary>
-        /// <param name="groupId">The id of the group that you want to add a user to.</param>
-        /// <param name="userId">The id of the user that you want to add to the group.</param>
-        /// <param name="save">If true the data will be written to a file after updating the value.</param>
-        /// <returns>True if the user was added to the group, otherwise false if the user
-        /// was already in the channel.</returns>
-        public static bool Server_AddUserToGroup(int groupId, int userId, bool save = true) {
-            if(!_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) {
-                groupMembers = new List<int>();
-            }
-            if(groupMembers.Contains(userId)) return false;
-            groupMembers.Add(userId);
-            if(save) Save();
-            return true;
-        }
-
-        /// <summary>
         /// This method is used to remove a user from a group.
         /// </summary>
         /// <param name="groupId">The id of the group that you want to remove a user from.</param>
@@ -715,34 +674,20 @@ namespace Amilious.Core.IO {
         /// <param name="save">If true the data will be written to a file after updating the value.</param>
         /// <returns>True if the user was removed from the group, otherwise false if the user was not
         /// part of the group.</returns>
-        public static bool Server_RemoveUserFromGroup(int groupId, int userId, bool save = true) {
-            if(!_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) return false;
-            groupMembers.Remove(userId);
-            if(save) Save();
-            return true;
+        public static bool Server_RemoveUserFromGroup(uint groupId, uint userId, bool save = true) {
+            if(!GroupMemberData.TryGetValueFix(groupId, out var groupMembers)) return false;
+            var result = groupMembers.Remove(userId);
+            DataChanged = true;
+            if(result && save) Save();
+            return result;
         }
 
         /// <summary>
         /// This method is used to get all of the group ids.
         /// </summary>
         /// <returns>The group ids.</returns>
-        public static IEnumerable<int> Server_GetGroupIds() {
-            return _serverGroupMembers.Keys;
-        }
-
-        /// <summary>
-        /// This method is used to try get the groups for a given user.
-        /// </summary>
-        /// <param name="userId">The id of the user that you want to get the groups for.</param>
-        /// <param name="channels">The groups that the user is a member of.</param>
-        /// <returns>True if the user is a member of a group, otherwise false.</returns>
-        public static bool Server_TryGetUsersGroups(int userId, out IEnumerable<int> channels) {
-            var results = new List<int>();
-            foreach(var group in _serverGroupMembers) {
-                if(group.Value.Contains(userId))results.Add(group.Key);
-            }
-            channels = results;
-            return results.Count > 0;
+        public static IEnumerable<uint> Server_GetGroupIds() {
+            return GroupData.Keys;
         }
 
         /// <summary>
@@ -751,23 +696,45 @@ namespace Amilious.Core.IO {
         /// <param name="groupId">The id of the group that you want to get the members of.</param>
         /// <param name="members">The members of the group with the given id.</param>
         /// <returns>True if the group contains members, otherwise false.</returns>
-        public static bool Server_TryGetGroupMembers(int groupId, out IEnumerable<int> members) {
-            if(_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) {
-                members = groupMembers;
-                return true;
-            }
+        public static bool Server_TryGetGroupMembers(uint groupId, out IEnumerable<uint> members) {
             members = null;
-            return false;
+            if(!GroupMemberData.TryGetValueFix(groupId, out var memberData))
+                return false;
+            members = memberData.Keys;
+            return true;
         }
 
+        /// <summary>
+        /// This method is used to get the group data for the given group.
+        /// </summary>
+        /// <param name="group">The group that you want to get the data for.</param>
+        /// <param name="groupData">The group data.</param>
+        /// <returns>True if the group data exists, otherwise false.</returns>
+        public static bool Server_TryGetGroupData(uint group, out GroupData groupData) {
+            return GroupData.TryGetValueFix(group, out groupData);
+        }
+        
+        /// <summary>
+        /// This method is used to get the group member data for the given group and user.
+        /// </summary>
+        /// <param name="group">The group that you want to get the member data for.</param>
+        /// <param name="user">The user that you want to get the member data for.</param>
+        /// <param name="groupMemberData">The user's group member data.</param>
+        /// <returns>True if able to get the group member data, otherwise false.</returns>
+        public static bool Server_TryGetGroupMemberData(uint group, uint user, out GroupMemberData groupMemberData) {
+            groupMemberData = null;
+            if(!GroupMemberData.TryGetValueFix(group, out var groupMembers)) return false;
+            return groupMembers.TryGetValueFix(user, out groupMemberData);
+        }
+        
         /// <summary>
         /// This method is used to get the number of members for a given group.
         /// </summary>
         /// <param name="groupId">The id of the group.</param>
         /// <param name="count">The number of members in the group.</param>
         /// <returns>True if the group exists, otherwise false.</returns>
-        public static bool Server_TryGetGroupMemberCount(int groupId, out int count) {
-            if(_serverGroupMembers.TryGetValueFix(groupId, out var groupMembers)) {
+        public static bool Server_TryGetGroupMemberCount(uint groupId, out int count) {
+            if(GroupMemberData.TryGetValueFix(groupId, out var groupMembers)) {
                 count = groupMembers.Count;
                 return true;
             }
@@ -778,39 +745,67 @@ namespace Amilious.Core.IO {
         /// <summary>
         /// This method is used to remove a group.
         /// </summary>
-        /// <param name="gorupId">The id of the group that you want to remove.</param>
+        /// <param name="group">The id of the group that you want to remove.</param>
         /// <param name="save">If true the data will be written to a file after updating the value.</param>
         /// <returns>True if the group was removed, otherwise false if the group did not exist.</returns>
-        public static bool Server_RemoveGroup(int gorupId, bool save = true) {
-            if(!_serverGroupData.ContainsKey(gorupId)) return false;
-            _serverGroupData.Remove(gorupId);
-            if(save) Save();
+        public static bool Server_RemoveGroup(uint group, bool save = true) {
+            GroupData.Remove(group);
+            GroupMemberData.Remove(group);
+            MarkDataChanged(save);
             return true;
         }
 
         /// <summary>
-        /// This method is used to add a new group to the server.
+        /// This method is used to add a new group.
         /// </summary>
-        /// <param name="groupName">The name for the group.</param>
-        /// <param name="groupType">The type of group that you want to create.</param>
-        /// <param name="save">If true the data will be written to a file after updating the value.</param>
-        /// <returns>The id for the new group.</returns>
-        public static int Server_AddGroup(string groupName = null, GroupType groupType = GroupType.Chat, 
-            bool save = true) {
+        /// <param name="name">The name of the group.</param>
+        /// <param name="groupType">The group type.</param>
+        /// <param name="creator">The creator of the group.</param>
+        /// <param name="creatorData">The value will out put the creator's member data.</param>
+        /// <param name="authType">The group authentication type.</param>
+        /// <param name="password">The group password.</param>
+        /// <returns>The group member data of the newly created group.</returns>
+        public static GroupData Server_AddGroup(string name, GroupType groupType, uint creator, out GroupMemberData creatorData, 
+            GroupAuthType authType = GroupAuthType.None, string password = null, bool save = true) {
             var id = Server_TakeNextGroupId();
-            if(string.IsNullOrWhiteSpace(groupName)) groupName = $"Group{id}";
-            Server_StoreGroupData(id, GroupIdentity.GROUP_NAME_KEY ,groupName);
-            Server_StoreGroupData(id,GroupIdentity.GROUP_TYPE_KEY, (byte)groupType);
-            if(save) Save();
-            return id;
+            name ??= $"Group_{id}";
+            var groupData = new GroupData(id, name, groupType,creator,creator,DateTime.Now,authType,password);
+            GroupData.Add(id, groupData);
+            creatorData = Server_AddGroupMemberData(id, creator, MemberStatus.Member, short.MaxValue, save: false);
+            MarkDataChanged(save);
+            return groupData;
+        }
+
+        /// <summary>
+        /// This method is used to add member data for the given user.
+        /// </summary>
+        /// <param name="group">The group that you want to add member data for.</param>
+        /// <param name="user">The user the member data is for.</param>
+        /// <param name="status">The status of the user.</param>
+        /// <param name="rank">The rank of the user.</param>
+        /// <param name="invitedBy">The id of the user's invitor.</param>
+        /// <param name="approvedBy">The id of the user's approver.</param>
+        /// <returns>This method returns the user member data for the given user and group.</returns>
+        public static GroupMemberData Server_AddGroupMemberData(uint group, uint user, MemberStatus status, 
+            short rank = 0, uint? invitedBy = null, uint? approvedBy = null, bool save = true) {
+            if(GroupMemberData.TryGetValueFix(group, out var members) && 
+                members.TryGetValueFix(user, out var memberData)) {
+                throw new InvalidOperationException(
+                    $"You can not add the user member data for user {user} in the group {group} because it already exists!");
+            }
+            memberData = new GroupMemberData(group, user, status, rank, invitedBy, approvedBy);
+            if(!GroupMemberData.ContainsKey(group)) GroupMemberData[group] = new Dictionary<uint, GroupMemberData>();
+            GroupMemberData[group][user] = memberData;
+            MarkDataChanged(save);
+            return memberData;
         }
         
         /// <summary>
         /// This method is used to get the next available group id.
         /// </summary>
         /// <returns>The next available group id.</returns>
-        public static int Server_TakeNextGroupId() {
-            TryReadData(SERVER_NEXT_GROUP_ID, out int id);
+        public static uint Server_TakeNextGroupId() {
+            TryReadData(SERVER_NEXT_GROUP_ID, out uint id);
             id++;
             StoreData(SERVER_NEXT_GROUP_ID,id);
             return id;

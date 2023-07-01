@@ -32,9 +32,9 @@ namespace Amilious.Core.FishNet.Groups {
         /// <param name="writer">The writer.</param>
         /// <param name="identity">The identity that you want to write.</param>
         public static void WriteGroupIdentity(this Writer writer, GroupIdentity identity) {
-            writer.WriteInt32(identity.Id, AutoPackType.Unpacked);
+            writer.WriteUInt32(identity.Id, AutoPackType.Unpacked);
             writer.WriteString(identity.Name);
-            writer.WriteInt32(identity.OwnerId, AutoPackType.Unpacked);
+            writer.WriteUInt32(identity.OwnerId, AutoPackType.Unpacked);
             writer.WriteByte((byte)identity.Type);
             writer.WriteByte((byte)identity.AuthType);
         }
@@ -45,9 +45,9 @@ namespace Amilious.Core.FishNet.Groups {
         /// <param name="reader">The reader.</param>
         /// <returns>Group Identity build from the reader's values.</returns>
         public static GroupIdentity ReadGroupIdentity(this Reader reader) {
-            var id = reader.ReadInt32(AutoPackType.Unpacked);
+            var id = reader.ReadUInt32(AutoPackType.Unpacked);
             var name = reader.ReadString();
-            var owner = reader.ReadInt32(AutoPackType.Unpacked);
+            var owner = reader.ReadUInt32(AutoPackType.Unpacked);
             var type = (GroupType)reader.ReadByte();
             var auth = (GroupAuthType)reader.ReadByte();
             var manager = reader.NetworkManager.GetGroupManager();

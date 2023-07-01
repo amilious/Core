@@ -76,7 +76,7 @@ namespace Amilious.Core.FishNet.Chat {
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void Server_ReceivePrivateMessage(int recipientId, string message, NetworkConnection con = null) {
+        private void Server_ReceivePrivateMessage(uint recipientId, string message, NetworkConnection con = null) {
             UserIdentityManager.TryGetIdentity(con, out var sender);
             if(!UserIdentityManager.TryGetConnection(recipientId, out var recipientConnection)) {
                 Client_ReceiveServerMessage(con,ZString.Style(StyleFormat.DebugError,"Unable to deliver the message."));
@@ -91,7 +91,7 @@ namespace Amilious.Core.FishNet.Chat {
         }
 
         [ServerRpc(RequireOwnership = false)]
-        private void Server_ReceiveGroupMessage(int groupId, string message, NetworkConnection con = null) {
+        private void Server_ReceiveGroupMessage(uint groupId, string message, NetworkConnection con = null) {
             UserIdentityManager.TryGetIdentity(con, out var sender);
             //make sure the channel exists
             if(!GroupIdentityManager.TryGetMembers(groupId, out var members)) {

@@ -8,7 +8,6 @@ using FishNet;
 
 namespace Amilious.Core.FishNet.Users {
     
-    
     [AmiHelpBox( HELP_BOX_TEXT,HelpBoxType.Info)]
     [AddComponentMenu("Amilious/Networking/FishNet/FishNet User Data Manager")]
     [RequireComponent(typeof(NetworkManager))]

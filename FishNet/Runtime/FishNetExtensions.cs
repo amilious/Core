@@ -26,6 +26,7 @@ using Amilious.Core.Identity.User;
 using Amilious.Core.FishNet.Users;
 using Amilious.Core.FishNet.Groups;
 using Amilious.Core.FishNet.Authentication;
+using FishNet.Object.Synchronizing;
 
 namespace Amilious.Core.FishNet {
     
@@ -45,18 +46,18 @@ namespace Amilious.Core.FishNet {
         /// <summary>
         /// This dictionary is used to look up a user id based on the connection.
         /// </summary>
-        private static readonly Dictionary<int, int> ConnectionToUserId = new Dictionary<int, int>();
+        private static readonly Dictionary<int, uint> ConnectionToUserId = new Dictionary<int, uint>();
 
         /// <summary>
         /// This dictionary is used to look up the id of the local connection.
         /// </summary>
-        private static readonly Dictionary<NetworkManager, int> LocalIdStorage = new Dictionary<NetworkManager, int>();
+        private static readonly Dictionary<NetworkManager, uint> LocalIdStorage = new Dictionary<NetworkManager, uint>();
 
         /// <summary>
         /// This dictionary is used to look up the connection based on the user's id.
         /// </summary>
-        private static readonly Dictionary<int, NetworkConnection> UserIdToConnection =
-            new Dictionary<int, NetworkConnection>();
+        private static readonly Dictionary<uint, NetworkConnection> UserIdToConnection =
+            new Dictionary<uint, NetworkConnection>();
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -67,7 +68,7 @@ namespace Amilious.Core.FishNet {
         /// <param name="userId">The user id for the connection.</param>
         /// <remarks>This method should only be used by the
         /// <see cref="FishNetAmiliousAuthenticator"/>.</remarks>
-        public static void AssignUserId(this NetworkConnection con, int userId) {
+        public static void AssignUserId(this NetworkConnection con, uint userId) {
             ConnectionToUserId[con.ClientId] = userId;
             UserIdToConnection[userId] = con;
         }
@@ -80,7 +81,7 @@ namespace Amilious.Core.FishNet {
         /// <returns>True if a user id has been assigned for the connection, otherwise false.</returns>
         /// <remarks>This method should only be used on the server and only when using the
         /// <see cref="FishNetAmiliousAuthenticator"/>.</remarks>
-        public static bool TryGetUserId(this NetworkConnection con, out int userId) {
+        public static bool TryGetUserId(this NetworkConnection con, out uint userId) {
             return ConnectionToUserId.TryGetValueFix(con.ClientId, out userId);
         }
 
@@ -115,15 +116,15 @@ namespace Amilious.Core.FishNet {
             return authenticator;
         }
         
-        public static void AssignLocalUserId(this NetworkManager networkManager, int localId) {
+        public static void AssignLocalUserId(this NetworkManager networkManager, uint localId) {
             LocalIdStorage[networkManager] = localId;
         }
 
-        public static bool TryGetLocalUserId(this NetworkManager networkManager, out int localId) {
+        public static bool TryGetLocalUserId(this NetworkManager networkManager, out uint localId) {
             return LocalIdStorage.TryGetValueFix(networkManager, out localId);
         }
 
-        public static bool IsLocalUser(this NetworkManager networkManager, int id) {
+        public static bool IsLocalUser(this NetworkManager networkManager, uint id) {
             return LocalIdStorage.TryGetValueFix(networkManager, out var localId) && id==localId;
         }
         
@@ -243,6 +244,7 @@ namespace Amilious.Core.FishNet {
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     }
     

@@ -66,7 +66,7 @@ namespace Amilious.Core.Identity.User {
         /// This property is used to get the user identity for the given id.
         /// </summary>
         /// <param name="userId">The user's id.</param>
-        public UserIdentity this[int userId] { get; }
+        public UserIdentity this[uint userId] { get; }
 
         /// <summary>
         /// This property is used to get a collection of identities.
@@ -123,13 +123,13 @@ namespace Amilious.Core.Identity.User {
         /// <param name="friendId">The friend's identity id.</param>
         /// <seealso cref="Client_RemoveFriend(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        void Client_RemoveFriend(int friendId);
+        void Client_RemoveFriend(uint friendId);
 
         /// <summary>
         /// This method is used to remove a friend.
         /// </summary>
         /// <param name="friend">The friend's identity.</param>
-        /// <seealso cref="Client_RemoveFriend(int)"/>
+        /// <seealso cref="Client_RemoveFriend(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_RemoveFriend(UserIdentity friend);
 
@@ -139,13 +139,13 @@ namespace Amilious.Core.Identity.User {
         /// <param name="friendId">The friend's identity id.</param>
         /// <seealso cref="Client_AddFriend(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        void Client_AddFriend(int friendId);
+        void Client_AddFriend(uint friendId);
 
         /// <summary>
         /// This method is used to add a friend.
         /// </summary>
         /// <param name="friend">The friend's identity.</param>
-        /// <seealso cref="Client_AddFriend(int)"/>
+        /// <seealso cref="Client_AddFriend(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_AddFriend(UserIdentity friend);
 
@@ -153,7 +153,7 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to block a user.
         /// </summary>
         /// <param name="user">The user that you want to block.</param>
-        /// <seealso cref="Client_BlockUser(int)"/>
+        /// <seealso cref="Client_BlockUser(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_BlockUser(UserIdentity user);
 
@@ -163,13 +163,13 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userId">The user id of the user that you want to block.</param>
         /// <seealso cref="Client_BlockUser(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        void Client_BlockUser(int userId);
+        void Client_BlockUser(uint userId);
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="user">The user that you want to unblock.</param>
-        /// <seealso cref="Client_UnblockUser(int)"/>
+        /// <seealso cref="Client_UnblockUser(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         void Client_UnblockUser(UserIdentity user);
 
@@ -179,14 +179,14 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userId">The user id of the user that you want to unblock.</param>
         /// <seealso cref="Client_UnblockUser(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        void Client_UnblockUser(int userId);
+        void Client_UnblockUser(uint userId);
         
         /// <summary>
         /// This method is used to check if a user is a friend.
         /// </summary>
         /// <param name="identity">The identity of the user.</param>
         /// <returns>True if the given identity is a friend, otherwise false.</returns>
-        /// <seealso cref="Client_IsFriend(int)"/>
+        /// <seealso cref="Client_IsFriend(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         bool Client_IsFriend(UserIdentity identity);
         
@@ -197,14 +197,14 @@ namespace Amilious.Core.Identity.User {
         /// <returns>True if the given identity is a friend, otherwise false.</returns>
         /// <seealso cref="Client_IsFriend(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        bool Client_IsFriend(int id);
+        bool Client_IsFriend(uint id);
 
         /// <summary>
         /// This method is used to check if a user is blocked.
         /// </summary>
         /// <param name="identity">The identity of the user.</param>
         /// <returns>True if the given user is blocked, otherwise false.</returns>
-        /// <seealso cref="Client_IsBlocked(int)"/>
+        /// <seealso cref="Client_IsBlocked(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         bool Client_IsBlocked(UserIdentity identity);
         
@@ -215,14 +215,14 @@ namespace Amilious.Core.Identity.User {
         /// <returns>True if the given user is blocked, otherwise false.</returns>
         /// <seealso cref="Client_IsBlocked(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        bool Client_IsBlocked(int id);
+        bool Client_IsBlocked(uint id);
 
         /// <summary>
         /// This method is used to check if a user is requesting friendship with you.
         /// </summary>
         /// <param name="identity">The identity of the user.</param>
         /// <returns>True if the given user is requesting friendship with you, otherwise false.</returns>
-        /// <seealso cref="Client_IsRequestingFriendship(int)"/>
+        /// <seealso cref="Client_IsRequestingFriendship(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         bool Client_IsRequestingFriendship(UserIdentity identity);
         
@@ -233,14 +233,14 @@ namespace Amilious.Core.Identity.User {
         /// <returns>True if the given user is requesting friendship with you, otherwise false.</returns>
         /// <seealso cref="Client_IsRequestingFriendship(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        bool Client_IsRequestingFriendship(int id);
+        bool Client_IsRequestingFriendship(uint id);
 
         /// <summary>
         /// This method is used to check if you have a pending friendship with the given user.
         /// </summary>
         /// <param name="identity">The identity of the user.</param>
         /// <returns>True if you are pending a friendship with the given user.</returns>
-        /// <seealso cref="Client_IsPendingFriendship(int)"/>
+        /// <seealso cref="Client_IsPendingFriendship(uint)"/>
         /// <remarks>This method should be called from the client.</remarks>
         bool Client_IsPendingFriendship(UserIdentity identity);
         
@@ -251,7 +251,7 @@ namespace Amilious.Core.Identity.User {
         /// <returns>True if you are pending a friendship with the given user.</returns>
         /// <seealso cref="Client_IsPendingFriendship(UserIdentity)"/>
         /// <remarks>This method should be called from the client.</remarks>
-        bool Client_IsPendingFriendship(int id);
+        bool Client_IsPendingFriendship(uint id);
 
         /// <summary>
         /// This method is used to get the current user's identity.
@@ -272,7 +272,7 @@ namespace Amilious.Core.Identity.User {
         /// <returns>True if an <see cref="UserIdentity"/> was found with the given id, otherwise false.</returns>
         /// <seealso cref="TryGetIdentity(string,out UserIdentity)"/>
         /// <remarks>This can be called from the client or server!</remarks>
-        bool TryGetIdentity(int id, out UserIdentity identity);
+        bool TryGetIdentity(uint id, out UserIdentity identity);
 
         /// <summary>
         /// This method is used to try get the <see cref="UserIdentity"/> for the given user name.
@@ -280,7 +280,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userName">The user name that you want to get the user identity for.</param>
         /// <param name="identity">The identity for the given user name.</param>
         /// <returns>True if an <see cref="UserIdentity"/> was found with the given user name, otherwise false.</returns>
-        /// <seealso cref="TryGetIdentity(int,out UserIdentity)"/>
+        /// <seealso cref="TryGetIdentity(uint,out UserIdentity)"/>
         /// <remarks>This can be called from the client or server!</remarks>
         bool TryGetIdentity(string userName, out UserIdentity identity);
 
@@ -290,13 +290,13 @@ namespace Amilious.Core.Identity.User {
         /// <param name="id">The id of the user.</param>
         /// <seealso cref="IsOnline(UserIdentity)"/>
         /// <returns>True if you are connected and so is the user with the given id, otherwise false.</returns>
-        bool IsOnline(int id);
+        bool IsOnline(uint id);
 
         /// <summary>
         /// This method is used to check if the user is currently online.
         /// </summary>
         /// <param name="identity">The id of the user.</param>
-        /// <seealso cref="IsOnline(int)"/>
+        /// <seealso cref="IsOnline(uint)"/>
         /// <returns>True if you are connected and so is the given user, otherwise false.</returns>
         bool IsOnline(UserIdentity identity);
 
@@ -311,7 +311,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="recipient">The receiver of the message.</param>
         /// <returns>True if the sender is able to send a message to the recipient, otherwise false.</returns>
         /// <remarks>This method should only be called from the server!</remarks>
-        bool Server_CanSendMessage(int sender, int recipient);
+        bool Server_CanSendMessage(uint sender, uint recipient);
         
         /// <summary>
         /// This method is used to change an identity's authority.
@@ -329,7 +329,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="authority">The identity's authority (bigger is less authority)</param>
         /// <returns>True if the user exists and was updated, otherwise false.</returns>
         /// <remarks>This method should only be called on the server!</remarks>
-        bool Server_TrySetAuthority(int userId, int authority = int.MaxValue);
+        bool Server_TrySetAuthority(uint userId, int authority = int.MaxValue);
 
         /// <summary>
         /// This method is used to change an identity's user name.
@@ -347,7 +347,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userName">The identity's new user name.</param>
         /// <returns>True if the user exists, the user name is available, and was updated, otherwise false.</returns>
         /// <remarks>This method should only be called on the server!</remarks>
-        bool Server_TryUpdateUserName(int userId, string userName);
+        bool Server_TryUpdateUserName(uint userId, string userName);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

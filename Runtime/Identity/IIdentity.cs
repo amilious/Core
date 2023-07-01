@@ -29,7 +29,7 @@ namespace Amilious.Core.Identity {
         /// <summary>
         /// This property contains the unique id for the identity type.
         /// </summary>
-        public int Id { get; }
+        public uint Id { get; }
         
         /// <summary>
         /// This property contains the identity type.
@@ -37,5 +37,4 @@ namespace Amilious.Core.Identity {
         public IdentityType IdentityType { get; }
         
     }
-    
 }

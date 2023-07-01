@@ -26,6 +26,7 @@ using Amilious.Core.Authentication;
 using Amilious.Core.FishNet.Groups;
 using Amilious.Core.FishNet.Users;
 using Amilious.Core.Identity.Group;
+using Amilious.Core.Identity.Group.Data;
 
 namespace Amilious.Core.FishNet.Authentication {
     
@@ -65,7 +66,7 @@ namespace Amilious.Core.FishNet.Authentication {
         [Tooltip("If true the last entered credentials will be saved!")]
         [SerializeField,AmiBool(true)] private bool rememberLast = true;
         [SerializeField, AmiShowIf(nameof(useUserId)), Tooltip("This optional field contains the user's id.")] 
-        private int userId;
+        private uint userId;
         [SerializeField, AmiHideIf(nameof(useUserId)), Tooltip("This optional field contains the user's user name.")] 
         private string userName;
         [SerializeField, PasswordPropertyText, AmiShowIf(nameof(usePassword))] 
@@ -77,7 +78,7 @@ namespace Amilious.Core.FishNet.Authentication {
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
         private AbstractUserDataManager _userDataManager;
-        private AbstractGroupDataManager _groupDataManager;
+        private IGroupDataManager _groupDataManager;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -97,10 +98,10 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <summary>
         /// This property is used to get the group data manager.
         /// </summary>
-        public AbstractGroupDataManager GroupDataManager {
+        public IGroupDataManager GroupDataManager {
             get {
                 if(_groupDataManager != null) return _groupDataManager;
-                _groupDataManager = GetComponent<AbstractGroupDataManager>();
+                _groupDataManager = GetComponent<IGroupDataManager>();
                 return _groupDataManager;
             }
         }
@@ -145,7 +146,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="userId">The user id of the user.</param>
         /// <param name="password">The password of the user.</param>
         // ReSharper disable ParameterHidesMember
-        public virtual void SetCredentials(int userId, string password = null) {
+        public virtual void SetCredentials(uint userId, string password = null) {
             if(useUserId == false) {
                 Debug.LogWarning("Credentials are being set with the user id, but the authenticator is set to use user names!");
                 return;

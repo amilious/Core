@@ -64,6 +64,17 @@ namespace Amilious.Core.Extensions {
             //just add an s
             return $"{i} {singular}s";
         }
+
+        /// <summary>
+        /// This method is used to get two int values that are packed into a long.
+        /// </summary>
+        /// <param name="packedLong">The packed long.</param>
+        /// <param name="value1">The first int value.</param>
+        /// <param name="value2">The second int value.</param>
+        public static void UnpackInts(this long packedLong, out int value1, out int value2) {
+            value1 = (int)(packedLong >> 32);
+            value2 = (int)(packedLong & 0xFFFFFFFF);
+        }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

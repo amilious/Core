@@ -31,8 +31,8 @@ namespace Amilious.Core.Identity.Group {
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
-        private readonly int? _id;
-        private readonly int? _owner;
+        private readonly uint? _id;
+        private readonly uint? _owner;
         private readonly string _name;
         private readonly GroupType? _groupType;
         private readonly GroupAuthType? _authType;
@@ -48,9 +48,9 @@ namespace Amilious.Core.Identity.Group {
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
-        public int Id => _id ?? int.MinValue;
+        public uint Id => _id ?? 0;
 
-        public int OwnerId => _owner ?? int.MinValue;
+        public uint OwnerId => _owner ?? 0;
 
         public string Name => _name ?? "Default Group";
 
@@ -68,8 +68,8 @@ namespace Amilious.Core.Identity.Group {
 
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
-        public GroupIdentity(IGroupIdentityManager manager, int id, string name, GroupType groupType, 
-            int owner = int.MinValue, GroupAuthType authType = GroupAuthType.None) {
+        public GroupIdentity(IGroupIdentityManager manager, uint id, string name, GroupType groupType, 
+            uint owner = 0, GroupAuthType authType = GroupAuthType.None) {
             _id = id;
             _name = name;
             _groupType = groupType;
@@ -89,14 +89,14 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="user">The user that you want to get the rank of.</param>
         /// <returns>The user's rank or <see cref="short.MinValue"/> if the user does not exist or is not within the
         /// group.</returns>
-        public short GetRank(int user) => Manager.GetRank(Id,user);
+        public short GetRank(uint user) => Manager.GetRank(Id,user);
 
         /// <summary>
         /// This method is used to check if the given user is a member of the group.
         /// </summary>
         /// <param name="user">The user that you want to check.</param>
         /// <returns>True if the user is a member in the group, otherwise false.</returns>
-        public bool IsMember(int user) => Manager.IsMember(Id, user);
+        public bool IsMember(uint user) => Manager.IsMember(Id, user);
 
         /// <summary>
         /// This method is used to get the user's status within the group.
@@ -104,7 +104,7 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="user">The user that you want to check.</param>
         /// <returns>The status of the user within the group or <see cref="MemberStatus.None"/> if not in the group.
         /// </returns>
-        public MemberStatus GetStatus(int user) => Manager.GetStatus(Id, user);
+        public MemberStatus GetStatus(uint user) => Manager.GetStatus(Id, user);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -114,7 +114,7 @@ namespace Amilious.Core.Identity.Group {
         /// Converts the <see cref="GroupIdentity"/> to an int.
         /// </summary>
         /// <param name="identity">The <see cref="GroupIdentity"/> instance.</param>
-        public static implicit operator int(GroupIdentity identity) { return identity.Id; }
+        public static implicit operator uint(GroupIdentity identity) { return identity.Id; }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

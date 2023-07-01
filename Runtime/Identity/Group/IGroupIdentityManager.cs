@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Amilious.Core.Identity.Group.Data;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group.GroupEventArgs;
 
@@ -29,7 +30,7 @@ namespace Amilious.Core.Identity.Group {
         /// This property is used to get the group identity for the given id.
         /// </summary>
         /// <param name="userId">The group's id.</param>
-        public GroupIdentity this[int userId] { get; }
+        public GroupIdentity this[uint userId] { get; }
         
         /// <summary>
         /// This property is used to get a collection of groups.
@@ -39,7 +40,7 @@ namespace Amilious.Core.Identity.Group {
         /// <summary>
         /// This property is used to get the data manager.
         /// </summary>
-        public AbstractGroupDataManager DataManager { get; }
+        public IGroupDataManager DataManager { get; }
         
         /// <summary>
         /// This property is used to get the user manager.
@@ -115,7 +116,7 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="user">The user that you want to check if is a member of a group.</param>
         /// <returns>True if the given user is a member of the given group.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        bool IsMember(int group, int user);
+        bool IsMember(uint group, uint user);
 
         /// <summary>
         /// This method is used to check if a user has been invited to the given group.
@@ -124,7 +125,7 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="user">The user that you want to check is has been invited.</param>
         /// <returns>True if the user has been invited.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        bool IsInvited(int group, int user);
+        bool IsInvited(uint group, uint user);
 
         /// <summary>
         /// This method is used to check if a user has apply to a group.
@@ -133,7 +134,7 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="user">The user that you want to check if has applied to the group.</param>
         /// <returns>True if the user has applied to the group, otherwise false.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        bool HasApplied(int group, int user);
+        bool HasApplied(uint group, uint user);
         
         /// <summary>
         /// This method is used to get the rank of a user within the given group.
@@ -142,7 +143,7 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="user">The user that you want to get the rank of within the group.</param>
         /// <returns>The rank of the user in the group or <see cref="short.MinValue"/> if not in the group.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        short GetRank(int group, int user);
+        short GetRank(uint group, uint user);
 
         /// <summary>
         /// This method is used to get the status of a user within a group.
@@ -152,7 +153,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>The status of the user within the group, otherwise <see cref="MemberStatus.None"/> if not
         /// in the group.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        MemberStatus GetStatus(int group, int user);
+        MemberStatus GetStatus(uint group, uint user);
 
         /// <summary>
         /// This method is used to get the user's within a group.
@@ -161,16 +162,16 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="members">The members within the given group.</param>
         /// <returns>True if able to get members from the given group, otherwise false.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        bool TryGetMembers(int group, out UserIdentity[] members);
+        bool TryGetMembers(uint group, out UserIdentity[] members);
 
         /// <summary>
         /// This method is used to try get the group from the group id.
         /// </summary>
-        /// <param name="groupId">The id of the group</param>
+        /// <param name="group">The id of the group</param>
         /// <param name="groupIdentity">The group identity for the given group.</param>
         /// <returns>True if a group with the given id exists, otherwise false.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        bool TryGetGroup(int groupId, out GroupIdentity groupIdentity);
+        bool TryGetGroup(uint group, out GroupIdentity groupIdentity);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -320,7 +321,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if able to send the request.</returns>
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="ChangeOwner">ChangeOwner (if on server)</seealso>
-        bool RequestOwnerChange(int group, int user);
+        bool RequestOwnerChange(uint group, uint user);
         
         /// <summary>
         /// This method is used to request entry to a group.
@@ -332,7 +333,7 @@ namespace Amilious.Core.Identity.Group {
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="AddMember">AddMember (if on server)</seealso>
         /// <seealso cref="Apply">Apply (if on server)</seealso>
-        bool RequestApply(int group, string request = null, string password = null);
+        bool RequestApply(uint group, string request = null, string password = null);
 
         /// <summary>
         /// This method is used to request an invitation of the given user to the given group.
@@ -342,7 +343,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if able to send the request.</returns>
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="Invite">Invite (if on server)</seealso>
-        bool RequestInvite(int group, int user);
+        bool RequestInvite(uint group, uint user);
 
         /// <summary>
         /// This method is used to request approval of an application to a group.
@@ -352,7 +353,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if able to send the request.</returns>
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="ApproveApplication">ApproveApplication (if on server)</seealso>
-        bool RequestApproveApplication(int group, int user);
+        bool RequestApproveApplication(uint group, uint user);
 
         /// <summary>
         /// This method is used to request changing the rank of a user in the group.
@@ -363,7 +364,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if able to send the request.</returns>
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="RankChange">RankChange (if on server)</seealso>
-        bool RequestRankChange(int group, int user, short rank);
+        bool RequestRankChange(uint group, uint user, short rank);
 
         /// <summary>
         /// This method is used to request leaving a group.
@@ -372,7 +373,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if able to send the request.</returns>
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="Remove">Remove (if on server)</seealso>
-        bool RequestLeave(int group);
+        bool RequestLeave(uint group);
 
         /// <summary>
         /// This method is used to request the kicking of a user in the group.
@@ -382,7 +383,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if able to send the request.</returns>
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="Kick">Kick (if on server)</seealso>
-        bool RequestKick(int group, int user);
+        bool RequestKick(uint group, uint user);
 
         /// <summary>
         /// This method is used to request a group disband.
@@ -391,7 +392,7 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if able to send the request.</returns>
         /// <remarks>This method should only be called from the <b>Client</b>!</remarks>
         /// <seealso cref="Disband">Disband (if on server)</seealso>
-        bool RequestDisband(int group);
+        bool RequestDisband(uint group);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

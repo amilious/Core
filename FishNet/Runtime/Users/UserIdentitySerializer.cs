@@ -35,7 +35,7 @@ namespace Amilious.Core.FishNet.Users {
         public static void WriteUserIdentity(this Writer writer, UserIdentity identity) {
             writer.WriteByte((byte)identity.UserType);
             if(identity.UserType != UserType.User) return;
-            writer.WriteInt32(identity.Id);
+            writer.WriteUInt32(identity.Id);
             writer.WriteString(identity.Name);
         }
 
@@ -51,7 +51,7 @@ namespace Amilious.Core.FishNet.Users {
                 case UserType.Server: return UserIdentity.Server;
                 case UserType.AmiliousConsole: return UserIdentity.Console;
                 case UserType.DefaultUser: return  UserIdentity.DefaultUser;
-                case UserType.User: return new UserIdentity(reader.ReadInt32(),reader.ReadString());
+                case UserType.User: return new UserIdentity(reader.ReadUInt32(),reader.ReadString());
                 default: throw new ArgumentOutOfRangeException();
             }
         }

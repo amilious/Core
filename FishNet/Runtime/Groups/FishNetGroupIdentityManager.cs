@@ -5,7 +5,10 @@ using FishNet.Object;
 using System.Collections.Generic;
 using Amilious.Core.Identity.Group;
 using Amilious.Core.Identity.User;
+using FishNet.Object.Synchronizing;
+using Amilious.Core.Identity.Group.Data;
 using Amilious.Core.Identity.Group.GroupEventArgs;
+using FishNet.Transporting;
 
 namespace Amilious.Core.FishNet.Groups {
     
@@ -17,20 +20,38 @@ namespace Amilious.Core.FishNet.Groups {
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
         private IUserIdentityManager _userManager;
-        private AbstractGroupDataManager _dataManager;
+        private IGroupDataManager _dataManager;
         
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Sync Variables /////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This dictionary is used to store all of the user's identities.
+        /// </summary>
+        [SyncObject] 
+        private readonly SyncDictionary<uint, GroupIdentity> _groupLookup = new SyncDictionary<uint, GroupIdentity>();
+
+        /// <summary>
+        /// This hash set is used to store all of the online user ids.
+        /// </summary>
+        [SyncObject]
+        private readonly SyncDictionary<ulong, GroupMemberData> _memberData =
+            new SyncDictionary<ulong, GroupMemberData>();
+
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <inheritdoc />
-        public GroupIdentity this[int userId] => throw new NotImplementedException();
+        public GroupIdentity this[uint userId] => throw new NotImplementedException();
 
         /// <inheritdoc />
         public IEnumerable<GroupIdentity> Identities { get; }
 
         /// <inheritdoc />
-        public AbstractGroupDataManager DataManager {
+        public IGroupDataManager DataManager {
             get {
                 if(_dataManager is not null) return _dataManager;
                 _dataManager = this.GetGroupDataManager();
@@ -80,44 +101,53 @@ namespace Amilious.Core.FishNet.Groups {
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
+        #region FishNet Methods ////////////////////////////////////////////////////////////////////////////////////////
+
+        public override void OnStartNetwork() {
+            base.OnStartNetwork();
+            NetworkManager.RegisterInstance(this);
+        }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         #region Server And Client Methods //////////////////////////////////////////////////////////////////////////////
         
         /// <inheritdoc />
-        public bool IsMember(int group, int user) {
+        public bool IsMember(uint group, uint user) {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public bool IsInvited(int group, int user) {
+        public bool IsInvited(uint group, uint user) {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public bool HasApplied(int group, int user) {
+        public bool HasApplied(uint group, uint user) {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public short GetRank(int group, int user) {
+        public short GetRank(uint group, uint user) {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public MemberStatus GetStatus(int group, int user) {
+        public MemberStatus GetStatus(uint group, uint user) {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public bool TryGetMembers(int group, out UserIdentity[] members) {
+        public bool TryGetMembers(uint group, out UserIdentity[] members) {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public bool TryGetGroup(int groupId, out GroupIdentity groupIdentity) {
+        public bool TryGetGroup(uint groupId, out GroupIdentity groupIdentity) {
             throw new NotImplementedException();
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+       
     }
 }

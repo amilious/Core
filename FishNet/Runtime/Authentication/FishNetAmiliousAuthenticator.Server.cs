@@ -47,7 +47,7 @@ namespace Amilious.Core.FishNet.Authentication {
                 Server_OnPasswordBroadcast, false);
         }
 
-        private bool IsUserCurrentlyActive(int id, string userName) {
+        private bool IsUserCurrentlyActive(uint id, string userName) {
             foreach(var tmpCon in NetworkManager.ClientManager.Clients.Values) {
                 //get the user id
                 if(!tmpCon.TryGetUserId(out var tmpId)) continue;
@@ -65,7 +65,7 @@ namespace Amilious.Core.FishNet.Authentication {
             return false;
         }
 
-        private void Server_SendAuthorizationResponse(NetworkConnection con, bool passed, int id, string userName, 
+        private void Server_SendAuthorizationResponse(NetworkConnection con, bool passed, uint id, string userName, 
             bool newUser, string reason) {
             var result = new AuthenticationResultBroadcast() {
                 Passed = passed, UserName = userName,
@@ -151,7 +151,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="type">The type of request.</param>
         /// <returns>The request id.</returns>
         // ReSharper disable InvalidXmlDocComment
-        private int Server_SetAuthenticationRequest(NetworkConnection con, int userId, string userName, bool newUser, 
+        private int Server_SetAuthenticationRequest(NetworkConnection con, uint userId, string userName, bool newUser, 
             AuthenticationRequestType type) {
             var request = new AuthenticationRequest() {
                 UserId = userId,
@@ -170,7 +170,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// </summary>
         /// <param name="userId">The user's id.</param>
         /// <returns>The user's password salt.</returns>
-        protected virtual string Server_GetUserPasswordSalt(int userId) {
+        protected virtual string Server_GetUserPasswordSalt(uint userId) {
             //return the old salt if it exists
             if(UserDataManager.Server_TryReadUserData(userId, UserIdentity.PASSWORD_SALT_KEY, out string salt)) 
                 return salt;
@@ -192,7 +192,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="response">A response that will be given upon failure.</param>
         /// <returns>True if the password is correct, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
-        protected virtual bool Server_AuthenticateCheckPassword(int infoUserId, string hashedPassword,
+        protected virtual bool Server_AuthenticateCheckPassword(uint infoUserId, string hashedPassword,
             out string response) {
             if (!UserDataManager.Server_TryReadUserData(infoUserId, UserIdentity.PASSWORD_KEY,
                     out string storedPassword)) {
@@ -218,7 +218,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <param name="hashedPassword">The user's new hashed password.</param>
         /// <param name="response">A response to the new password.</param>
         /// <returns>True if the new password is accepted, otherwise false.</returns>
-        protected virtual bool Server_SetNewPassword(int userId, string hashedPassword, out string response) {
+        protected virtual bool Server_SetNewPassword(uint userId, string hashedPassword, out string response) {
             UserDataManager.Server_StoreUserData(userId,UserIdentity.PASSWORD_KEY,hashedPassword);
             response = "The password has been updated!";
             return true;
@@ -239,7 +239,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <returns>True if the authentication was valid, otherwise false.</returns>
         /// <remarks>This method should only be called from the server.</remarks>
         protected virtual bool Server_AuthenticateGetUserId(AuthenticationBroadcast authenticationInfo,
-            bool usingUserId, bool autoRegister, out int userId, out string userName, out bool newUser,
+            bool usingUserId, bool autoRegister, out uint userId, out string userName, out bool newUser,
             out string response) {
             response = string.Empty;
             if(usingUserId) { //authenticating with user id

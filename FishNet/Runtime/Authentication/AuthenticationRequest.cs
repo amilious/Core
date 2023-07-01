@@ -24,7 +24,7 @@ namespace Amilious.Core.FishNet.Authentication {
         /// <summary>
         /// This property contains the user's id.
         /// </summary>
-        public int UserId { get; set; }
+        public uint UserId { get; set; }
         
         /// <summary>
         /// This property is true if the user was just automatically created.

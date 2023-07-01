@@ -56,7 +56,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="userId">The user id that you want to check.</param>
         /// <returns>True if the given user id is valid, otherwise false.</returns>
-        public virtual bool Server_IsUserIdValid(int userId) => IdentitySave.Server_IsUserIdValid(userId);
+        public virtual bool Server_IsUserIdValid(uint userId) => IdentitySave.Server_IsUserIdValid(userId);
 
         /// <summary>
         /// This method is used to try get a user identity from the user's user id.
@@ -64,7 +64,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userId">The user's id.</param>
         /// <param name="identity">The user's identity.</param>
         /// <returns>True if the user exists, otherwise false.</returns>
-        public virtual bool Server_TryGetUserIdentity(int userId, out UserIdentity identity) =>
+        public virtual bool Server_TryGetUserIdentity(uint userId, out UserIdentity identity) =>
             IdentitySave.Server_TryGetUserIdentity(userId, out identity);
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userId">The user id associated with the user id.</param>
         /// <param name="caseSensitive">True if the user name is case sensitive, otherwise false.</param>
         /// <returns>True if able to find a user with the given user name, otherwise false.</returns>
-        public virtual bool Server_TryGetIdFromUserName(string userName, out int userId, bool caseSensitive = false) =>
+        public virtual bool Server_TryGetIdFromUserName(string userName, out uint userId, bool caseSensitive = false) =>
             IdentitySave.Server_TryGetIdFromUserName(userName, out userId, caseSensitive);
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="value">The read value.</param>
         /// <typeparam name="T">The type of the value.</typeparam>
         /// <returns>True if the data exists, otherwise false.</returns>
-        public virtual bool Server_TryReadUserData<T>(int userId, string key, out T value) =>
+        public virtual bool Server_TryReadUserData<T>(uint userId, string key, out T value) =>
             IdentitySave.Server_TryReadUserData(userId, key, out value);
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="key">The key for the data that you want to store.</param>
         /// <param name="value">The value that you want to store for the given key.</param>
         /// <typeparam name="T">The type of the value.</typeparam>
-        public virtual void Server_StoreUserData<T>(int userId, string key, T value) =>
+        public virtual void Server_StoreUserData<T>(uint userId, string key, T value) =>
             IdentitySave.Server_StoreUserData(userId, key, value);
 
         /// <summary>
@@ -118,14 +118,14 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to get the id's for all of the registered users.
         /// </summary>
         /// <returns>The id's of the registered users.</returns>
-        public virtual IEnumerable<int> Server_GetStoredUserIds() => IdentitySave.Server_GetStoredUserIds();
+        public virtual IEnumerable<uint> Server_GetStoredUserIds() => IdentitySave.Server_GetStoredUserIds();
 
         /// <summary>
         /// This method is used to block a user.
         /// </summary>
         /// <param name="blocker">The user id of the user who is blocking another user.</param>
         /// <param name="blocked">The user id of the user that will be blocked.</param>
-        public virtual void Server_BlockUser(int blocker, int blocked) =>
+        public virtual void Server_BlockUser(uint blocker, uint blocked) =>
             IdentitySave.Server_BlockUser(blocker, blocked);
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="blocker">The user id of the user who is blocking another user.</param>
         /// <param name="blocked">The user id of the user that will be unblocked.</param>
-        public virtual void Server_UnblockUser(int blocker, int blocked) =>
+        public virtual void Server_UnblockUser(uint blocker, uint blocked) =>
             IdentitySave.Server_UnblockUser(blocker, blocked);
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="blockerId">The id of the blocker.</param>
         /// <returns>A list of the user's currently blocked by the given user.</returns>
-        public virtual List<int> Server_GetBlockedUsers(int blockerId) => IdentitySave.Server_GetBlockedUsers(blockerId);
+        public virtual List<uint> Server_GetBlockedUsers(uint blockerId) => IdentitySave.Server_GetBlockedUsers(blockerId);
 
         /// <summary>
         /// This method is used to check if a user has blocked another.
@@ -150,7 +150,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="blocked">The user id of the user who was blocked.</param>
         /// <returns>True if the <paramref name="blocker"/> has blocked the <paramref name="blocked"/>, otherwise false.
         /// </returns>
-        public virtual bool Server_HasBlocked(int blocker, int blocked) =>
+        public virtual bool Server_HasBlocked(uint blocker, uint blocked) =>
             IdentitySave.Server_HasBlocked(blocker, blocked);
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="userId">The user id of the user who is friending another user.</param>
         /// <param name="friendId">The user id of the user that will be friended.</param>
-        public virtual void Server_FriendUser(int userId, int friendId) =>
+        public virtual void Server_FriendUser(uint userId, uint friendId) =>
             IdentitySave.Server_FriendUser(userId, friendId);
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="userId">The user id of the user who is unfriending another user.</param>
         /// <param name="friendId">The user id of the user that will be unfriended.</param>
-        public virtual void Server_UnfriendUser(int userId, int friendId) =>
+        public virtual void Server_UnfriendUser(uint userId, uint friendId) =>
             IdentitySave.Server_UnfriendUser(userId, friendId);
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Amilious.Core.Identity.User {
         /// <returns>True if the <paramref name="userId"/> has friended the <paramref name="friendId"/>, otherwise
         /// false. This does not mean that the friendship has been approved.
         /// </returns>
-        public virtual bool Server_HasFriended(int userId, int friendId) =>
+        public virtual bool Server_HasFriended(uint userId, uint friendId) =>
             IdentitySave.Server_HasFriended(userId, friendId);
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Amilious.Core.Identity.User {
         /// <param name="userId1">The first user.</param>
         /// <param name="userId2">The second user.</param>
         /// <returns>True if the two user's have an approved friendship together, otherwise false.</returns>
-        public virtual bool Server_HasApprovedFriendship(int userId1, int userId2) =>
+        public virtual bool Server_HasApprovedFriendship(uint userId1, uint userId2) =>
             IdentitySave.Server_HasApprovedFriendship(userId1, userId2);
 
         /// <summary>
@@ -194,14 +194,14 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's friends including unaccepted friends.</returns>
-        public virtual List<int> Server_GetFriends(int userId) => IdentitySave.Server_GetFriends(userId);
+        public virtual List<uint> Server_GetFriends(uint userId) => IdentitySave.Server_GetFriends(userId);
 
         /// <summary>
         /// This method is used to get a list of the approved friends for the given user.
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's friends excluding unaccepted friends.</returns>
-        public virtual List<int> Server_GetApprovedFriends(int userId) =>
+        public virtual List<uint> Server_GetApprovedFriends(uint userId) =>
             IdentitySave.Server_GetApprovedFriends(userId);
         
         /// <summary>
@@ -209,7 +209,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's friend requests that have not yet been approved.</returns>
-        public virtual List<int> Server_GetNotApprovedFriends(int userId) =>
+        public virtual List<uint> Server_GetNotApprovedFriends(uint userId) =>
             IdentitySave.Server_GetNotApprovedFriends(userId);
         
         /// <summary>
@@ -217,7 +217,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="userId">The id of the user.</param>
         /// <returns>A list of the user's requesting friendship.</returns>
-        public virtual List<int> Server_GetRequestingFriends(int userId) =>
+        public virtual List<uint> Server_GetRequestingFriends(uint userId) =>
             IdentitySave.Server_GetRequestingFriends(userId);
         
         /// <summary>
@@ -225,7 +225,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="userId">The user id of the user you want to check.</param>
         /// <returns>True if the user has set their password, otherwise false.</returns>
-        public virtual bool Server_HasUserSetPassword(int userId) => IdentitySave.Server_HasUserSetPassword(userId);
+        public virtual bool Server_HasUserSetPassword(uint userId) => IdentitySave.Server_HasUserSetPassword(userId);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -235,7 +235,7 @@ namespace Amilious.Core.Identity.User {
         /// This method is used to store the reply identity id.
         /// </summary>
         /// <param name="id">The id that should be used for a reply.</param>
-        public virtual void Client_StoreReplyIdentity(int id) {
+        public virtual void Client_StoreReplyIdentity(uint id) {
             IdentitySave.Client_StoreReplyIdentity(id);
         }
 
@@ -244,7 +244,7 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         /// <param name="id">The reply identity id.</param>
         /// <returns>True if the reply id exists, otherwise false.</returns>
-        public virtual bool Client_TryGetReplyIdentity(out int id) {
+        public virtual bool Client_TryGetReplyIdentity(out uint id) {
             return IdentitySave.Client_TryGetReplyIdentity(out id);
         }
         
