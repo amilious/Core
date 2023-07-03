@@ -793,7 +793,15 @@ namespace Amilious.Core.IO {
                 throw new InvalidOperationException(
                     $"You can not add the user member data for user {user} in the group {group} because it already exists!");
             }
-            memberData = new GroupMemberData(group, user, status, rank, invitedBy, approvedBy);
+            
+            //calculate any date based on the status
+            DateTime? invitedDate = status == MemberStatus.Invited ? DateTime.UtcNow : null;
+            DateTime? appliedDate = status == MemberStatus.Applying ? DateTime.UtcNow : null;
+            DateTime? joinedDate = status == MemberStatus.Member ? DateTime.UtcNow : null;
+            DateTime? leftDate = status == MemberStatus.Left ? DateTime.UtcNow : null;
+            
+            memberData = new GroupMemberData(group, user, status, rank, invitedBy, approvedBy, invitedDate,
+                appliedDate, joinedDate, leftDate);
             if(!GroupMemberData.ContainsKey(group)) GroupMemberData[group] = new Dictionary<uint, GroupMemberData>();
             GroupMemberData[group][user] = memberData;
             MarkDataChanged(save);

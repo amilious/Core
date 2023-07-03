@@ -14,7 +14,7 @@ namespace Amilious.Core.Identity.Group.Data {
         /// <summary>
         /// This is used to allow us to change the serialization format.
         /// </summary>
-        private const ushort VERSION = 1;
+        private const ushort VERSION = 2;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -26,11 +26,19 @@ namespace Amilious.Core.Identity.Group.Data {
         [DataMember, SerializeField] private uint? _invitedBy;
         [DataMember, SerializeField] private uint? _approvedBy;
         [DataMember, SerializeField] private MemberStatus _memberStatus;
+        [DataMember, SerializeField] private DateTime? _inviteDate;
+        [DataMember, SerializeField] private DateTime? _appliedDate;
+        [DataMember, SerializeField] private DateTime? _joinedDate;
+        [DataMember, SerializeField] private DateTime? _leaveDate;
+        [DataMember, SerializeField] private DateTime _rankDate;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         
+        /// <summary>
+        /// This property contains the manager for the data.
+        /// </summary>
         public IGroupDataManager Manager { get; private set; }
         
         /// <summary>
@@ -44,76 +52,176 @@ namespace Amilious.Core.Identity.Group.Data {
         public uint UserId => _userId;
 
         /// <summary>
-        /// This property contains the user's group rank.
+        /// This property contains the user's group rank.  Setting this property will automatically update the rank date.
         /// </summary>
         public short Rank {
             get => _rank;
             set {
                 if(_rank == value) return;
                 _rank = value;
+                _rankDate = DateTime.UtcNow;
                 Updated();
             }
         }
 
         /// <summary>
-        /// This property contains the id of the member who invited the user to the group, or null.
+        /// This property contains the id of the member who invited the user to the group, or null.  Setting this
+        /// property will automatically update the status and the invited date.
         /// </summary>
         public uint? InvitedBy {
             get => _invitedBy;
             set {
-                if(_invitedBy == value) return;
+                if(_invitedBy == value || Status == MemberStatus.Member) return;
                 _invitedBy = value;
+                if(_invitedBy == null) {
+                    if(Status == MemberStatus.Invited) {
+                        _memberStatus = MemberStatus.None;
+                        _inviteDate = null;
+                    }
+                }
+                else {
+                    _memberStatus = MemberStatus.Invited;
+                    _inviteDate = DateTime.UtcNow;
+                }
                 Updated();
             }
         }
 
         /// <summary>
-        /// This property contains the id of the member that approved the user's join request, or null.
+        /// This property contains the id of the member that approved the user's join request, or null.  Setting this
+        /// property will automatically update the status and the joined date.
         /// </summary>
         public uint? ApprovedBy {
             get => _approvedBy;
             set {
                 if(_approvedBy == value) return;
                 _approvedBy = value;
+                if(_approvedBy != null && Status != MemberStatus.Member) {
+                    _memberStatus = MemberStatus.Member;
+                    _joinedDate = DateTime.UtcNow;
+                }
                 Updated();
             }
         }
 
         /// <summary>
-        /// This property contains the users group status.
+        /// This property contains the users group status.  Setting this property will automatically update the
+        /// date and times.
         /// </summary>
         public MemberStatus Status {
             get => _memberStatus;
             set {
                 if(_memberStatus == value) return;
                 _memberStatus = value;
+                switch(value) {
+                    case MemberStatus.None:
+                        _appliedDate = null;
+                        _inviteDate = null;
+                        _joinedDate = null;
+                        _leaveDate = null;
+                        _approvedBy = null;
+                        _invitedBy = null;
+                        break;
+                    case MemberStatus.Member:
+                        _joinedDate = DateTime.UtcNow;
+                        break;
+                    case MemberStatus.Invited:
+                        _inviteDate = DateTime.UtcNow;
+                        break;
+                    case MemberStatus.Applying:
+                        _appliedDate = DateTime.UtcNow;
+                        break;
+                    case MemberStatus.Kicked:
+                        _leaveDate = DateTime.UtcNow;
+                        break;
+                    case MemberStatus.Left:
+                        _leaveDate = DateTime.UtcNow;
+                        break;
+                    default: throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                }
                 Updated();
             }
         }
 
+        /// <summary>
+        /// This property contains the local date and time for when the user was invited to the group.
+        /// </summary>
+        public DateTime? InviteDate => _inviteDate?.ToLocalTime();
+
+        /// <summary>
+        /// This property contains the local date and time for when the user joined the group.
+        /// </summary>
+        public DateTime? JoinDate => _joinedDate?.ToLocalTime();
+
+        /// <summary>
+        /// This property contains the local date and time for when the user applied to the group.
+        /// </summary>
+        public DateTime? AppliedDate => _appliedDate?.ToLocalTime();
+
+        /// <summary>
+        /// This property contains the local date and time for when the user left the group.
+        /// </summary>
+        public DateTime? LeaveDate => _leaveDate?.ToLocalTime();
+
+        public DateTime RankDate => _rankDate.ToLocalTime();
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
-        
+
+        /// <summary>
+        /// This constructor is used to create a new group member info.
+        /// </summary>
+        /// <param name="groupId">The id of the group.</param>
+        /// <param name="userId">The id of the user.</param>
+        /// <param name="status">The membership status of the user.</param>
+        /// <param name="rank">The rank of the user.</param>
+        /// <param name="invitedBy">The id of the user's invitor.</param>
+        /// <param name="approvedBy">The id of the user's approver.</param>
+        /// <param name="rankDate">The date that the last rank was changed.</param>
+        /// <param name="inviteDate">The Utc date time of when the user was invited.</param>
+        /// <param name="appliedDate">The Utc date time of when the user applied.</param>
+        /// <param name="joinedDate">The Utc date time of when the user joined.</param>
+        /// <param name="leaveDate">The Utc date time of when the user joined.</param>
         public GroupMemberData(uint groupId, uint userId, MemberStatus status = MemberStatus.None, 
-            short rank = 0, uint? invitedBy = null, uint? approvedBy = null ) {
+            short rank = 0, uint? invitedBy = null, uint? approvedBy = null, DateTime? rankDate = null, 
+            DateTime? inviteDate = null, DateTime? appliedDate = null, DateTime? joinedDate = null, 
+            DateTime? leaveDate =null) {
             _groupId = groupId;
             _userId = userId;
             _memberStatus = status;
             _rank = rank;
             _invitedBy = invitedBy;
             _approvedBy = approvedBy;
+            //added in version 2
+            _inviteDate = inviteDate;
+            _appliedDate = appliedDate;
+            _joinedDate = joinedDate;
+            _leaveDate = leaveDate;
+            _rankDate = rankDate ?? DateTime.UtcNow;
         }
         
+        /// <summary>
+        /// This constructor is used when deserializing the object.
+        /// </summary>
+        /// <param name="info">The serialized info.</param>
+        /// <param name="context">The streaming context.</param>
+        /// <exception cref="InvalidDataException">Thrown if the data is invalid.</exception>
         protected GroupMemberData(SerializationInfo info, StreamingContext context) {
             var version = info.GetUInt16(nameof(VERSION));
-            if(version != VERSION) throw new InvalidDataException("The read data is not formatted correctly!");
+            if(version > VERSION) throw new InvalidDataException("The read data is not formatted correctly!");
             _groupId = info.GetUInt32(nameof(GroupId));
             _userId = info.GetUInt32(nameof(UserId));
             _rank = info.GetInt16(nameof(Rank));
             _invitedBy = (uint?)info.GetValue(nameof(InvitedBy), typeof(int?));
             _approvedBy = (uint?)info.GetValue(nameof(ApprovedBy), typeof(int?));
             _memberStatus = (MemberStatus)info.GetValue(nameof(Status), typeof(MemberStatus));
+            if(version < 2) return; //added in version 2
+            _inviteDate = (DateTime?)info.GetValue(nameof(InviteDate), typeof(DateTime?));
+            _appliedDate = (DateTime?)info.GetValue(nameof(AppliedDate), typeof(DateTime?));
+            _joinedDate = (DateTime?)info.GetValue(nameof(JoinDate), typeof(DateTime?));
+            _leaveDate = (DateTime?)info.GetValue(nameof(LeaveDate), typeof(DateTime?));
+            _rankDate = info.GetDateTime(nameof(RankDate));
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,12 +243,18 @@ namespace Amilious.Core.Identity.Group.Data {
         /// <inheritdoc />
         public void GetObjectData(SerializationInfo info, StreamingContext context) {
             info.AddValue(nameof(VERSION),VERSION);
-            info.AddValue(nameof(GroupId), GroupId);
-            info.AddValue(nameof(UserId), UserId);
-            info.AddValue(nameof(Rank), Rank);
-            info.AddValue(nameof(InvitedBy), InvitedBy);
-            info.AddValue(nameof(ApprovedBy), ApprovedBy);
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(GroupId), _groupId);
+            info.AddValue(nameof(UserId), _userId);
+            info.AddValue(nameof(Rank), _rank);
+            info.AddValue(nameof(InvitedBy), _invitedBy);
+            info.AddValue(nameof(ApprovedBy), _approvedBy);
+            info.AddValue(nameof(Status), _memberStatus);
+            //added in version 2
+            info.AddValue(nameof(InviteDate), _inviteDate);
+            info.AddValue(nameof(AppliedDate), _appliedDate);
+            info.AddValue(nameof(JoinDate), _joinedDate);
+            info.AddValue(nameof(LeaveDate), _leaveDate);
+            info.AddValue(nameof(RankDate), _rankDate);
         }
 
         /// <summary>
