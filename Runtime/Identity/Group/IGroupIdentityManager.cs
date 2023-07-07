@@ -49,7 +49,44 @@ namespace Amilious.Core.Identity.Group {
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
+        #region Delegates //////////////////////////////////////////////////////////////////////////////////////////////
+
+        public delegate void DisbandDelegate(uint group, bool isServer);
+        
+        public delegate void GroupCreatedDelegate(GroupIdentity group, bool isServer);
+
+        public delegate void GroupUserDelegate(GroupIdentity group, UserIdentity user, bool isServer);
+
+        public delegate void GroupInviteDelegate(GroupIdentity group, UserIdentity inviter, UserIdentity user,
+            bool isServer);
+
+        public delegate void GroupRankChangeDelegate(GroupIdentity group, UserIdentity ranker, UserIdentity user,
+            short rank, bool isServer);
+
+        public delegate void UserKickedDelegate(GroupIdentity group, UserIdentity kicker, UserIdentity user,
+            bool isServer);
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        public event DisbandDelegate OnDisband;
+        
+        public event GroupCreatedDelegate OnGroupCreated;
+
+        public event GroupUserDelegate OnUserJoined;
+
+        public event GroupUserDelegate OnReceiveApplication;
+
+        public event GroupInviteDelegate OnUserInvited;
+
+        public event GroupRankChangeDelegate OnRankChanged;
+
+        public event GroupUserDelegate OnUserLeft;
+
+        public event UserKickedDelegate OnUserKicked;
+
+        public event GroupUserDelegate OnOwnerChanged;
 
         /// <summary>
         /// This event is triggered when trying to create a group.
@@ -135,6 +172,14 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if the user has applied to the group, otherwise false.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
         bool HasApplied(uint group, uint user);
+
+        /// <summary>
+        /// This method is used to get the number of members within a given group.
+        /// </summary>
+        /// <param name="group">The group in which you want to get a member count.</param>
+        /// <returns>The number of members within the given group.</returns>
+        /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
+        int GetMemberCount(uint group);
         
         /// <summary>
         /// This method is used to get the rank of a user within the given group.
@@ -159,10 +204,17 @@ namespace Amilious.Core.Identity.Group {
         /// This method is used to get the user's within a group.
         /// </summary>
         /// <param name="group">The group in which you want to get the members.</param>
-        /// <param name="members">The members within the given group.</param>
-        /// <returns>True if able to get members from the given group, otherwise false.</returns>
+        /// <returns>The user identities for the members of the group.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
-        bool TryGetMembers(uint group, out UserIdentity[] members);
+        IEnumerable<UserIdentity> TryGetMembers(uint group);
+
+        /// <summary>
+        /// This method is used to get the user's within a group.
+        /// </summary>
+        /// <param name="group">The group in which you want to get the members.</param>
+        /// <returns>The user member data for the members of the group.</returns>
+        /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
+        IEnumerable<GroupMemberData> TryGetAllMemberData(uint group);
 
         /// <summary>
         /// This method is used to try get the group from the group id.
@@ -172,6 +224,29 @@ namespace Amilious.Core.Identity.Group {
         /// <returns>True if a group with the given id exists, otherwise false.</returns>
         /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
         bool TryGetGroup(uint group, out GroupIdentity groupIdentity);
+
+        /// <summary>
+        /// This method is used to try get the member data for the given user and the given group.
+        /// </summary>
+        /// <param name="group">The group that you want to get the data for.</param>
+        /// <param name="user">The user that you want to get the data for.</param>
+        /// <param name="data">The data for the given user in the given group.</param>
+        /// <returns>True if data for the given user and group exists, otherwise false.</returns>
+        /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
+        bool TryGetMemberData(uint group, uint user, out GroupMemberData data);
+
+        /// <summary>
+        /// This method is used to try get the member data for the given user and the given group.
+        /// </summary>
+        /// <param name="group">The group that you want to get the data for.</param>
+        /// <param name="user">The user that you want to get the data for.</param>
+        /// <param name="groupIdentity">The group identity for the given group.</param>
+        /// <param name="userIdentity">The user identity for the given user.</param>
+        /// <param name="data">The data for the given user in the given group.</param>
+        /// <returns>True if data and identities for the given user and group exists, otherwise false.</returns>
+        /// <remarks>This method can be called from the <b>Client</b> or <b>Server</b>!</remarks>
+        bool TryGetMemberData(uint group, uint user, out GroupIdentity groupIdentity,
+            out UserIdentity userIdentity, out GroupMemberData data);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -185,13 +260,14 @@ namespace Amilious.Core.Identity.Group {
         /// <param name="owner">The owner of the group.</param>
         /// <param name="group">The newly created group.</param>
         /// <param name="authType">The authorization type of the group.</param>
-        /// <param name="password">(optional) The password of the group.</param>
+        /// <param name="saltedPassword">(optional) The salted password of the group.</param>
+        /// <param name="salt">(optional) The password salt.</param>
         /// <returns>True if able to create the group, otherwise false.</returns>
         /// <remarks>This method should only be called from the <b>Server</b>!  It also skips the
         /// <see cref="OnCreating"/> event.</remarks>
         /// <seealso cref="RequestCreate">RequestCreate (if on client)</seealso>
         public bool Create(string name, GroupType type, UserIdentity owner, out GroupIdentity group, 
-            GroupAuthType authType = GroupAuthType.None, string password = null);
+            GroupAuthType authType = GroupAuthType.None, string saltedPassword = null, string salt = null);
 
         /// <summary>
         /// This method is used to try change the owner of a group.
@@ -233,11 +309,12 @@ namespace Amilious.Core.Identity.Group {
         /// </summary>
         /// <param name="group">The group that you want to approve of the join request.</param>
         /// <param name="user">The user that you want to approve to join the group.</param>
+        /// <param name="approver">The user that is approving of the join.</param>
         /// <returns>True if the application was approved.</returns>
         /// <remarks>This method should only be called from the <b>Server</b>!  It also skips the
         /// <see cref="OnApproving"/> event.</remarks>
         /// <seealso cref="RequestApproveApplication">RequestApproveApplication (if on client)</seealso>
-        public bool ApproveApplication(GroupIdentity group, UserIdentity user);
+        public bool ApproveApplication(GroupIdentity group, UserIdentity user, UserIdentity approver);
 
         /// <summary>
         /// This method is used to invite a user to a group.
@@ -255,13 +332,14 @@ namespace Amilious.Core.Identity.Group {
         /// This method is used to change a user's rank in a group.
         /// </summary>
         /// <param name="group">The group in which you want to change the user's rank.</param>
+        /// <param name="ranker">The member that is setting the rank of the user.</param>
         /// <param name="user">The user that you want to change the rank of.</param>
         /// <param name="rank">The rank that you want to apply to the user.</param>
         /// <returns>True if able to change the user's rank, otherwise false.</returns>
         /// <remarks>This method should only be called from the <b>Server</b>!  It also skips the
         /// <see cref="OnRanking"/> event.</remarks>
         /// <seealso cref="RequestRankChange">RequestRankChange (if on client)</seealso>
-        public bool RankChange(GroupIdentity group, UserIdentity user, short rank);
+        public bool RankChange(GroupIdentity group,  UserIdentity ranker, UserIdentity user, short rank);
 
         /// <summary>
         /// This method is used to remove a user from a group.

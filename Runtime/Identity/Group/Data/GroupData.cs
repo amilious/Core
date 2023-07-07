@@ -11,7 +11,7 @@ namespace Amilious.Core.Identity.Group.Data {
 
         #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
         
-        private const ushort VERSION = 1;
+        private const ushort VERSION = 2;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,6 +25,7 @@ namespace Amilious.Core.Identity.Group.Data {
         [DataMember, SerializeField] private GroupAuthType _authType;
         [DataMember, SerializeField] private GroupType _groupType;
         [DataMember, SerializeField] private string _password;
+        [DataMember, SerializeField] private string _salt;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -90,12 +91,14 @@ namespace Amilious.Core.Identity.Group.Data {
             }
         }
         
+        public string Salt { get; }
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
 
         public GroupData(uint id, string name, GroupType groupType, uint owner, uint creator, DateTime created,
-            GroupAuthType authType = GroupAuthType.None, string password = null) {
+            GroupAuthType authType = GroupAuthType.None, string password = null, string salt = null) {
             _id = id;
             _name = name;
             _groupType = groupType;
@@ -104,6 +107,7 @@ namespace Amilious.Core.Identity.Group.Data {
             _created = created;
             _authType = authType;
             _password = password;
+            _salt = salt;
         }
         
         protected GroupData(SerializationInfo info, StreamingContext context) {
@@ -118,6 +122,8 @@ namespace Amilious.Core.Identity.Group.Data {
             _authType = (GroupAuthType)info.GetValue(nameof(AuthType),typeof(GroupAuthType));
             _groupType = (GroupType)info.GetValue(nameof(GroupType), typeof(GroupType));
             _password = info.GetString(nameof(Password));
+            if(version < 2) return; //value added in version 2
+            _salt = info.GetString(nameof(Salt));
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,6 +146,8 @@ namespace Amilious.Core.Identity.Group.Data {
             info.AddValue(nameof(AuthType), AuthType);
             info.AddValue(nameof(GroupType), GroupType);
             info.AddValue(nameof(Password), Password);
+            //added in version 2
+            info.AddValue(nameof(Salt), Password);
         }
         
         public void RegisterDataManager(IGroupDataManager manager) => Manager = manager;
@@ -150,7 +158,7 @@ namespace Amilious.Core.Identity.Group.Data {
         /// <param name="manager">The group identity manager.</param>
         /// <returns>The group identity for the group data.</returns>
         public GroupIdentity GetGroupIdentity(IGroupIdentityManager manager) =>
-            new GroupIdentity(manager, Id, Name, GroupType, Owner, AuthType);
+            new GroupIdentity(manager, Id, Name, GroupType, Owner, AuthType, Salt);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

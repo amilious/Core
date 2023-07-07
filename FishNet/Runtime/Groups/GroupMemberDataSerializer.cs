@@ -34,6 +34,7 @@ namespace Amilious.Core.FishNet.Groups {
             if(memberData.JoinDate.HasValue) writer.WriteDateTime(memberData.JoinDate.Value);
             writer.WriteBoolean(memberData.LeaveDate.HasValue);
             if(memberData.LeaveDate.HasValue) writer.WriteDateTime(memberData.LeaveDate.Value);
+            writer.WriteString(memberData.ApplicationRequest);
         }
 
         /// <summary>
@@ -54,9 +55,10 @@ namespace Amilious.Core.FishNet.Groups {
             DateTime? appliedDate = reader.ReadBoolean() ? reader.ReadDateTime() : null;
             DateTime? joinedDate = reader.ReadBoolean() ? reader.ReadDateTime() : null;
             DateTime? leaveDate = reader.ReadBoolean() ? reader.ReadDateTime() : null;
+            var applicationRequest = reader.ReadString();
             //create the object
             return new GroupMemberData(group, user, status, rank, invitedBy, approvedBy, rankDate, inviteDate, 
-                appliedDate, joinedDate, leaveDate);
+                appliedDate, joinedDate, leaveDate, applicationRequest);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

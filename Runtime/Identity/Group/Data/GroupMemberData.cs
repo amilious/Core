@@ -25,6 +25,7 @@ namespace Amilious.Core.Identity.Group.Data {
         [DataMember, SerializeField] private short _rank;
         [DataMember, SerializeField] private uint? _invitedBy;
         [DataMember, SerializeField] private uint? _approvedBy;
+        [DataMember, SerializeField] private string _applicationRequest;
         [DataMember, SerializeField] private MemberStatus _memberStatus;
         [DataMember, SerializeField] private DateTime? _inviteDate;
         [DataMember, SerializeField] private DateTime? _appliedDate;
@@ -60,6 +61,17 @@ namespace Amilious.Core.Identity.Group.Data {
                 if(_rank == value) return;
                 _rank = value;
                 _rankDate = DateTime.UtcNow;
+                Updated();
+            }
+        }
+
+        public string ApplicationRequest {
+            get => _applicationRequest;
+            set {
+                if(_applicationRequest == value) return;
+                _applicationRequest = value;
+                _memberStatus = MemberStatus.Applying;
+                _appliedDate = DateTime.UtcNow;
                 Updated();
             }
         }
@@ -183,10 +195,20 @@ namespace Amilious.Core.Identity.Group.Data {
         /// <param name="appliedDate">The Utc date time of when the user applied.</param>
         /// <param name="joinedDate">The Utc date time of when the user joined.</param>
         /// <param name="leaveDate">The Utc date time of when the user joined.</param>
+        /// <param name="applicationRequest">The user's application request.</param>
         public GroupMemberData(uint groupId, uint userId, MemberStatus status = MemberStatus.None, 
             short rank = 0, uint? invitedBy = null, uint? approvedBy = null, DateTime? rankDate = null, 
             DateTime? inviteDate = null, DateTime? appliedDate = null, DateTime? joinedDate = null, 
-            DateTime? leaveDate =null) {
+            DateTime? leaveDate =null, string applicationRequest = null) {
+
+            switch(status) { // add missing dates
+                case MemberStatus.Member: joinedDate??= DateTime.UtcNow; break;
+                case MemberStatus.Invited: inviteDate??=DateTime.UtcNow; break;
+                case MemberStatus.Applying: appliedDate??=DateTime.UtcNow; break;
+                case MemberStatus.Kicked: leaveDate ??= DateTime.UtcNow; break;
+                case MemberStatus.Left: leaveDate ??= DateTime.UtcNow; break;
+            }
+            
             _groupId = groupId;
             _userId = userId;
             _memberStatus = status;
@@ -199,6 +221,7 @@ namespace Amilious.Core.Identity.Group.Data {
             _joinedDate = joinedDate;
             _leaveDate = leaveDate;
             _rankDate = rankDate ?? DateTime.UtcNow;
+            _applicationRequest = applicationRequest;
         }
         
         /// <summary>
@@ -222,6 +245,7 @@ namespace Amilious.Core.Identity.Group.Data {
             _joinedDate = (DateTime?)info.GetValue(nameof(JoinDate), typeof(DateTime?));
             _leaveDate = (DateTime?)info.GetValue(nameof(LeaveDate), typeof(DateTime?));
             _rankDate = info.GetDateTime(nameof(RankDate));
+            _applicationRequest = info.GetString(nameof(ApplicationRequest));
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -255,6 +279,7 @@ namespace Amilious.Core.Identity.Group.Data {
             info.AddValue(nameof(JoinDate), _joinedDate);
             info.AddValue(nameof(LeaveDate), _leaveDate);
             info.AddValue(nameof(RankDate), _rankDate);
+            info.AddValue(nameof(ApplicationRequest), _applicationRequest);
         }
 
         /// <summary>

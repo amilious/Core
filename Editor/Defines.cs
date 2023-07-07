@@ -62,7 +62,7 @@ namespace Amilious.Core.Editor {
         /// <remarks>Remember to update the assembly definitions when changing the active defines.</remarks>
         /// </summary>
         private static readonly string[] DefineSymbols = {
-            "AMILIOUS_CORE", "AMILIOUS_CORE_1_0", "AMILIOUS_CORE_1_0_OR_NEWER"
+            "AMILIOUS_CORE", "AMILIOUS_CORE_2_0", "AMILIOUS_CORE_1_0_OR_NEWER", "AMILIOUS_CORE_2_0_OR_NEWER"
         };
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

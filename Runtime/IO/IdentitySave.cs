@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group;
 using System.Runtime.Serialization.Formatters.Binary;
+using Amilious.Core.Collections;
 using Amilious.Core.Identity.Group.Data;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -56,7 +57,6 @@ namespace Amilious.Core.IO {
         private const string CLIENT_REPLY_IDENTITY = "**reply_identity";
         private const string TITLE = "<b><color="+LABEL_COLOR+">["+SAVE_NAME+"]</color></b>";
 
-        private const string SERVER_DATA_GROUP_MEMBERS = "**group_member_data**";
         private const string SERVER_DATA_GROUPS = "**server_data_groups**";
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,9 +85,12 @@ namespace Amilious.Core.IO {
         
         private static Dictionary<uint, GroupData> GroupData = new Dictionary<uint, GroupData>();
 
-        private static Dictionary<uint, Dictionary<uint, GroupMemberData>> GroupMemberData =
-            new Dictionary<uint, Dictionary<uint, GroupMemberData>>();
-        
+        //private static Dictionary<uint, Dictionary<uint, GroupMemberData>> GroupMemberData =
+            //new Dictionary<uint, Dictionary<uint, GroupMemberData>>();
+
+            private static DoubleDictionary<uint, uint, GroupMemberData> MemberData =
+                new DoubleDictionary<uint, uint, GroupMemberData>();
+
         #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
@@ -185,8 +188,8 @@ namespace Amilious.Core.IO {
                 ServerUserFriends = new Dictionary<uint, List<uint>>();
             if(!Data.TryGetCastValue(SERVER_DATA_GROUPS, out GroupData))
                 GroupData = new Dictionary<uint, GroupData>();
-            if(!Data.TryGetCastValue(SERVER_DATA_GROUP_MEMBERS, out GroupMemberData))
-                GroupMemberData = new Dictionary<uint, Dictionary<uint, GroupMemberData>>();
+            if(!Data.TryGetCastValue(nameof(MemberData), out MemberData))
+                MemberData = new DoubleDictionary<uint, uint, GroupMemberData>();
             if(ShowSaveAndLoadLogs)
                 Debug.Log($"{TITLE} <color=#00FF00>Loaded the save data!</color>");
             OnAfterLoad?.Invoke();
@@ -213,14 +216,14 @@ namespace Amilious.Core.IO {
             ServerUserBlocked.Clear();
             ServerUserFriends.Clear();
             GroupData.Clear();
-            GroupMemberData.Clear();
+            MemberData.Clear();
             Data.Clear();
             //data containers
             Data[SERVER_USER_DATA] = ServerUserData;
             Data[SERVER_USER_BLOCKED] = ServerUserBlocked;
             Data[SERVER_USER_FRIENDS] = ServerUserFriends;
             Data[SERVER_DATA_GROUPS] = GroupData;
-            Data[SERVER_DATA_GROUP_MEMBERS] = GroupMemberData;
+            Data[nameof(MemberData)] = MemberData;
             OnResetting?.Invoke();
             DataChanged = true;
             Debug.Log($"{TITLE}  <color=#FF0000>Reset the save data!</color>");
@@ -255,6 +258,7 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="oldVersion">The version that was loaded.</param>
         /// <param name="data">The loaded data that needs to be modified.</param>
+        // ReSharper disable twice UnusedParameter.Local
         private static void UpgradeData(Version oldVersion, Dictionary<string, object> data) {}
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -675,10 +679,8 @@ namespace Amilious.Core.IO {
         /// <returns>True if the user was removed from the group, otherwise false if the user was not
         /// part of the group.</returns>
         public static bool Server_RemoveUserFromGroup(uint groupId, uint userId, bool save = true) {
-            if(!GroupMemberData.TryGetValueFix(groupId, out var groupMembers)) return false;
-            var result = groupMembers.Remove(userId);
-            DataChanged = true;
-            if(result && save) Save();
+            var result = MemberData.Remove(groupId, userId);
+            if(result)MarkDataChanged(save);
             return result;
         }
 
@@ -695,13 +697,10 @@ namespace Amilious.Core.IO {
         /// </summary>
         /// <param name="groupId">The id of the group that you want to get the members of.</param>
         /// <param name="members">The members of the group with the given id.</param>
-        /// <returns>True if the group contains members, otherwise false.</returns>
+        /// <returns>True if the group exists and contains members, otherwise false.</returns>
         public static bool Server_TryGetGroupMembers(uint groupId, out IEnumerable<uint> members) {
-            members = null;
-            if(!GroupMemberData.TryGetValueFix(groupId, out var memberData))
-                return false;
-            members = memberData.Keys;
-            return true;
+            members = MemberData.SubKeys(groupId);
+            return GroupData.ContainsKey(groupId) && MemberData.SubCount(groupId)>0;
         }
 
         /// <summary>
@@ -710,9 +709,8 @@ namespace Amilious.Core.IO {
         /// <param name="group">The group that you want to get the data for.</param>
         /// <param name="groupData">The group data.</param>
         /// <returns>True if the group data exists, otherwise false.</returns>
-        public static bool Server_TryGetGroupData(uint group, out GroupData groupData) {
-            return GroupData.TryGetValueFix(group, out groupData);
-        }
+        public static bool Server_TryGetGroupData(uint group, out GroupData groupData) =>
+            GroupData.TryGetValueFix(group, out groupData);
         
         /// <summary>
         /// This method is used to get the group member data for the given group and user.
@@ -721,11 +719,8 @@ namespace Amilious.Core.IO {
         /// <param name="user">The user that you want to get the member data for.</param>
         /// <param name="groupMemberData">The user's group member data.</param>
         /// <returns>True if able to get the group member data, otherwise false.</returns>
-        public static bool Server_TryGetGroupMemberData(uint group, uint user, out GroupMemberData groupMemberData) {
-            groupMemberData = null;
-            if(!GroupMemberData.TryGetValueFix(group, out var groupMembers)) return false;
-            return groupMembers.TryGetValueFix(user, out groupMemberData);
-        }
+        public static bool Server_TryGetGroupMemberData(uint group, uint user, out GroupMemberData groupMemberData) =>
+            MemberData.TryGetValue(group, user, out groupMemberData);
         
         /// <summary>
         /// This method is used to get the number of members for a given group.
@@ -734,12 +729,8 @@ namespace Amilious.Core.IO {
         /// <param name="count">The number of members in the group.</param>
         /// <returns>True if the group exists, otherwise false.</returns>
         public static bool Server_TryGetGroupMemberCount(uint groupId, out int count) {
-            if(GroupMemberData.TryGetValueFix(groupId, out var groupMembers)) {
-                count = groupMembers.Count;
-                return true;
-            }
-            count = 0;
-            return false;
+            count = MemberData.SubCount(groupId);
+            return GroupData.ContainsKey(groupId);
         }
 
         /// <summary>
@@ -750,7 +741,7 @@ namespace Amilious.Core.IO {
         /// <returns>True if the group was removed, otherwise false if the group did not exist.</returns>
         public static bool Server_RemoveGroup(uint group, bool save = true) {
             GroupData.Remove(group);
-            GroupMemberData.Remove(group);
+            MemberData.Remove(group);
             MarkDataChanged(save);
             return true;
         }
@@ -764,12 +755,14 @@ namespace Amilious.Core.IO {
         /// <param name="creatorData">The value will out put the creator's member data.</param>
         /// <param name="authType">The group authentication type.</param>
         /// <param name="password">The group password.</param>
+        /// <param name="salt">The password salt for the server.</param>
+        /// <param name="save">If true the data will be written to a file after updating the value.</param>
         /// <returns>The group member data of the newly created group.</returns>
         public static GroupData Server_AddGroup(string name, GroupType groupType, uint creator, out GroupMemberData creatorData, 
-            GroupAuthType authType = GroupAuthType.None, string password = null, bool save = true) {
+            GroupAuthType authType = GroupAuthType.None, string password = null, string salt = null, bool save = true) {
             var id = Server_TakeNextGroupId();
             name ??= $"Group_{id}";
-            var groupData = new GroupData(id, name, groupType,creator,creator,DateTime.Now,authType,password);
+            var groupData = new GroupData(id, name, groupType,creator,creator,DateTime.Now,authType,password,salt);
             GroupData.Add(id, groupData);
             creatorData = Server_AddGroupMemberData(id, creator, MemberStatus.Member, short.MaxValue, save: false);
             MarkDataChanged(save);
@@ -785,28 +778,28 @@ namespace Amilious.Core.IO {
         /// <param name="rank">The rank of the user.</param>
         /// <param name="invitedBy">The id of the user's invitor.</param>
         /// <param name="approvedBy">The id of the user's approver.</param>
+        /// <param name="applicationRequest">The text for the user's application.</param>
+        /// <param name="save">If true the data will be written to a file after updating the value.</param>
         /// <returns>This method returns the user member data for the given user and group.</returns>
         public static GroupMemberData Server_AddGroupMemberData(uint group, uint user, MemberStatus status, 
-            short rank = 0, uint? invitedBy = null, uint? approvedBy = null, bool save = true) {
-            if(GroupMemberData.TryGetValueFix(group, out var members) && 
-                members.TryGetValueFix(user, out var memberData)) {
-                throw new InvalidOperationException(
+            short rank = 0, uint? invitedBy = null, uint? approvedBy = null, string applicationRequest = null, bool save = true) {
+            if(MemberData.ContainsKey(group,user)) throw new InvalidOperationException(
                     $"You can not add the user member data for user {user} in the group {group} because it already exists!");
-            }
-            
-            //calculate any date based on the status
-            DateTime? invitedDate = status == MemberStatus.Invited ? DateTime.UtcNow : null;
-            DateTime? appliedDate = status == MemberStatus.Applying ? DateTime.UtcNow : null;
-            DateTime? joinedDate = status == MemberStatus.Member ? DateTime.UtcNow : null;
-            DateTime? leftDate = status == MemberStatus.Left ? DateTime.UtcNow : null;
-            
-            memberData = new GroupMemberData(group, user, status, rank, invitedBy, approvedBy, invitedDate,
-                appliedDate, joinedDate, leftDate);
-            if(!GroupMemberData.ContainsKey(group)) GroupMemberData[group] = new Dictionary<uint, GroupMemberData>();
-            GroupMemberData[group][user] = memberData;
+            var memberData = new GroupMemberData(group, user, status, rank, invitedBy, approvedBy,
+                applicationRequest:applicationRequest);
+            MemberData.Add(group,user,memberData);
             MarkDataChanged(save);
             return memberData;
         }
+
+        /// <summary>
+        /// This method is used to check if the given user is a member of the give group.
+        /// </summary>
+        /// <param name="group">The group that you want to check.</param>
+        /// <param name="user">The user that you want to check.</param>
+        /// <returns>True if the given user is a member of the given group, otherwise false.</returns>
+        public static bool Server_IsMember(uint group, uint user) =>
+            MemberData.TryGetValue(group, user, out var data) && data.Status == MemberStatus.Member;
         
         /// <summary>
         /// This method is used to get the next available group id.
@@ -819,7 +812,16 @@ namespace Amilious.Core.IO {
             return id;
         }
         
+        /// <summary>
+        /// This method is used to get the groups that the given user is involved with.
+        /// </summary>
+        /// <param name="user">The user that you want to get groups for.</param>
+        /// <returns>The id's of the groups that contain data on the given user.</returns>
+        public static IEnumerable<uint> Server_TryGetUsersGroups(uint user) =>
+            MemberData.GetPrimaryKeysForSecondary(user);
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
         
     }
     

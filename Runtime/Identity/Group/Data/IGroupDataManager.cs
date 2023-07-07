@@ -103,6 +103,14 @@ namespace Amilious.Core.Identity.Group.Data {
         #region Group Data Methods /////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// This method is used to check if the given user is a member of the group.
+        /// </summary>
+        /// <param name="group">The group that you want to check.</param>
+        /// <param name="user">The user that you want to check.</param>
+        /// <returns>True if the given user is a member of the given group.</returns>
+        public bool IsMember(uint group, uint user);
+        
+        /// <summary>
         /// This method is used to remove a user from a group.
         /// </summary>
         /// <param name="group">The id of the group that you want to remove a user from.</param>
@@ -173,10 +181,11 @@ namespace Amilious.Core.Identity.Group.Data {
         /// <param name="creatorData">The value will out put the creator's member data.</param>
         /// <param name="authType">The group authentication type.</param>
         /// <param name="password">The group password.</param>
+        /// <param name="salt">The password salt.</param>
         /// <returns>The group member data of the newly created group.</returns>
         /// <remarks>This method should only be called on the <b>SERVER</b>!</remarks>
         public GroupData AddGroup(string name, GroupType groupType, uint creator,
-            out GroupMemberData creatorData, GroupAuthType authType = GroupAuthType.None, string password = null);
+            out GroupMemberData creatorData, GroupAuthType authType = GroupAuthType.None, string password = null, string salt = null);
 
         /// <summary>
         /// This method is used to add member data for the given user.
@@ -187,10 +196,18 @@ namespace Amilious.Core.Identity.Group.Data {
         /// <param name="rank">The rank of the user.</param>
         /// <param name="invitedBy">The id of the user's invitor.</param>
         /// <param name="approvedBy">The id of the user's approver.</param>
+        /// <param name="applicationRequest">The user's application request.</param>
         /// <returns>This method returns the user member data for the given user and group.</returns>
         /// <remarks>This method should only be called on the <b>SERVER</b>!</remarks>
         public GroupMemberData AddGroupMemberData(uint group, uint user, MemberStatus status,
-            short rank = 0, uint? invitedBy = null, uint? approvedBy = null);
+            short rank = 0, uint? invitedBy = null, uint? approvedBy = null, string applicationRequest = null);
+
+        /// <summary>
+        /// This method is used to get the groups that the user belongs to.
+        /// </summary>
+        /// <param name="user">The user that you want to get the group for.</param>
+        /// <returns>The groups for the given user.</returns>
+        public IEnumerable<uint> GetUsersGroups(uint user);
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

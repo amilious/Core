@@ -92,7 +92,12 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         public UserType UserType => _userType ?? UserType.AmiliousConsole;
 
-        public IdentityType IdentityType => IdentityType.User; 
+        public IdentityType IdentityType => IdentityType.User;
+
+        /// <summary>
+        /// This property is true if the Manager has been registered and the user is online, otherwise false.
+        /// </summary>
+        public bool IsOnline => Manager?.IsOnline(Id) ?? false;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

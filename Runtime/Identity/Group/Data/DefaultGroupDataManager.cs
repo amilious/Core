@@ -80,8 +80,8 @@ namespace Amilious.Core.Identity.Group.Data {
 
         /// <inheritdoc />
         public GroupData AddGroup(string name, GroupType groupType, uint creator, out GroupMemberData creatorData,
-            GroupAuthType authType = GroupAuthType.None, string password = null) {
-            var group = IdentitySave.Server_AddGroup(name, groupType, creator, out creatorData, authType, password, 
+            GroupAuthType authType = GroupAuthType.None, string password = null, string salt = null) {
+            var group = IdentitySave.Server_AddGroup(name, groupType, creator, out creatorData, authType, password, salt, 
                 SAVE_EVERY_CHANGE);
             group.RegisterDataManager(this);
             OnGroupDataAdded?.Invoke(group);
@@ -91,18 +91,24 @@ namespace Amilious.Core.Identity.Group.Data {
 
         /// <inheritdoc />
         public GroupMemberData AddGroupMemberData(uint group, uint user, MemberStatus status, short rank = 0,
-            uint? invitedBy = null, uint? approvedBy = null) {
+            uint? invitedBy = null, uint? approvedBy = null, string applicationRequest = null) {
             var member = IdentitySave.Server_AddGroupMemberData(group, user, status, rank, invitedBy, approvedBy,
-                SAVE_EVERY_CHANGE);
+                applicationRequest,SAVE_EVERY_CHANGE);
             member.RegisterDataManager(this);
             OnGroupMemberDataAdded?.Invoke(member);
             return member;
         }
 
+        /// <inheritdoc />
+        public IEnumerable<uint> GetUsersGroups(uint user) => IdentitySave.Server_TryGetUsersGroups(user);
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Get Data ///////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// <inheritdoc />
+        public bool IsMember(uint group, uint user) => IdentitySave.Server_IsMember(group, user);
+        
         /// <inheritdoc />
         public IEnumerable<uint> GetGroupIds() => IdentitySave.Server_GetGroupIds();
 

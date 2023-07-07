@@ -92,22 +92,13 @@ namespace Amilious.Core.FishNet.Chat {
 
         [ServerRpc(RequireOwnership = false)]
         private void Server_ReceiveGroupMessage(uint groupId, string message, NetworkConnection con = null) {
-            UserIdentityManager.TryGetIdentity(con, out var sender);
-            //make sure the channel exists
-            if(!GroupIdentityManager.TryGetMembers(groupId, out var members)) {
-                Client_ReceiveServerMessage(con,"Message sent to an invalid channel.");
-                return;
-            }
-            //make sure the sender is in the channel
-            if(!members.Contains(sender)) { 
-                Client_ReceiveServerMessage(con,"You can't send a message to that group because you are not a member.");
-                return;
-            }
-            //send the message.
-            foreach(var member in members) {
-                if(member == sender.Id) continue; //do not send the message to self
-                if(!UserIdentityManager.TryGetConnection(member, out var connection)) continue;
-                if(!Observers.Contains(connection)) Observers.Add(connection);
+            if(!UserIdentityManager.TryGetIdentity(con, out var sender)) return;
+            if(!GroupIdentityManager.TryGetGroup(groupId, out var group)) return;
+            if(!GroupIdentityManager.IsMember(group,sender)) return;
+            
+            //send the message
+            foreach(var connection in GroupIdentityManager.GetGroupConnections(group)) {
+                if(connection==con) continue;
                 Client_ReceiveGroupMessage(connection,sender.Id,groupId,message);
             }
         }

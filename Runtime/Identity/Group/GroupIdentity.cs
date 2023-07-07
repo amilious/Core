@@ -21,14 +21,6 @@ namespace Amilious.Core.Identity.Group {
     /// </summary>
     public readonly struct GroupIdentity : IIdentity {
 
-        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
-        
-        public const string GROUP_NAME_KEY = "_group_name_";
-        public const string GROUP_TYPE_KEY = "_group_type_";
-        public const string GROUP_PASSWORD_KEY = "_group_password_";
-        
-        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
         private readonly uint? _id;
@@ -36,7 +28,7 @@ namespace Amilious.Core.Identity.Group {
         private readonly string _name;
         private readonly GroupType? _groupType;
         private readonly GroupAuthType? _authType;
-        public readonly string _link;
+        private readonly string _link;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -62,6 +54,8 @@ namespace Amilious.Core.Identity.Group {
 
         public IdentityType IdentityType => IdentityType.Group;
         
+        public string Salt { get; }
+        
         public IGroupIdentityManager Manager { get; }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +63,7 @@ namespace Amilious.Core.Identity.Group {
         #region Constructors ///////////////////////////////////////////////////////////////////////////////////////////
         
         public GroupIdentity(IGroupIdentityManager manager, uint id, string name, GroupType groupType, 
-            uint owner = 0, GroupAuthType authType = GroupAuthType.None) {
+            uint owner = 0, GroupAuthType authType = GroupAuthType.None, string salt = null) {
             _id = id;
             _name = name;
             _groupType = groupType;
@@ -77,6 +71,7 @@ namespace Amilious.Core.Identity.Group {
             _owner = owner;
             _link = $"<link=group|{id}>{name}</link>";
             Manager = manager;
+            Salt = salt;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
