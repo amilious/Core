@@ -14,7 +14,6 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System.Linq;
 using Cysharp.Text;
 using FishNet.Object;
 using Amilious.Console;
@@ -29,12 +28,12 @@ namespace Amilious.Core.FishNet.Chat {
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
         /// <summary>
-        /// Use <see cref="GroupIdentityManager"/> and not this variable.
+        /// Use <see cref="GroupManager"/> and not this variable.
         /// </summary>
         private FishNetGroupIdentityManager _groupManager;
         
         /// <summary>
-        /// User <see cref="UserIdentityManager"/> and not this variable.
+        /// User <see cref="UserManager"/> and not this variable.
         /// </summary>
         private FishNetUserIdentityManager _userManager;
         
@@ -45,7 +44,7 @@ namespace Amilious.Core.FishNet.Chat {
         /// <summary>
         /// This property contains the FishNet Group Identity Manager.
         /// </summary>
-        private FishNetGroupIdentityManager GroupIdentityManager {
+        private FishNetGroupIdentityManager GroupManager {
             get {
                 if(_groupManager != null) return _groupManager;
                 _groupManager = this.GetGroupManager();
@@ -56,7 +55,7 @@ namespace Amilious.Core.FishNet.Chat {
         /// <summary>
         /// This property contains the FishNet User Identity Manager.
         /// </summary>
-        private FishNetUserIdentityManager UserIdentityManager {
+        private FishNetUserIdentityManager UserManager {
             get {
                 if(_userManager != null) return _userManager;
                 _userManager = this.GetUserManager();
@@ -77,12 +76,12 @@ namespace Amilious.Core.FishNet.Chat {
 
         [ServerRpc(RequireOwnership = false)]
         private void Server_ReceivePrivateMessage(uint recipientId, string message, NetworkConnection con = null) {
-            UserIdentityManager.TryGetIdentity(con, out var sender);
-            if(!UserIdentityManager.TryGetConnection(recipientId, out var recipientConnection)) {
+            UserManager.TryGetIdentity(con, out var sender);
+            if(!UserManager.TryGetConnection(recipientId, out var recipientConnection)) {
                 Client_ReceiveServerMessage(con,ZString.Style(StyleFormat.DebugError,"Unable to deliver the message."));
                 return;
             };
-            if(!UserIdentityManager.Server_CanSendMessage(sender.Id, recipientId)) {
+            if(!UserManager.Server_CanSendMessage(sender.Id, recipientId)) {
                 Client_ReceiveServerMessage(con, ZString.Style(StyleFormat.DebugError,"Unable to deliver the message."));
                 return;
             }
@@ -92,12 +91,11 @@ namespace Amilious.Core.FishNet.Chat {
 
         [ServerRpc(RequireOwnership = false)]
         private void Server_ReceiveGroupMessage(uint groupId, string message, NetworkConnection con = null) {
-            if(!UserIdentityManager.TryGetIdentity(con, out var sender)) return;
-            if(!GroupIdentityManager.TryGetGroup(groupId, out var group)) return;
-            if(!GroupIdentityManager.IsMember(group,sender)) return;
-            
+            if(!UserManager.TryGetIdentity(con, out var sender)) return;
+            if(!GroupManager.TryGetGroup(groupId, out var group)) return;
+            if(!GroupManager.IsMember(group,sender)) return;
             //send the message
-            foreach(var connection in GroupIdentityManager.GetGroupConnections(group)) {
+            foreach(var connection in GroupManager.GetGroupConnections(group)) {
                 if(connection==con) continue;
                 Client_ReceiveGroupMessage(connection,sender.Id,groupId,message);
             }

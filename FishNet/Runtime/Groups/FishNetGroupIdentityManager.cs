@@ -40,7 +40,8 @@ namespace Amilious.Core.FishNet.Groups {
         
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 
-        [Header("General Settings")] private ClientServer authenticationMode = ClientServer.Both;
+        [Header("General Settings")][SerializeField] 
+        private ClientServer authenticationMode = ClientServer.Both;
         
         [Header("Group Password Settings")]
         [SerializeField] private int hashIterations = 10;

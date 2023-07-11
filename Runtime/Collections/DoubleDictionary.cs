@@ -119,11 +119,6 @@ namespace Amilious.Core.Collections {
         /// <returns>The values within the given main key.</returns>
         public IEnumerator<TValue> GetValuesEnumerator(TKey1 key1);
         /// <summary>
-        /// This method is used to merge the values from another dictionary into this one.
-        /// </summary>
-        /// <param name="otherDictionary">The other dictionary.</param>
-        public void Merge(DoubleDictionary<TKey1, TKey2, TValue> otherDictionary);
-        /// <summary>
         /// This method is used to remove the keys that contain the given value.
         /// </summary>
         /// <param name="value">The value that you want to remove.</param>
@@ -347,7 +342,10 @@ namespace Amilious.Core.Collections {
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// This method is used to merge the values from another dictionary into this one.
+        /// </summary>
+        /// <param name="otherDictionary">The other dictionary.</param>
         public void Merge(DoubleDictionary<TKey1, TKey2, TValue> otherDictionary) {
             foreach (var kvp in otherDictionary._dictionary) {
                 Add(kvp.Key.Item1, kvp.Key.Item2, kvp.Value);

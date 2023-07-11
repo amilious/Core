@@ -15,9 +15,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 namespace Amilious.Core.UI.Text {
     
@@ -33,6 +33,7 @@ namespace Amilious.Core.UI.Text {
         public Color MouseNotOverColor => mouseNotOverColor;
 
         public Color MouseOverColor => mouseOverColor;
+
         
         public void AddAction(string actionName, Action action) {
             var actionItem = (_actionItemPool.Count>0)?
@@ -56,5 +57,6 @@ namespace Amilious.Core.UI.Text {
         }
 
         public void OnPointerExit(PointerEventData eventData) => Hide();
+
     }
 }

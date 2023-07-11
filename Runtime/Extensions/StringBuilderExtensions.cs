@@ -55,6 +55,10 @@ namespace Amilious.Core.Extensions {
             if(builder.Length != 0) builder.Append(c);
             return builder;
         }
+
+        public static StringBuilder Space(this StringBuilder builder, int times = 1) => builder.Append(' ',times);
+
+        public static StringBuilder NewLine(this StringBuilder builder, int times = 1) => builder.Append('\n',times);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         

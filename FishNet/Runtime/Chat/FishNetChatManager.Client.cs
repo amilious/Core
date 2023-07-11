@@ -24,16 +24,17 @@ namespace Amilious.Core.FishNet.Chat {
         #region Client Rpcs ////////////////////////////////////////////////////////////////////////////////////////////
         
         [ObserversRpc]
-        private void Clients_ReceiveGlobalMessage(uint senderId, string message) =>
-            OnReceiveGlobalMessage?.Invoke(senderId, message);
+        private void Clients_ReceiveGlobalMessage(uint senderId, string message) {
+            OnReceiveGlobalMessage?.Invoke(UserManager[senderId], message);
+        }
 
         [TargetRpc]
         private void Client_ReceiveGroupMessage(NetworkConnection con, uint senderId, uint groupId, string message) =>
-            OnReceiveGroupMessage?.Invoke(senderId, groupId, message);
+            OnReceiveGroupMessage?.Invoke(UserManager[senderId], GroupManager[groupId], message);
 
         [TargetRpc]
         private void Client_ReceivePrivateMessage(NetworkConnection con, uint senderId, string message) =>
-            OnReceivePrivateMessage?.Invoke(senderId, message);
+            OnReceivePrivateMessage?.Invoke(UserManager[senderId], message);
 
         [TargetRpc]
         private void Client_ReceiveServerMessage(NetworkConnection con, string message) =>

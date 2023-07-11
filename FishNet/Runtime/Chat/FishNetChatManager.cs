@@ -39,9 +39,16 @@ namespace Amilious.Core.FishNet.Chat {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
+        /// <inheritdoc />
+        public event IChatManager.SendPrivateMessageDelegate OnPrivateMessageSent;
+
         /// <inheritdoc />
         public event IChatManager.ReceiveGroupMessageDelegate OnReceiveGroupMessage;
+
+        /// <inheritdoc />
+        public event IChatManager.SendGroupMessageDelegate OnGroupMessageSent;
+
         /// <inheritdoc />
         public event IChatManager.ReceiveServerMessageDelegate OnReceiveServerMessage;
         /// <inheritdoc />
@@ -58,38 +65,24 @@ namespace Amilious.Core.FishNet.Chat {
             Server_ReceiveGlobalMessage(message);
 
         /// <inheritdoc />
-        public void SendGroupMessage(GroupIdentity group, string message) =>
-            Server_ReceiveGroupMessage(group.Id,message);
-
-        /// <inheritdoc />
-        public void SendGroupMessage(uint groupId, string message) => 
-            Server_ReceiveGroupMessage(groupId, message);
-
-        /// <inheritdoc />
-        public void SendPrivateMessage(UserIdentity recipient, string message) =>
-            Server_ReceivePrivateMessage(recipient.Id, message);
-
-        /// <inheritdoc />
-        public void SendPrivateMessage(uint recipientId, string message) =>
-            Server_ReceivePrivateMessage(recipientId, message);
-
-        /// <inheritdoc />
-        public void SendMessageToClient(UserIdentity recipient, string message) {
-            if(!IsServer) {
-                Debug.LogWarning("Only the server can send messages to clients!");
-                return;
-            }
-            if(!UserIdentityManager.TryGetConnection(recipient.Id, out var connection)) return;
-            Client_ReceiveServerMessage(connection,message);
+        public void SendGroupMessage(uint group, string message) {
+            Server_ReceiveGroupMessage(group, message);
+            OnGroupMessageSent?.Invoke(GroupManager[group],message);
         }
-        
+
         /// <inheritdoc />
-        public void SendMessageToClient(uint recipientId, string message) {
+        public void SendPrivateMessage(uint recipient, string message) {
+            Server_ReceivePrivateMessage(recipient, message);
+            OnPrivateMessageSent?.Invoke(UserManager[recipient],message);
+        }
+
+        /// <inheritdoc />
+        public void SendMessageToClient(uint recipient, string message) {
             if(!IsServer) {
                 Debug.LogWarning("Only the server can send messages to clients!");
                 return;
             }
-            if(!UserIdentityManager.TryGetConnection(recipientId, out var connection)) return;
+            if(!UserManager.TryGetConnection(recipient, out var connection)) return;
             Client_ReceiveServerMessage(connection,message);
         }
 
@@ -106,10 +99,10 @@ namespace Amilious.Core.FishNet.Chat {
 
         #region MonoBehavior Methods ///////////////////////////////////////////////////////////////////////////////////
         
-        private void Awake() {
-            if(NetworkManager.TryRegisterInstance(this)) return;
-            AmiliousCore.RemoveDuplicateMessage(this);
-            Destroy(this);
+        public override void OnStartNetwork() {
+            base.OnStartNetwork();
+            NetworkManager.RegisterInstance(this);
+            Debug.Log("ChatManager registered!");
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

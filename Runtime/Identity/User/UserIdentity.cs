@@ -15,8 +15,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
-using Amilious.Core.Identity;
-using Amilious.Core.Identity.User;
 
 namespace Amilious.Core.Identity.User {
     
@@ -92,12 +90,43 @@ namespace Amilious.Core.Identity.User {
         /// </summary>
         public UserType UserType => _userType ?? UserType.AmiliousConsole;
 
+        /// <inheritdoc />
         public IdentityType IdentityType => IdentityType.User;
 
         /// <summary>
         /// This property is true if the Manager has been registered and the user is online, otherwise false.
         /// </summary>
         public bool IsOnline => Manager?.IsOnline(Id) ?? false;
+
+        /// <summary>
+        /// This property is true if the user is a friend of the local user.
+        /// </summary>
+        /// <remarks>This property should only be used on the client.</remarks>
+        public bool IsFriend => Manager?.Client_IsFriend(Id) ?? false;
+
+        /// <summary>
+        /// This property is true if the user is the local user.
+        /// </summary>
+        /// <remarks>This property should only be used on the client.</remarks>
+        public bool IsLocalUser => (Manager is not null) && Manager.Client_GetIdentity() == this;
+
+        /// <summary>
+        /// This property is true if the user is blocked by the local user.
+        /// </summary>
+        /// <remarks>This property should only be used on the client.</remarks>
+        public bool IsBlocked => Manager?.Client_IsBlocked(Id) ?? false;
+
+        /// <summary>
+        /// This property is true if the local user is waiting for the user to accept friendship.
+        /// </summary>
+        /// <remarks>This property should only be used on the client.</remarks>
+        public bool IsPendingFriendship => Manager?.Client_IsPendingFriendship(Id) ?? false;
+
+        /// <summary>
+        /// This property is true if the user is waiting for friendship approval from the local user.
+        /// </summary>
+        /// <remarks>The property should only be used on the client.</remarks>
+        public bool IsRequestingFriendship => Manager?.Client_IsRequestingFriendship(Id) ?? false;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 

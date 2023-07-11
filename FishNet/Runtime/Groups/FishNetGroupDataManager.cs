@@ -32,8 +32,11 @@ namespace Amilious.Core.FishNet.Groups {
         /// <summary>
         /// This is used to register the instance.
         /// </summary>
-        private void Awake() => NetworkManager.TryRegisterInstance<FishNetGroupDataManager>(this);
-        
+        private void Awake() {
+            Debug.Log("Group manager registered.");
+            NetworkManager.TryRegisterInstance<FishNetGroupDataManager>(this);
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }

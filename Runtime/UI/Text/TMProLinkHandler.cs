@@ -14,12 +14,13 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-using System.Collections.Generic;
-using Amilious.Core.Extensions;
-using Amilious.Core.Input;
 using TMPro;
 using UnityEngine;
+using Amilious.Core.Input;
 using UnityEngine.EventSystems;
+using Amilious.Core.Attributes;
+using Amilious.Core.Extensions;
+using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
 namespace Amilious.Core.UI.Text {
@@ -27,15 +28,17 @@ namespace Amilious.Core.UI.Text {
     /// <summary>
     /// This component is used to handle links within text mesh pro text.
     /// </summary>
+    [DisallowMultipleComponent]
     [AddComponentMenu("Amilious/Text/TMPro Link Handler")]
     [RequireComponent(typeof(TextMeshProUGUI))]
+    [AmiHelpBox("If links are not working properly, make sure that noting is overlapping the text field.",HelpBoxType.Info)]
     public class TMProLinkHandler : AmiliousBehavior, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler {
 
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
-        private TextMeshProUGUI _tmpText;
         private Canvas _canvas;
         private Camera _camera;
+        private TextMeshProUGUI _tmpText;
 
         // Flags
         private bool _isHoveringObject;
@@ -45,6 +48,10 @@ namespace Amilious.Core.UI.Text {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Delegates //////////////////////////////////////////////////////////////////////////////////////////////
+
+        public delegate void LinkClickLocalDelegate(PointerEventData clickEvent, string text, string[] id);
+
+        public delegate void LinkHoverLocalDelegate(string text, string[] id);
         
         public delegate void LinkHoverDelegate(TextMeshProUGUI textObject,string text, string[] id);
         public delegate void LinkClickDelegate(TextMeshProUGUI textObject, PointerEventData clickEvent, string text, string[] id);
@@ -57,6 +64,11 @@ namespace Amilious.Core.UI.Text {
         /// This event is triggered when the used starts hovering over a link.
         /// </summary>
         public static event LinkHoverDelegate OnLinkEnter;
+
+        /// <summary>
+        /// This event is triggered when the used starts hovering over a link.
+        /// </summary>
+        public event LinkHoverLocalDelegate OnLinkEnterLocal;
         
         /// <summary>
         /// This event is triggered when the user stops hovering over a link.
@@ -64,9 +76,19 @@ namespace Amilious.Core.UI.Text {
         public static event LinkHoverDelegate OnLinkExit;
         
         /// <summary>
+        /// This event is triggered when the user stops hovering over a link.
+        /// </summary>
+        public event LinkHoverLocalDelegate OnLinkExitLocal;
+        
+        /// <summary>
         /// This event is triggered when the user clicks on a link.
         /// </summary>
         public static event LinkClickDelegate OnLinkClick;
+        
+        /// <summary>
+        /// This event is triggered when the user clicks on a link.
+        /// </summary>
+        public event LinkClickLocalDelegate OnLinkClickLocal;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -93,7 +115,10 @@ namespace Amilious.Core.UI.Text {
             //check if the link is valid
             if(linkId < 0) return;
             var linkInfo = _tmpText.textInfo.linkInfo[linkId];
-            OnLinkClick?.Invoke(_tmpText,eventData,linkInfo.GetLinkText(),linkInfo.GetLinkID().Split('|'));
+            var ids = linkInfo.GetLinkID().Split('|');
+            var linkText = linkInfo.GetLinkText();
+            OnLinkClickLocal?.Invoke(eventData,linkText,ids);
+            OnLinkClick?.Invoke(_tmpText,eventData,linkText,ids);
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,31 +144,39 @@ namespace Amilious.Core.UI.Text {
 
         private void LateUpdate() {
             if(!_isHoveringObject&&_selectedLink==-1) return;
-            
             //Check if Mouse intersects any words and if so assign a random color to that word.
-            var linkIndex = TMP_TextUtilities.FindIntersectingLink(_tmpText, InputHelper.PointerPosition, _camera);
-
+            var linkIndex = TMP_TextUtilities.FindIntersectingLink(_tmpText, 
+                InputHelper.PointerPosition, _camera);
             // Clear previous word selection.
             if (_selectedLink != -1 && (linkIndex == -1 || linkIndex != _selectedLink)) {
-                if(ModifyLinkTint(_selectedLink, 1.33333f, out var info, true)) {
-                    OnLinkExit?.Invoke(_tmpText,info.GetLinkText(),info.GetLinkID().Split('|'));
-                    _selectedLink = -1;
-                }
+                LinkLeft();
+                _selectedLink = -1;
             }
-
             // Word Selection Handling
-            if (linkIndex != -1 && linkIndex != _selectedLink) {
-                _selectedLink = linkIndex;
-                if(ModifyLinkTint(_selectedLink, 0.75f, out var info)) {
-                    OnLinkEnter?.Invoke(_tmpText,info.GetLinkText(),info.GetLinkID().Split('|'));
-                }
-            }
-
+            if(linkIndex == -1 || linkIndex == _selectedLink) return;
+            _selectedLink = linkIndex;
+            LinkEntered();
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
                    
         #region Private Methods ////////////////////////////////////////////////////////////////////////////////////////
+
+        private void LinkEntered() {
+            if(!ModifyLinkTint(_selectedLink, 0.75f, out var info)) return;
+            var ids = info.GetLinkID().Split('|');
+            var linkText = info.GetLinkText();
+            OnLinkEnterLocal?.Invoke(linkText,ids);
+            OnLinkEnter?.Invoke(_tmpText,linkText,ids);
+        }
+
+        private void LinkLeft() {
+            if(!ModifyLinkTint(_selectedLink, 1.33333f, out var info, true)) return;
+            var ids = info.GetLinkID().Split('|');
+            var linkText = info.GetLinkText();
+            OnLinkExitLocal?.Invoke(linkText,ids);
+            OnLinkExit?.Invoke(_tmpText,linkText,ids);
+        }
         
         private void OnTmpTextChanged(Object obj) {
             if(obj != _tmpText) return;
