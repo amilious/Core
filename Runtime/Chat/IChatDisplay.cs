@@ -1,12 +1,20 @@
 ﻿using System;
-using Amilious.Console.Display.LinkActions;
+using Amilious.Core.Chat.Requests;
 using Amilious.Core.Identity.Group;
 using Amilious.Core.Identity.User;
+using Amilious.Core.UI;
+using TMPro;
+using UnityEngine;
 
 namespace Amilious.Core.Chat {
+    
     public interface IChatDisplay {
 
+        public string InputText { get; }
+        
         public delegate void MessageDelegate(ChatType type, string message, uint id);
+
+        public delegate void InputUpdatedDelegate(string text, bool handlingRequest);
 
         #region Events /////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -19,6 +27,17 @@ namespace Amilious.Core.Chat {
         /// This event is triggered when a command is submitted.
         /// </summary>
         public event Action<string> OnCommandSubmitted;
+
+        /// <summary>
+        /// This event is triggered when the input text is updated.
+        /// </summary>
+        public event InputUpdatedDelegate OnInputTextUpdated;
+        
+        /// <summary>
+        /// This event is triggered when the result of an input request is submitted.
+        /// </summary>
+        public event Action<string> OnInputRequestResult;
+
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -42,7 +61,8 @@ namespace Amilious.Core.Chat {
         /// This method is used to set the input text.
         /// </summary>
         /// <param name="text">The text that you want to set as the input text.</param>
-        void SetInputText(string text);
+        /// <param name="silent">If true, the text will be set silently, otherwise normally.</param>
+        void SetInputText(string text, bool silent = false);
 
         /// <summary>
         /// This method is used to set the input to the given command.
@@ -85,5 +105,9 @@ namespace Amilious.Core.Chat {
         /// This method is used to clear the messages.
         /// </summary>
         void ClearMessages();
+
+        void SubmitCurrentInput();
+
+        void FocusInput();
     }
 }

@@ -3,7 +3,8 @@
     "rootNamespace": "Amilious.Core.FishNet.Editor",
     "references": [
         "Amilious.Core.FishNet",
-        "Amilious.Core.Editor"
+        "Amilious.Core.Editor",
+        "ToolbarExtender.Editor"
     ],
     "includePlatforms": [
         "Editor"

@@ -5,6 +5,7 @@ using Amilious.Console;
 using Amilious.Core.Chat;
 using Amilious.Core.UI.Chat;
 using Amilious.Core.Attributes;
+using Amilious.Core.Authentication;
 using Amilious.Core.Extensions;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group;
@@ -24,8 +25,8 @@ namespace Amilious.Core.Networking {
         [SerializeField, AmiTab(NOTIFICATIONS), AmiBool(true)] private bool showSelfConnection = true;
         [SerializeField, AmiTab(NOTIFICATIONS), AmiBool(true)] private bool showFriendConnections = true;
 
-        
 
+        private bool _successfulConnection;
         private AbstractNetworkManagers _networkManager;
         private Utf16ValueStringBuilder _sb = new Utf16ValueStringBuilder(false);
 
@@ -34,6 +35,8 @@ namespace Amilious.Core.Networking {
         public IUserIdentityManager UserManager { get; private set; }
         public IGroupIdentityManager GroupManager { get; private set; }
         public IChatManager ChatManager {get; private set; }
+        
+        public IAmiliousAuthenticator Authenticator { get; private set; }
         
         
         private void Awake() {
@@ -55,6 +58,10 @@ namespace Amilious.Core.Networking {
             if(UserManager != null) {
                 UserManager.OnUserConnectionChanged += OnUserConnectionChanged;
             }
+            if(Authenticator != null) {
+                Authenticator.OnSuccessfulConnection += OnSuccessfulConnection;
+                Authenticator.OnConnectionRejected += OnConnectionRejected;
+            }
         }
 
         private void OnDisable() {
@@ -72,10 +79,14 @@ namespace Amilious.Core.Networking {
             if(UserManager != null) {
                 UserManager.OnUserConnectionChanged -= OnUserConnectionChanged;
             }
+            if(Authenticator != null) {
+                Authenticator.OnSuccessfulConnection -= OnSuccessfulConnection;
+                Authenticator.OnConnectionRejected -= OnConnectionRejected;
+            }
         }
-
-        private void OnClientStopped() {
-            if(!showSelfConnection) return;
+        
+        private void OnConnectionRejected(string failReason) {
+            _sb.Clear();
             _sb.Clear();
             _sb.AppendStyle(StyleFormat.Server,"Server");
             if(showTime) {
@@ -83,11 +94,12 @@ namespace Amilious.Core.Networking {
                 _sb.AppendStyle(StyleFormat.TimeString, DateTime.Now.ToString(timeFormat));
             }
             _sb.AppendStyle(StyleFormat.Normal,": ");
-            _sb.AppendStyle(StyleFormat.Server,"You have disconnected from the server!");
+            _sb.AppendStyle(StyleFormat.DebugError,failReason);
             ChatBox.AddMessage(_sb.ToString());
         }
 
-        private void OnClientStarted() {
+        private void OnSuccessfulConnection(string obj) {
+            _successfulConnection = true;
             if(!showSelfConnection) return;
             _sb.Clear();
             _sb.AppendStyle(StyleFormat.Server,"Server");
@@ -100,10 +112,36 @@ namespace Amilious.Core.Networking {
             ChatBox.AddMessage(_sb.ToString());
         }
 
+        private void OnClientStopped() {
+            var goodConnection = _successfulConnection;
+            _successfulConnection = false;
+            if(!showSelfConnection || !goodConnection) return;
+            _sb.Clear();
+            _sb.AppendStyle(StyleFormat.Server,"Server");
+            if(showTime) {
+                _sb.Space();
+                _sb.AppendStyle(StyleFormat.TimeString, DateTime.Now.ToString(timeFormat));
+            }
+            _sb.AppendStyle(StyleFormat.Normal,": ");
+            _sb.AppendStyle(StyleFormat.Server,"You have disconnected from the server!");
+            ChatBox.AddMessage(_sb.ToString());
+        }
+
+        private void OnClientStarted() {
+            
+        }
+
         private void Start() {
             NetworkManager.OnChatManagerRegistered(OnChatManagerRegistered);
             NetworkManager.OnGroupManagerRegistered(OnGroupManagerRegistered);
             NetworkManager.OnUserManagerRegistered(OnUserManagerRegistered);
+            NetworkManager.OnAuthenticatorRegistered(OnAuthenticatorRegistered);
+        }
+
+        private void OnAuthenticatorRegistered(IAmiliousAuthenticator authenticator) {
+            Authenticator = authenticator;
+            Authenticator.OnSuccessfulConnection += OnSuccessfulConnection;
+            Authenticator.OnConnectionRejected += OnConnectionRejected;
         }
 
         private void OnGroupManagerRegistered(IGroupIdentityManager groupManager) {

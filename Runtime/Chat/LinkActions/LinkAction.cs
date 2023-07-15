@@ -1,8 +1,6 @@
 using System;
-using Amilious.Core;
-using Amilious.Core.Chat;
 
-namespace Amilious.Console.Display.LinkActions {
+namespace Amilious.Core.Chat.LinkActions {
     
     public abstract class LinkAction : AmiliousBehavior {
 
@@ -14,9 +12,9 @@ namespace Amilious.Console.Display.LinkActions {
         
         public bool IsForLinkType(string linkType) => LinkType.Equals(linkType, StringComparison.CurrentCultureIgnoreCase);
 
-        public abstract bool ShowMenuItem(IChatDisplay chatDisplay, string[] linkArgs);
+        public abstract bool ShowMenuItem(IChatDisplay chatDisplay, string text, string[] linkArgs);
 
-        public abstract void Action(IChatDisplay chatDisplay, string[] linkArgs);
+        public abstract void Action(IChatDisplay chatDisplay, string text, string[] linkArgs);
 
 
     }

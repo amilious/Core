@@ -3,7 +3,8 @@
     "rootNamespace": "Amilious.Core.Editor",
     "references": [
         "Amilious.Core",
-        "Amilious.Localization"
+        "Amilious.Localization",
+        "ToolbarExtender.Editor"
     ],
     "includePlatforms": [
         "Editor"

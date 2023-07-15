@@ -24,7 +24,6 @@ using FishNet.Transporting;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
-using Amilious.Core.FishNet.Authentication;
 using Amilious.Core.Identity.User;
 using FishNet.Object.Synchronizing;
 
@@ -46,6 +45,7 @@ namespace Amilious.Core.FishNet.Users {
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
 
+        private bool _initialLoad = true;
         private int _localUserId;
 
         /// <summary>
@@ -346,8 +346,9 @@ namespace Amilious.Core.FishNet.Users {
         private void OnlineChanged(SyncHashSetOperation op, uint item, bool server) {
             if(server) return;
             var online = op != SyncHashSetOperation.Remove;
+            if(op == SyncHashSetOperation.Complete) _initialLoad = false;
             if(!TryGetIdentity(item, out var identity)) return;
-            OnUserConnectionChanged?.Invoke(identity,online);
+            if(!_initialLoad) OnUserConnectionChanged?.Invoke(identity,online);
         }
         
         public override void OnStartServer() {
@@ -362,6 +363,11 @@ namespace Amilious.Core.FishNet.Users {
         public override void OnStartClient() {
             base.OnStartClient();
             Server_ReceiveUniqueDataRequest();
+        }
+
+        public override void OnStopClient() {
+            base.OnStopClient();
+            _initialLoad = true;
         }
 
         private void OnRemoteConnectionState(NetworkConnection con, RemoteConnectionStateArgs args) {
@@ -398,7 +404,7 @@ namespace Amilious.Core.FishNet.Users {
         private void OnAuthenticationResult(NetworkConnection con, bool authenticated) {
             if(!authenticated) return;
             if(!con.TryGetUserId(out var id)) return;
-            if(!_online.Contains(id)) _online.Add(id);
+            _online.Add(id);
             UserIdDataManager.Server_StoreUserData(id,UserIdentity.LAST_CONNECTED_KEY,DateTime.UtcNow);
             if(_userLookup.ContainsKey(id)) {
                 UpdateIdentity(id);

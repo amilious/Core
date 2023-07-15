@@ -73,6 +73,81 @@ namespace Amilious.Core.Extensions {
             return result;
         }
         
+        // Scale a Texture2D using a single scale value while maintaining the aspect ratio
+        public static Texture2D ScaleTexture(this Texture2D sourceTexture, float scale) {
+            int newWidth = Mathf.RoundToInt(sourceTexture.width * scale);
+            int newHeight = Mathf.RoundToInt(sourceTexture.height * scale);
+
+            return ScaleTexture(sourceTexture, newWidth, newHeight);
+        }
+
+        // Scale a Texture2D using bilinear filtering
+        public static Texture2D ScaleTexture(this Texture2D sourceTexture, int newWidth, int newHeight) {
+            // Create a new texture with the desired width and height
+            Texture2D scaledTexture = new Texture2D(newWidth, newHeight, TextureFormat.RGBA32, false);
+            // Calculate the ratio of the source texture's width and height to the new width and height
+            float ratioX = (float)sourceTexture.width / newWidth;
+            float ratioY = (float)sourceTexture.height / newHeight;
+            // Loop through each pixel in the new texture and sample the source texture using bilinear filtering
+            for (int y = 0; y < newHeight; y++) {
+                for (int x = 0; x < newWidth; x++) {
+                    // Calculate the coordinates in the source texture based on the current pixel in the new texture
+                    float u = x * ratioX;
+                    float v = y * ratioY;
+                    // Perform the bilinear filtering by sampling the four nearest pixels in the source texture
+                    Color color = BilinearSample(sourceTexture, u, v);
+                    scaledTexture.SetPixel(x, y, color);
+                }
+            }
+            // Apply the changes to the texture
+            scaledTexture.Apply();
+            return scaledTexture;
+        }
+
+        public static Texture2D ReplaceColor(this Texture2D texture, Color targetColor, Color replacementColor, float threshold) {
+            var result = new Texture2D(texture.width, texture.height);
+
+            for (int x = 0; x < texture.width; x++) {
+                for (int y = 0; y < texture.height; y++) {
+                    Color pixelColor = texture.GetPixel(x, y);
+
+                    // Compare the pixel color to the target color with a threshold
+                    if (pixelColor.ColorSimilar(targetColor, threshold)) {
+                        Color modifiedColor = pixelColor.ModifyColor(replacementColor);
+                        result.SetPixel(x, y, modifiedColor);
+                    } else {
+                        result.SetPixel(x, y, pixelColor);
+                    }
+                }
+            }
+
+            result.Apply();
+            return result;
+        }
+        
+        // Perform bilinear filtering by sampling the four nearest pixels in the source texture
+        public static Color BilinearSample(Texture2D texture, float u, float v) {
+            // Calculate the pixel coordinates of the four nearest pixels
+            int x1 = Mathf.FloorToInt(u);
+            int y1 = Mathf.FloorToInt(v);
+            int x2 = Mathf.CeilToInt(u);
+            int y2 = Mathf.CeilToInt(v);
+            // Calculate the blend factors based on the decimal parts of u and v
+            float blendX = u - x1;
+            float blendY = v - y1;
+            // Sample the four nearest pixels in the source texture using GetPixelBilinear
+            Color color1 = texture.GetPixelBilinear((float)x1 / texture.width, (float)y1 / texture.height);
+            Color color2 = texture.GetPixelBilinear((float)x2 / texture.width, (float)y1 / texture.height);
+            Color color3 = texture.GetPixelBilinear((float)x1 / texture.width, (float)y2 / texture.height);
+            Color color4 = texture.GetPixelBilinear((float)x2 / texture.width, (float)y2 / texture.height);
+            // Perform the bilinear blending
+            Color finalColor = color1 * (1 - blendX) * (1 - blendY) +
+                               color2 * blendX * (1 - blendY) +
+                               color3 * (1 - blendX) * blendY +
+                               color4 * blendX * blendY;
+            return finalColor;
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

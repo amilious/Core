@@ -1,5 +1,4 @@
-﻿using Amilious.Console.Display.LinkActions;
-using Amilious.Core.Extensions;
+﻿using Amilious.Core.Extensions;
 using Amilious.Core.Networking;
 using UnityEngine;
 

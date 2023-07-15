@@ -21,6 +21,7 @@ using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using Amilious.Core.Editor.Editors;
+using Amilious.Core.Editor.Extensions;
 
 namespace Amilious.Core.Editor.Tabs {
     
@@ -167,11 +168,12 @@ namespace Amilious.Core.Editor.Tabs {
         public bool TryDrawTabGroup(SerializedProperty property) {
             return TryDrawTabGroup(property.name);
         }
-        
+
         /// <summary>
         /// This method is used to draw the tab group for the given property name if it exist and hasn't been drawn.
         /// </summary>
         /// <param name="propertyName">The name property that you want to draw the tab group for.</param>
+        /// <param name="editor">The calling editor.</param>
         /// <returns>True if the tab group was drawn, otherwise false.</returns>
         public bool TryDrawTabGroup(string propertyName) {
             if(_drawnTabs.Contains(propertyName)) return false;
@@ -188,6 +190,10 @@ namespace Amilious.Core.Editor.Tabs {
             DrawCurrentTabContent(tabGroup);
             return true;
         }
+        
+        
+        
+        
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -309,9 +315,20 @@ namespace Amilious.Core.Editor.Tabs {
             EditorGUILayout.BeginVertical(); 
             var first = true;
             foreach(var tabItem in tabGroup.SelectedTabProperties) {
+
+                var modifiers = tabItem.Property.GetAttributes<AmiModifierAttribute>();
+                var amiModifierAttributes = modifiers as AmiModifierAttribute[] ?? modifiers.ToArray();
+                var hide = amiModifierAttributes.Any(a => a.ShouldHide(tabItem.Property));
+                var disable = amiModifierAttributes.Any(a => a.ShouldDisable(tabItem.Property));
+                //skipp hidden
+                if(hide) continue;
                 //only add the separator if the first property does not have a header.
                 if(first&&!tabItem.HasHeader) EditorGUILayout.Separator();
-                EditorGUILayout.PropertyField(tabItem.Property);
+
+                if(disable) EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.PropertyField(tabItem.Property, true);
+                if(disable) EditorGUI.EndDisabledGroup();
+                
                 first = false;
             }
 

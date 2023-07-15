@@ -25,12 +25,12 @@ namespace Amilious.Core.Chat.LinkActions {
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
         
         /// <inheritdoc />
-        public sealed override bool ShowMenuItem(IChatDisplay chatDisplay, string[] linkArgs) {
+        public sealed override bool ShowMenuItem(IChatDisplay chatDisplay, string text, string[] linkArgs) {
             return TryGetGroup(linkArgs, out var group) && ShowMenuItem(chatDisplay, group);
         }
 
         /// <inheritdoc />
-        public sealed override void Action(IChatDisplay chatDisplay, string[] linkArgs) {
+        public sealed override void Action(IChatDisplay chatDisplay, string text, string[] linkArgs) {
             if(TryGetGroup(linkArgs, out var group)) Action(chatDisplay,group);
         }
 

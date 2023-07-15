@@ -14,6 +14,8 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -119,6 +121,15 @@ namespace Amilious.Core.FishNet.Display {
             if (autoStartType == AutoStartType.Host || autoStartType == AutoStartType.Server) OnClick_Server();
             if (!Application.isBatchMode && (autoStartType == AutoStartType.Host || 
                 autoStartType == AutoStartType.Client)) OnClick_Client();
+            //auto start
+            bool startServer = false;
+            bool startClient = false;
+            foreach(var arg in Environment.GetCommandLineArgs()) {
+                if(arg.Equals("-start-server", StringComparison.CurrentCultureIgnoreCase)) startServer = true;
+                if(arg.Equals("-start-client", StringComparison.CurrentCultureIgnoreCase)) startClient = true;
+            }
+            if(startServer) OnClick_Server();
+            if(startClient) OnClick_Client();
         }
 
         private void OnEnable() {

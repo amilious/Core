@@ -183,6 +183,31 @@ namespace Amilious.Core.Extensions {
             return result;
         }
         
+        public static bool ColorSimilar(this Color color1, Color color2, float threshold) {
+            var deltaR = Mathf.Abs(color1.r - color2.r);
+            var deltaG = Mathf.Abs(color1.g - color2.g);
+            var deltaB = Mathf.Abs(color1.b - color2.b);
+            var deltaA = Mathf.Abs(color1.a - color2.a);
+
+            return deltaR <= threshold &&
+                deltaG <= threshold &&
+                deltaB <= threshold &&
+                deltaA <= threshold;
+        }
+
+        public static Color ModifyColor(this Color originalColor, Color modifiedColor) {
+            // Modify the modifiedColor using the originalColor's components
+            // Example modification: Multiply the originalColor's RGB components with the modifiedColor's RGB components
+            var finalColor = new Color(
+                originalColor.r * modifiedColor.r,
+                originalColor.g * modifiedColor.g,
+                originalColor.b * modifiedColor.b,
+                originalColor.a * modifiedColor.a
+            );
+
+            return finalColor;
+        }
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

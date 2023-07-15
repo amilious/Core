@@ -8,6 +8,8 @@ using FishNet.Transporting;
 using Amilious.Core.Networking;
 using Amilious.Core.FishNet.Chat;
 using System.Collections.Generic;
+using Amilious.Core.Authentication;
+using Amilious.Core.FishNet.Authentication;
 using Amilious.Core.FishNet.Users;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group;
@@ -23,6 +25,7 @@ namespace Amilious.Core.FishNet {
         [SerializeField] private FishNetUserIdentityManager userManager;
         [SerializeField] private FishNetGroupIdentityManager groupManager;
         [SerializeField] private FishNetChatManager chatManager;
+        [SerializeField] private IAmiliousAuthenticator authenticator;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -31,6 +34,7 @@ namespace Amilious.Core.FishNet {
         private readonly List<ChatManagerRegisteredDelegate> _chatManagerCallbacks = new ();
         private readonly List<UserManagerRegisteredDelegate> _userManagerCallbacks = new ();
         private readonly List<GroupManagerRegisteredDelegate> _groupManagerCallbacks = new ();
+        private readonly List<AuthenticatorRegisteredDelegate> _authenticatorCallbacks = new();
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -47,6 +51,8 @@ namespace Amilious.Core.FishNet {
         public override IGroupIdentityManager GroupManager => groupManager;
         /// <inheritdoc />
         public override IChatManager ChatManager => chatManager;
+        /// <inheritdoc />
+        public override IAmiliousAuthenticator Authenticator => authenticator;
         /// <inheritdoc />
         public override bool IsServer => networkManager.IsServer;
         /// <inheritdoc />
@@ -73,6 +79,8 @@ namespace Amilious.Core.FishNet {
                 networkManager.RegisterInvokeOnInstance<FishNetUserIdentityManager>(UserManagerRegistered);
             if(groupManager==null)
                 networkManager.RegisterInvokeOnInstance<FishNetGroupIdentityManager>(GroupManagerRegistered);
+            if(authenticator==null)
+                networkManager.RegisterInvokeOnInstance<FishNetAmiliousAuthenticator>(AuthenticatorRegistered);
             //register
             if(networkManager.ServerManager!=null) 
                 networkManager.ServerManager.OnServerConnectionState += OnServerConnectionState;
@@ -102,10 +110,25 @@ namespace Amilious.Core.FishNet {
             else _groupManagerCallbacks.Add(callback);
         }
 
+        /// <inheritdoc />
+        public override void OnAuthenticatorRegistered(AuthenticatorRegisteredDelegate callback) {
+            if(authenticator!=null) callback.Invoke(authenticator);
+            else _authenticatorCallbacks.Add(callback);
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Private Messages ///////////////////////////////////////////////////////////////////////////////////////
 
+        
+        private void AuthenticatorRegistered(Component obj) {
+            networkManager.UnregisterInvokeOnInstance<FishNetAmiliousAuthenticator>(ChatManagerRegistered);
+            if(obj is not FishNetAmiliousAuthenticator manager) return;
+            authenticator = manager;
+            foreach(var callback in _authenticatorCallbacks) callback?.Invoke(authenticator);
+            _authenticatorCallbacks.Clear();
+        }
+        
         private void GroupManagerRegistered(Component obj) {
             networkManager.UnregisterInvokeOnInstance<FishNetGroupIdentityManager>(ChatManagerRegistered);
             if(obj is not FishNetGroupIdentityManager manager) return;

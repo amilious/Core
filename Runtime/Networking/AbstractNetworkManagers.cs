@@ -1,4 +1,5 @@
 ﻿using System;
+using Amilious.Core.Authentication;
 using Amilious.Core.Chat;
 using Amilious.Core.Identity.Group;
 using Amilious.Core.Identity.User;
@@ -13,6 +14,8 @@ namespace Amilious.Core.Networking {
 
         public delegate void GroupManagerRegisteredDelegate(IGroupIdentityManager groupManager);
 
+        public delegate void AuthenticatorRegisteredDelegate(IAmiliousAuthenticator authenticator);
+
         public abstract event Action OnServerStarted;
 
         public abstract event Action OnServerStopped;
@@ -26,6 +29,8 @@ namespace Amilious.Core.Networking {
         public abstract  IGroupIdentityManager GroupManager { get; }
         
         public abstract  IChatManager ChatManager { get; }
+        
+        public abstract IAmiliousAuthenticator Authenticator { get; }
         
         public abstract bool IsServer { get; }
         
@@ -44,6 +49,8 @@ namespace Amilious.Core.Networking {
         public abstract void OnUserManagerRegistered(UserManagerRegisteredDelegate callback);
 
         public abstract void OnGroupManagerRegistered(GroupManagerRegisteredDelegate callback);
+
+        public abstract void OnAuthenticatorRegistered(AuthenticatorRegisteredDelegate callback);
 
     }
     

@@ -14,22 +14,27 @@ using Amilious.Core.Extensions;
 using System.Collections.Generic;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group;
+using System.Text.RegularExpressions;
+using Amilious.Core.UI.Component;
 
 namespace Amilious.Core.UI.Chat {
     
-    [DisallowMultipleComponent]
+    [DisallowMultipleComponent, RequireComponent(typeof(UIComponent))]
     public class ChatBox : AmiliousBehavior, IChatDisplay {
-
+        
+        private const string OPTIONS = "Options";
         private const string COMPONENTS = "Components";
         private const string DRAWING = "Drawing";
         private const string COMMANDS = "Commands";
-        
+
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
-        
+
         [SerializeField, AmiTab(COMPONENTS)] private ScrollRect scrollRect;
         [SerializeField, AmiTab(COMPONENTS)] private TMP_InputField inputField;
         [SerializeField, AmiTab(COMPONENTS)] private GameObject messagePrefab;
         [SerializeField, AmiTab(COMPONENTS)] private TMP_Text chatName;
+        [SerializeField, AmiTab(COMPONENTS)] private TMP_Text promptText;
+        [SerializeField, AmiTab(COMPONENTS)] private GameObject promptArea;
 
         [Tooltip("This value will adjust the drawn content size to extend in both directions from the visible area.")]
         [SerializeField, Min(0), AmiTab(DRAWING)] private float extraRender = 10f;
@@ -47,6 +52,7 @@ namespace Amilious.Core.UI.Chat {
         private float _minY;
         private float _maxY;
         private float _offset;
+        private bool _handlingRequest;
         private TMP_Text _template;
         private int _lastIndex = -1;
         private int _firstIndex = -1;
@@ -56,24 +62,38 @@ namespace Amilious.Core.UI.Chat {
         private RectTransform _scrollRectTransform;
         private string _lastInputText = string.Empty;
 
+        private UIComponent _component;
+        
         private readonly HashSet<int> _drawn = new HashSet<int>();
         private readonly List<MessageData> _messages = new List<MessageData>();
         private readonly Queue<TMP_Text> _textObjectsQueue = new Queue<TMP_Text>();
+        private static readonly Regex LinkPattern = 
+            new Regex(@"(?<!<link=web>)(http(s)?://([\w-]+.)+[\w-]+(/[\w- ./?%&=])?)");
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
+
+        public UIComponent UIComponent => this.GetCacheComponent(ref _component);
         
         public ChatType ChatType { get; private set; }
         
         public uint ChatId { get; private set; }
 
+        public string InputText => inputField.text;
+
         public ChatLinkManager LinkManager => this.GetCacheComponent(ref _linkManager);
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// <inheritdoc />
         public event IChatDisplay.MessageDelegate OnMessageSubmitted;
+        /// <inheritdoc />
         public event Action<string> OnCommandSubmitted;
+        /// <inheritdoc />
+        public event IChatDisplay.InputUpdatedDelegate OnInputTextUpdated;
+        /// <inheritdoc />
+        public event Action<string> OnInputRequestResult;
 
         #region Monobehavior Methods ///////////////////////////////////////////////////////////////////////////////////
         
@@ -88,18 +108,23 @@ namespace Amilious.Core.UI.Chat {
             scrollRect.normalizedPosition = new Vector2(0, 0);
             SetContentHeight(0);
             OnScrollValueChanged(scrollRect.normalizedPosition);
+            Redraw();
         }
 
         private void OnEnable() {
             scrollRect.onValueChanged.AddListener(OnScrollValueChanged);
             inputField.onSubmit.AddListener(OnInputSubmit);
             inputField.onValueChanged.AddListener(OnInputChanged);
+            UIComponent.AddOnExitStateListener(OnExitState);
+            UIComponent.AddOnEnterStateListener(OnEnterState);
         }
 
         private void OnDisable() {
             scrollRect.onValueChanged.RemoveListener(OnScrollValueChanged);
             inputField.onSubmit.RemoveListener(OnInputSubmit);
             inputField.onValueChanged.RemoveListener(OnInputChanged);
+            UIComponent.RemoveOnExitStateListener(OnExitState);
+            UIComponent.RemoveOnEnterStateListener(OnEnterState);
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,11 +139,14 @@ namespace Amilious.Core.UI.Chat {
         /// <param name="group">(optional)The group that the message is for. </param>
         /// ReSharper disable once MemberCanBePrivate.Global
         public void AddMessage(string message, uint? sender = null, uint? group=null) {
+            //fix weblinks
+            message = LinkPattern.Replace(message,"<link=web>$&</link>");
             var height = GetTextHeight(message);
             var messageData = new MessageData(message, sender, group, _offset-padding.x, height);
             _messages.Add(messageData);
+            var atBottom = scrollRect.verticalNormalizedPosition <= 0.00001||
+                Mathf.Abs(_offset)<_scrollRectTransform.rect.height;
             _offset -= height;
-            var atBottom = scrollRect.verticalNormalizedPosition <= 0.00001;
             SetContentHeight(_offset);
             if(!atBottom) Redraw();
             else scrollRect.normalizedPosition = new Vector2(0, 0);
@@ -130,10 +158,9 @@ namespace Amilious.Core.UI.Chat {
         /// <param name="force">If true redundancy checks will be skipped.</param>
         /// ReSharper disable once MemberCanBePrivate.Global
         public void Redraw(bool force = false) {
-
-            //skip redraw if not change
-            if (!force && ShouldDraw(_firstIndex) && ShouldDraw(_lastIndex) && !ShouldDraw(_lastIndex + 1)) return;
-            
+            //skip redraw if loaded messages have not changed
+            if (!force && !ShouldDraw(_firstIndex-1) && ShouldDraw(_firstIndex) && 
+                ShouldDraw(_lastIndex) && !ShouldDraw(_lastIndex + 1)) return;
             // Calculate the visible range of indices
             _firstIndex = _messages.FindIndex(msg => msg.ShouldDraw(_minY, _maxY));
             _lastIndex = _messages.FindLastIndex(msg => msg.ShouldDraw(_minY, _maxY));
@@ -166,6 +193,7 @@ namespace Amilious.Core.UI.Chat {
         /// This method is used to recalculate the sizes and redraw the messages.
         /// </summary>
         public void RecalculateSize() {
+            Canvas.ForceUpdateCanvases(); //make sure all values are up to date
             _offset = 0;
             foreach(var msg in _messages) {
                 msg.YPos = _offset-padding.x;
@@ -184,14 +212,26 @@ namespace Amilious.Core.UI.Chat {
         }
 
         /// <inheritdoc />
-        public void SetInputText(string text) {
+        public void SetInputText(string text, bool silent = false) {
             if(inputField == null) return;
-            inputField.text = text;
+            if(!silent) inputField.text = text;
+            else inputField.SetTextWithoutNotify(text);
             Canvas.ForceUpdateCanvases();
+            FocusInput();
+        }
+
+        /// <inheritdoc />
+        public void FocusInput() {
             EventSystem.current.SetSelectedGameObject(inputField.gameObject);
+            inputField.Select();
             inputField.ActivateInputField();
             inputField.caretPosition = inputField.text.Length;
             inputField.MoveToEndOfLine(false, true);
+        }
+
+        /// <inheritdoc />
+        public void SubmitCurrentInput() {
+            ExecuteEvents.Execute(inputField.gameObject, null, ExecuteEvents.submitHandler);
         }
 
         /// <inheritdoc />
@@ -254,6 +294,24 @@ namespace Amilious.Core.UI.Chat {
             _messages.Clear();
             RecalculateSize();
         }
+        
+        public void MakeInputRequest(string message, TMP_InputField.ContentType contentType) {
+            _handlingRequest = true;
+            inputField.contentType = contentType;
+            promptArea.SetActive(true);
+            scrollRect.gameObject.SetActive(false);
+            promptText.SetText(message);
+            ClearChatChannel();
+            SetInputText(string.Empty);
+        }
+        
+        public void CancelInputRequest() {
+            inputField.contentType = TMP_InputField.ContentType.Standard;
+            promptText.SetText(string.Empty);
+            promptArea.SetActive(false);
+            scrollRect.gameObject.SetActive(true);
+            _handlingRequest = false;
+        }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -264,17 +322,17 @@ namespace Amilious.Core.UI.Chat {
                 ClearChatChannel();
 
 
-
+            OnInputTextUpdated?.Invoke(text,_handlingRequest);
             _lastInputText = text;
         }
         
         private void SetContentHeight(float height) {
             height = Mathf.Abs(height) + padding.x + padding.y;
-            var startHeight = height;
-            height = Mathf.Max(height, _scrollRectTransform.sizeDelta.y);
+            //var startHeight = height;
+            //height = Mathf.Max(height, _scrollRectTransform.sizeDelta.y);
             scrollRect.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if(height == startHeight) return;
+            //if(height == startHeight) return;
             OnScrollValueChanged(scrollRect.normalizedPosition);
         }
         
@@ -284,8 +342,13 @@ namespace Amilious.Core.UI.Chat {
         /// <param name="inputText">The input text.</param>
         private void OnInputSubmit(string inputText) {
             inputField.text = string.Empty;
-            if(string.IsNullOrWhiteSpace(inputText)) return;
             inputField.ActivateInputField();
+            if(string.IsNullOrWhiteSpace(inputText)) return;
+            if(_handlingRequest) {
+                CancelInputRequest();
+                OnInputRequestResult?.Invoke(inputText);
+                return;
+            }
             if(usingCommands&&inputText.StartsWith(commandPrefix))
                 OnCommandSubmitted?.Invoke(inputText);
             else OnMessageSubmitted?.Invoke(ChatType, inputText, ChatId);
@@ -321,7 +384,7 @@ namespace Amilious.Core.UI.Chat {
             return chatObject;
         }
 
-        public void ReturnTextObject(MessageData message) {
+        private void ReturnTextObject(MessageData message) {
             var textObject = message.TextObject;
             message.TextObject = null;
             if(textObject==null)return;
@@ -329,14 +392,14 @@ namespace Amilious.Core.UI.Chat {
             textObject.gameObject.SetActive(false);
             _textObjectsQueue.Enqueue(textObject);
         }
-
+        
         /// <summary>
         /// This method is used to get the height for the given text.
         /// </summary>
         /// <param name="text">The text that you want to get the height for.</param>
         /// <returns>The height of the given text.</returns>
         private float GetTextHeight(string text) {
-            var width = _rectTransform.sizeDelta.x - _scrollBarWidth - _template.margin.x - _template.margin.z; // fix the wrapping calculation
+            var width = _scrollRectTransform.sizeDelta.x - _scrollBarWidth;
             return _template.GetPreferredValues(text,width,0).y;
         }
 
@@ -347,10 +410,25 @@ namespace Amilious.Core.UI.Chat {
         /// <returns>True if the message should be drawn, otherwise false.</returns>
         private bool ShouldDraw(int id) {
             if(id < 0 || id >= _messages.Count) return false;
-            return _messages[id].ShouldDraw(_minY, _minY);
+            return _messages[id].ShouldDraw(_minY, _maxY);
+        }
+        
+        private void OnExitState(UIStatesType state) {
+            if(state != UIStatesType.Resizing) return;
+            scrollRect.gameObject.SetActive(true);
+            inputField.transform.parent.gameObject.SetActive(true);
+            RecalculateSize();
+        }
+
+        private void OnEnterState(UIStatesType state) {
+            if(state != UIStatesType.Resizing) return;
+            scrollRect.gameObject.SetActive(false);
+            inputField.transform.parent.gameObject.SetActive(false);
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
         
     }
 }

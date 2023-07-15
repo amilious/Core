@@ -36,7 +36,7 @@ namespace Amilious.Core.FishNet.Authentication {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NetworkManager))]
     [AddComponentMenu("Amilious/Networking/FishNet/FishNet Amilious Authenticator")]
-    [RequireComponent(typeof(FishNetUserDataManager),typeof(FishNetGroupDataManager))]
+    [RequireComponent(typeof(FishNetUserDataManager),typeof(FishNetGroupDataManager), typeof(NetworkManager))]
     public partial class FishNetAmiliousAuthenticator : Authenticator, IAmiliousAuthenticator {
         
         #region Inspector Values ///////////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ namespace Amilious.Core.FishNet.Authentication {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties
-
+        
         /// <summary>
         /// This property is used to get the user data manager.
         /// </summary>
@@ -137,6 +137,7 @@ namespace Amilious.Core.FishNet.Authentication {
         public override void InitializeOnce(NetworkManager networkManager) {
             InitializeServer(networkManager);
             InitializeClient(networkManager);
+            networkManager.RegisterInstance(this);
             base.InitializeOnce(networkManager);
         }
 

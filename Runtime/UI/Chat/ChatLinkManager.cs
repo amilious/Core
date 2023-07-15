@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Amilious.Console.Display.LinkActions;
+using Amilious.Core.Chat.LinkActions;
 using Amilious.Core.Extensions;
+using Amilious.Core.UI.Cursors;
 using Amilious.Core.UI.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -66,9 +67,9 @@ namespace Amilious.Core.UI.Chat {
         
         #region Private Methods ////////////////////////////////////////////////////////////////////////////////////////
         
-        private void OnLinkExit(string text, string[] id) {}
+        private void OnLinkExit(string text, string[] id) { CursorController.ReturnToPrevious(); }
 
-        private void OnLinkEnter(string text, string[] id) {}
+        private void OnLinkEnter(string text, string[] id) {CursorController.SetCursor(DefaultCursors.Finger);}
 
         private void OnLinkClicked(PointerEventData clickEvent, string text, string[] args) {
             if(linkActionMenu == null) {
@@ -80,18 +81,18 @@ namespace Amilious.Core.UI.Chat {
             if(actions.Count == 0) return;
             var clickAction = actions.FirstOrDefault(a => !a.IsMenuItem);
             if(clickAction != null) {
-                clickAction.Action(ChatBox,args);
+                clickAction.Action(ChatBox, text, args);
                 return;
             }
-            linkActionMenu.Show(clickEvent.pressPosition);
+            //linkActionMenu.Show(clickEvent.pressPosition);
             var hasMenu = false;
             foreach(var action in actions) {
-                if(!action.ShowMenuItem(ChatBox, args)) continue;
-                linkActionMenu.AddAction(action.ActionName,()=>action.Action(ChatBox,args));
+                if(!action.ShowMenuItem(ChatBox, text, args)) continue;
+                linkActionMenu.AddAction(action.ActionName,()=>action.Action(ChatBox, text, args));
                 hasMenu = true;
             }
-            //if(hasMenu) linkActionMenu.Show(clickEvent.pressPosition);
-            if(!hasMenu) linkActionMenu.Hide();
+            if(hasMenu) linkActionMenu.Show(clickEvent.pressPosition);
+            //if(!hasMenu) linkActionMenu.Hide();
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -85,7 +85,6 @@ namespace Amilious.Core.Attributes {
                     case SerializedPropertyType.String: return Validate(_comparisonProperty.stringValue,setValue,value);
                     case SerializedPropertyType.Color: return Validate(_comparisonProperty.colorValue,setValue,value);
                     case SerializedPropertyType.ObjectReference:
-                        return Validate(_comparisonProperty.objectReferenceValue,setValue,value);
                     case SerializedPropertyType.Enum:
                         #if UNITY_2021_1_OR_NEWER
                         return ValidateEnumValue(_comparisonProperty.enumValueIndex,_comparisonProperty.enumValueFlag,value);

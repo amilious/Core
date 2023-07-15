@@ -16,25 +16,55 @@
 
 using System;
 using UnityEngine;
+using Amilious.Core.Extensions;
 using UnityEngine.EventSystems;
+using Amilious.Core.Attributes;
 using System.Collections.Generic;
 
 namespace Amilious.Core.UI.Text {
     
+    [AmiHelpBox("This component is used as a context menu for link actions!")]
     public class LinkActionMenu : AmiliousBehavior, IPointerExitHandler {
 
+        #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
+        
+        [SerializeField] private RectTransform bindingRect;
         [SerializeField] private GameObject actionPrefab;
         [SerializeField] private Color mouseOverColor = Color.white;
         [SerializeField] private Color mouseNotOverColor = Color.gray;
 
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        private RectTransform _rectTransform;
         private readonly Queue<LinkActionItem> _actionItemPool = new Queue<LinkActionItem>();
         private readonly List<LinkActionItem> _currentActions = new List<LinkActionItem>();
 
-        public Color MouseNotOverColor => mouseNotOverColor;
+        public Color MouseNotOverColor {
+            get => mouseNotOverColor;
+            set => mouseNotOverColor = value;
+        }
 
-        public Color MouseOverColor => mouseOverColor;
+        public Color MouseOverColor {
+            get => mouseOverColor;
+            set => mouseOverColor = value;
+        }
 
-        
+        public RectTransform RectTransform {
+            get {
+                if(_rectTransform != null) return _rectTransform;
+                _rectTransform = (RectTransform)transform;
+                return _rectTransform;
+            }
+        }
+
+        public RectTransform BindingRect {
+            get {
+                if(bindingRect != null) return bindingRect;
+                bindingRect = GetComponentInParent<Canvas>()?.GetComponent<RectTransform>();
+                return BindingRect;
+            }
+        }
+
         public void AddAction(string actionName, Action action) {
             var actionItem = (_actionItemPool.Count>0)?
                 _actionItemPool.Dequeue():new LinkActionItem(actionPrefab,this);
@@ -52,8 +82,10 @@ namespace Amilious.Core.UI.Text {
         }
 
         public void Show(Vector3 position) {
-            transform.position = position;
             gameObject.SetActive(true);
+            RectTransform.TryClampUIToScreen(BindingRect, position);
+            Canvas.ForceUpdateCanvases();
+            RectTransform.TryClampUIToScreen(BindingRect, position);
         }
 
         public void OnPointerExit(PointerEventData eventData) => Hide();
