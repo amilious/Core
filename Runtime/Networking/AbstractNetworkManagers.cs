@@ -1,14 +1,14 @@
 ﻿using System;
 using Amilious.Core.Authentication;
-using Amilious.Core.Chat;
 using Amilious.Core.Identity.Group;
 using Amilious.Core.Identity.User;
+using Amilious.Core.UI.Chat;
 
 namespace Amilious.Core.Networking {
     
     public abstract class AbstractNetworkManagers : AmiliousBehavior {
 
-        public delegate void ChatManagerRegisteredDelegate(IChatManager chatManager);
+        public delegate void ChatManagerRegisteredDelegate(IChatNetworkManager chatManager);
 
         public delegate void UserManagerRegisteredDelegate(IUserIdentityManager userManager);
 
@@ -28,7 +28,7 @@ namespace Amilious.Core.Networking {
         
         public abstract  IGroupIdentityManager GroupManager { get; }
         
-        public abstract  IChatManager ChatManager { get; }
+        public abstract  IChatNetworkManager ChatManager { get; }
         
         public abstract IAmiliousAuthenticator Authenticator { get; }
         

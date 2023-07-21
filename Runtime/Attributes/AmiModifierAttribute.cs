@@ -18,6 +18,7 @@ using System;
 using UnityEngine;
 
 #if UNITY_EDITOR
+using System.Reflection;
 using TMPro;
 using UnityEditor;
 #endif
@@ -134,16 +135,31 @@ namespace Amilious.Core.Attributes {
                 }
             }
 
-            var field = serializedObject?.GetType().GetField(propertyName);
-            if(field != null) { return Validate(field.GetValue(serializedObject.context),setValue,value); }
-            var prop = serializedObject?.GetType().GetProperty(propertyName);
-            if(prop != null) { return Validate(prop.GetValue(serializedObject.context),setValue,value); }
-            var method = serializedObject?.GetType().GetMethod(propertyName);
-            if(method == null || method.GetParameters().Length >= 1 || method.ReturnParameter == null) return false;
-            var result = method.Invoke(serializedObject.context, null);
+            var binding = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+            if(_hasTriedToGet && !_hasFound) return false;
+            
+            if(!_hasTriedToGet) {
+                _field = serializedObject.targetObject.GetType().GetField(propertyName,binding);
+                _property = serializedObject.targetObject.GetType().GetProperty(propertyName,binding);
+                _method = serializedObject.targetObject.GetType().GetMethod(propertyName);
+                if(_method == null || _method.GetParameters().Length >= 1 || _method.ReturnParameter == null)
+                    _method = null;
+                _hasTriedToGet = true;
+                if(_field != null || _property != null || _method != null) _hasFound = true;
+                else return false;
+            }
+            if(_field != null) return Validate(_field.GetValue(serializedObject.targetObject),setValue,value);
+            if(_property != null) { return Validate(_property.GetValue(serializedObject.targetObject),setValue,value); }
+            var result = _method?.Invoke(_method.IsStatic?null:serializedObject.targetObject, null);
             return Validate(result,setValue,value);
             #endif
         }
+
+        private bool _hasTriedToGet = false;
+        private bool _hasFound = false;
+        private FieldInfo _field;
+        private PropertyInfo _property;
+        private MethodInfo _method;
         
         #if UNITY_EDITOR
         

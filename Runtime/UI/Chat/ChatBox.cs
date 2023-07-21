@@ -5,7 +5,6 @@ using UnityEngine;
 using Cysharp.Text;
 using UnityEngine.UI;
 using Amilious.Console;
-using Amilious.Core.Chat;
 using Amilious.Core.Input;
 using Amilious.Core.UI.Text;
 using UnityEngine.EventSystems;
@@ -20,7 +19,7 @@ using Amilious.Core.UI.Component;
 namespace Amilious.Core.UI.Chat {
     
     [DisallowMultipleComponent, RequireComponent(typeof(UIComponent))]
-    public class ChatBox : AmiliousBehavior, IChatDisplay {
+    public class ChatBox : AmiliousBehavior, IChatBox {
         
         private const string OPTIONS = "Options";
         private const string COMPONENTS = "Components";
@@ -87,11 +86,11 @@ namespace Amilious.Core.UI.Chat {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc />
-        public event IChatDisplay.MessageDelegate OnMessageSubmitted;
+        public event IChatBox.MessageDelegate OnMessageSubmitted;
         /// <inheritdoc />
         public event Action<string> OnCommandSubmitted;
         /// <inheritdoc />
-        public event IChatDisplay.InputUpdatedDelegate OnInputTextUpdated;
+        public event IChatBox.InputUpdatedDelegate OnInputTextUpdated;
         /// <inheritdoc />
         public event Action<string> OnInputRequestResult;
 
@@ -221,12 +220,17 @@ namespace Amilious.Core.UI.Chat {
         }
 
         /// <inheritdoc />
-        public void FocusInput() {
+        public void FocusInput(bool moveCaret = true) {
             EventSystem.current.SetSelectedGameObject(inputField.gameObject);
             inputField.Select();
             inputField.ActivateInputField();
+            if(!moveCaret) return;
             inputField.caretPosition = inputField.text.Length;
             inputField.MoveToEndOfLine(false, true);
+        }
+
+        public void RemoveInputFocus() {
+            inputField.DeactivateInputField();
         }
 
         /// <inheritdoc />

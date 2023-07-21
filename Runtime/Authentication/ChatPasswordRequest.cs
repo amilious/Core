@@ -1,4 +1,4 @@
-using Amilious.Core.Chat.Requests;
+using Amilious.Core.UI.Chat.Requests;
 using UnityEngine;
 
 namespace Amilious.Core.Authentication {

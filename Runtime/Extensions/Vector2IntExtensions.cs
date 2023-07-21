@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using UnityEngine;
 using Amilious.Core.Serializables;
 
@@ -45,35 +46,32 @@ namespace Amilious.Core.Extensions {
             x = vector2Int.x;
             y = vector2Int.y;
         }
-
+        
         /// <summary>
-        /// This method is used to get the width or the x value.
+        /// Sets the value of the specified axis in the vector.
         /// </summary>
-        /// <param name="vector2Int">The vector that you want to get the x or width value of.</param>
-        /// <returns>The width or x value of the vector.</returns>
-        public static int Width(this Vector2Int vector2Int) => vector2Int.x;
-
+        /// <param name="vector">The vector to modify.</param>
+        /// <param name="axis">The axis index (0 for X-axis, 1 for Y-axis).</param>
+        /// <param name="value">The new value for the axis.</param>
+        /// <returns>The modified vector.</returns>
+        public static Vector2Int SetAxis(this Vector2Int vector, int axis, int value) {
+            if(axis == 0) vector.x = value;
+            else if(axis == 1) vector.y = value;
+            return vector;
+        }
+        
         /// <summary>
-        /// This method is used to set the width or the x value.
+        /// Gets the value of the specified axis from the vector.
         /// </summary>
-        /// <param name="vector2Int">The vector that you want to set the x or width value of.</param>
-        /// <param name="width">The width or x value.</param>
-        public static void Width(this Vector2Int vector2Int, int width) => vector2Int.x = width;
+        /// <param name="vector">The vector to retrieve the value from.</param>
+        /// <param name="axis">The axis index (0 for X-axis, 1 for Y-axis).</param>
+        /// <returns>The value of the specified axis.</returns>
+        public static int GetAxis(this Vector2Int vector, int axis) {
+            if(axis == 0) return vector.x;
+            if(axis == 1) return vector.y;
+            throw new IndexOutOfRangeException("A Vector2Int is a two-axis vector.");
+        }
 
-        /// <summary>
-        /// This method is used to get the height or the y value.
-        /// </summary>
-        /// <param name="vector2Int">The vector that you want to get the y or height value of.</param>
-        /// <returns>The height or y value of the vector.</returns>
-        public static int Height(this Vector2Int vector2Int) => vector2Int.y;
-
-        /// <summary>
-        /// This method is used to set the height or the y value.
-        /// </summary>
-        /// <param name="vector2Int">The vector that you want to set the y or height value of.</param>
-        /// <param name="height">The height or y value.</param>
-        public static int Height(this Vector2Int vector2Int, int height) => vector2Int.y = height;
-       
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }

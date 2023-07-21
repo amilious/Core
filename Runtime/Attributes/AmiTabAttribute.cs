@@ -21,7 +21,7 @@ namespace Amilious.Core.Attributes {
     /// <summary>
     /// This attribute is used to add an item to a tab group.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
     public class AmiTabAttribute : Attribute {
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////

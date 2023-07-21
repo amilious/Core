@@ -3,7 +3,6 @@ using System;
 using FishNet;
 using UnityEngine;
 using FishNet.Managing;
-using Amilious.Core.Chat;
 using FishNet.Transporting;
 using Amilious.Core.Networking;
 using Amilious.Core.FishNet.Chat;
@@ -14,6 +13,7 @@ using Amilious.Core.FishNet.Users;
 using Amilious.Core.Identity.User;
 using Amilious.Core.Identity.Group;
 using Amilious.Core.FishNet.Groups;
+using Amilious.Core.UI.Chat;
 
 namespace Amilious.Core.FishNet {
     
@@ -50,7 +50,7 @@ namespace Amilious.Core.FishNet {
         /// <inheritdoc />
         public override IGroupIdentityManager GroupManager => groupManager;
         /// <inheritdoc />
-        public override IChatManager ChatManager => chatManager;
+        public override IChatNetworkManager ChatManager => chatManager;
         /// <inheritdoc />
         public override IAmiliousAuthenticator Authenticator => authenticator;
         /// <inheritdoc />

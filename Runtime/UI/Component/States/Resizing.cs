@@ -65,7 +65,7 @@ namespace Amilious.Core.UI.Component.States {
             var pos = eventData.position;
             pos = UIController.RectTransform.ClampToRect(pos);
             //calculate the new size
-            var off = (pos - _offset);
+            var off = (pos - _offset) / UIController.Canvas.scaleFactor;
             //fix the offset
             if(_edge.HasBottom()) off.y *= -1;
             if(_edge.HasLeft()) off.x *= -1;

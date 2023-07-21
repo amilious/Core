@@ -2,7 +2,6 @@
 using UnityEngine;
 using Cysharp.Text;
 using Amilious.Console;
-using Amilious.Core.Chat;
 using Amilious.Core.UI.Chat;
 using Amilious.Core.Attributes;
 using Amilious.Core.Authentication;
@@ -34,7 +33,7 @@ namespace Amilious.Core.Networking {
         public AbstractNetworkManagers NetworkManager => this.GetCacheComponent(ref _networkManager);
         public IUserIdentityManager UserManager { get; private set; }
         public IGroupIdentityManager GroupManager { get; private set; }
-        public IChatManager ChatManager {get; private set; }
+        public IChatNetworkManager ChatManager {get; private set; }
         
         public IAmiliousAuthenticator Authenticator { get; private set; }
         
@@ -153,7 +152,7 @@ namespace Amilious.Core.Networking {
             UserManager.OnUserConnectionChanged += OnUserConnectionChanged;
         }
 
-        private void OnChatManagerRegistered(IChatManager chatManager) {
+        private void OnChatManagerRegistered(IChatNetworkManager chatManager) {
             ChatManager = chatManager;
             ChatManager.OnReceiveGlobalMessage += OnReceiveGlobalMessage;
             ChatManager.OnReceiveGroupMessage += OnReceiveGroupMessage;

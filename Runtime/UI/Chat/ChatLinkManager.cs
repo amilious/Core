@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿
 using System.Linq;
-using Amilious.Core.Chat.LinkActions;
-using Amilious.Core.Extensions;
-using Amilious.Core.UI.Cursors;
-using Amilious.Core.UI.Text;
 using UnityEngine;
+using Amilious.Core.UI.Text;
+using Amilious.Core.UI.Cursors;
 using UnityEngine.EventSystems;
+using Amilious.Core.Extensions;
+using System.Collections.Generic;
+using Amilious.Core.UI.Chat.LinkActions;
 
 namespace Amilious.Core.UI.Chat {
     

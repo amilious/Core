@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using UnityEngine;
 
 namespace Amilious.Core.Attributes {
@@ -21,6 +22,7 @@ namespace Amilious.Core.Attributes {
     /// <summary>
     /// This attribute is used to hide a property if a condition is met.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
     public class AmiShowIfAttribute : AmiModifierAttribute {
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////

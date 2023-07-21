@@ -1,5 +1,5 @@
 ﻿using Amilious.Core.Attributes;
-using Amilious.Core.Editor.Tabs;
+using Amilious.Core.Editor.Editors.Tabs;
 using Amilious.Core.UI.Graph;
 using Amilious.Core.UI.Layout;
 using UnityEditor;

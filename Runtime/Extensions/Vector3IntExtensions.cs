@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using UnityEngine;
 using Amilious.Core.Serializables;
 
@@ -129,6 +130,35 @@ namespace Amilious.Core.Extensions {
         /// <returns>The vector's position as x = y and y = z.</returns>
         public static Vector2Int GetYZ(this Vector3Int vector3Int) {
             return new Vector2Int(vector3Int.y, vector3Int.z);
+        }
+        
+        
+        
+        /// <summary>
+        /// Sets the value of the specified axis in the vector.
+        /// </summary>
+        /// <param name="vector">The vector to modify.</param>
+        /// <param name="axis">The axis index (0 for X-axis, 1 for Y-axis, 2 for Z-axis).</param>
+        /// <param name="value">The new value for the axis.</param>
+        /// <returns>The modified vector.</returns>
+        public static Vector3Int SetAxis(this Vector3Int vector, int axis, int value) {
+            if(axis == 0) vector.x = value;
+            else if(axis == 1) vector.y = value;
+            else if(axis == 2) vector.z = value;
+            return vector;
+        }
+        
+        /// <summary>
+        /// Gets the value of the specified axis from the vector.
+        /// </summary>
+        /// <param name="vector">The vector to retrieve the value from.</param>
+        /// <param name="axis">The axis index (0 for X-axis, 1 for Y-axis, 2 for Z-axis).</param>
+        /// <returns>The value of the specified axis.</returns>
+        public static int GetAxis(this Vector3Int vector, int axis) {
+            if(axis == 0) return vector.x;
+            if(axis == 1) return vector.y;
+            if(axis == 2) return vector.z;
+            throw new IndexOutOfRangeException("A Vector3Int is a three-axis vector.");
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

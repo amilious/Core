@@ -1,6 +1,6 @@
 ﻿using System;
-using Amilious.Core.Extensions;
 using UnityEngine;
+using Amilious.Core.Extensions;
 
 namespace Amilious.Core.UI.Component {
     
@@ -17,20 +17,48 @@ namespace Amilious.Core.UI.Component {
         BottomRight
     }
     
+    /// <summary>
+    /// Extension methods for the <see cref="ComponentEdge"/> enum.
+    /// </summary>
     public static class ComponentEdgeExtensions{
 
+        /// <summary>
+        /// Determines whether the edge has a top side.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <returns>True if the edge has a top side; otherwise, false.</returns>
         public static bool HasTop(this ComponentEdge edge) => edge is ComponentEdge.Top or 
             ComponentEdge.TopLeft or ComponentEdge.TopRight;
         
+        /// <summary>
+        /// Determines whether the edge has a bottom side.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <returns>True if the edge has a bottom side; otherwise, false.</returns>
         public static bool HasBottom(this ComponentEdge edge) => edge is ComponentEdge.Bottom or 
             ComponentEdge.BottomLeft or ComponentEdge.BottomRight;
         
+        /// <summary>
+        /// Determines whether the edge has a right side.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <returns>True if the edge has a right side; otherwise, false.</returns>
         public static bool HasRight(this ComponentEdge edge) => edge is ComponentEdge.Right or 
             ComponentEdge.BottomRight or ComponentEdge.TopRight;
         
+        /// <summary>
+        /// Determines whether the edge has a left side.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <returns>True if the edge has a left side; otherwise, false.</returns>
         public static bool HasLeft(this ComponentEdge edge) => edge is ComponentEdge.Left or 
             ComponentEdge.TopLeft or ComponentEdge.BottomLeft;
         
+        /// <summary>
+        /// Gets the opposite edge.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <returns>The opposite edge.</returns>
         public static ComponentEdge GetOpposite(this ComponentEdge edge) {
             return edge switch {
                 ComponentEdge.None => ComponentEdge.None,
@@ -46,62 +74,86 @@ namespace Amilious.Core.UI.Component {
             };
         }
 
+        /// <summary>
+        /// Gets the local position of the edge on a RectTransform.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <param name="transform">The RectTransform.</param>
+        /// <returns>The local position of the edge.</returns>
         public static Vector3 GetLocalPosition(this ComponentEdge edge, RectTransform transform) {
             return edge switch {
-                ComponentEdge.None => transform.GetCenterLocalPosition(),
-                ComponentEdge.TopLeft => transform.GetTopLeftLocalPosition(),
-                ComponentEdge.Top => transform.GetTopLeftLocalPosition(),
-                ComponentEdge.TopRight => transform.GetTopRightLocalPosition(),
-                ComponentEdge.Left => transform.GetTopLeftLocalPosition(),
-                ComponentEdge.Right => transform.GetTopRightLocalPosition(),
-                ComponentEdge.BottomLeft => transform.GetBottomLeftLocalPosition(),
-                ComponentEdge.Bottom => transform.GetBottomLeftLocalPosition(),
-                ComponentEdge.BottomRight => transform.GetBottomRightLocalPosition(),
+                ComponentEdge.None => transform.GetCornerLocalPosition(MoveSource.Center),
+                ComponentEdge.TopLeft => transform.GetCornerLocalPosition(MoveSource.TopLeft),
+                ComponentEdge.Top => transform.GetCornerLocalPosition(MoveSource.TopLeft),
+                ComponentEdge.TopRight => transform.GetCornerLocalPosition(MoveSource.TopRight),
+                ComponentEdge.Left => transform.GetCornerLocalPosition(MoveSource.TopLeft),
+                ComponentEdge.Right => transform.GetCornerLocalPosition(MoveSource.TopRight),
+                ComponentEdge.BottomLeft => transform.GetCornerLocalPosition(MoveSource.BottomLeft),
+                ComponentEdge.Bottom => transform.GetCornerLocalPosition(MoveSource.BottomLeft),
+                ComponentEdge.BottomRight => transform.GetCornerLocalPosition(MoveSource.BottomRight),
                 _ => throw new ArgumentOutOfRangeException(nameof(edge), edge, null)
             };
         }
 
-        public static void SetLocalPosition(this ComponentEdge edge, RectTransform transform, Vector3 localPosition) {
+        /// <summary>
+        /// Sets the local position of the edge on a RectTransform.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <param name="transform">The RectTransform.</param>
+        /// <param name="position">The local position.</param>
+        public static void SetLocalPosition(this ComponentEdge edge, RectTransform transform, Vector3 position) {
             switch(edge) {
-                case ComponentEdge.None: transform.SetCenterLocalPosition(localPosition); break;
-                case ComponentEdge.TopLeft: transform.SetTopLeftLocalPosition(localPosition); break;
-                case ComponentEdge.Top: transform.SetTopLeftLocalPosition(localPosition); break;
-                case ComponentEdge.TopRight: transform.SetTopRightLocalPosition(localPosition); break;
-                case ComponentEdge.Left: transform.SetTopLeftLocalPosition(localPosition); break;
-                case ComponentEdge.Right: transform.SetTopRightLocalPosition(localPosition); break;
-                case ComponentEdge.BottomLeft: transform.SetBottomLeftLocalPosition(localPosition); break;
-                case ComponentEdge.Bottom: transform.SetBottomLeftLocalPosition(localPosition); break;
-                case ComponentEdge.BottomRight: transform.SetBottomRightLocalPosition(localPosition); break; default:
-                    throw new ArgumentOutOfRangeException(nameof(edge), edge, null);
+                case ComponentEdge.None: transform.SetCornerLocalPosition(MoveSource.Center,position); break;
+                case ComponentEdge.TopLeft: transform.SetCornerLocalPosition(MoveSource.TopLeft,position);  break;
+                case ComponentEdge.Top: transform.SetCornerLocalPosition(MoveSource.TopLeft,position);  break;
+                case ComponentEdge.TopRight: transform.SetCornerLocalPosition(MoveSource.TopRight,position);  break;
+                case ComponentEdge.Left: transform.SetCornerLocalPosition(MoveSource.TopLeft,position);  break;
+                case ComponentEdge.Right: transform.SetCornerLocalPosition(MoveSource.TopRight,position);  break;
+                case ComponentEdge.BottomLeft: transform.SetCornerLocalPosition(MoveSource.BottomLeft,position);  break;
+                case ComponentEdge.Bottom: transform.SetCornerLocalPosition(MoveSource.BottomLeft,position);  break;
+                case ComponentEdge.BottomRight: transform.SetCornerLocalPosition(MoveSource.BottomRight,position);  break;
+                default: throw new ArgumentOutOfRangeException(nameof(edge), edge, null);
             }
         }
         
+        /// <summary>
+        /// Gets the position of the edge on a RectTransform.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <param name="transform">The RectTransform.</param>
+        /// <returns>The position of the edge.</returns>
         public static Vector3 GetPosition(this ComponentEdge edge, RectTransform transform) {
             return edge switch {
-                ComponentEdge.None => transform.GetCenterPosition(),
-                ComponentEdge.TopLeft => transform.GetTopLeftPosition(),
-                ComponentEdge.Top => transform.GetTopLeftPosition(),
-                ComponentEdge.TopRight => transform.GetTopRightPosition(),
-                ComponentEdge.Left => transform.GetTopLeftPosition(),
-                ComponentEdge.Right => transform.GetTopRightPosition(),
-                ComponentEdge.BottomLeft => transform.GetBottomLeftPosition(),
-                ComponentEdge.Bottom => transform.GetBottomLeftPosition(),
-                ComponentEdge.BottomRight => transform.GetBottomRightPosition(),
+                ComponentEdge.None => transform.GetCornerPosition(MoveSource.Center),
+                ComponentEdge.TopLeft => transform.GetCornerPosition(MoveSource.TopLeft),
+                ComponentEdge.Top => transform.GetCornerPosition(MoveSource.TopLeft),
+                ComponentEdge.TopRight => transform.GetCornerPosition(MoveSource.TopRight),
+                ComponentEdge.Left => transform.GetCornerPosition(MoveSource.TopLeft),
+                ComponentEdge.Right => transform.GetCornerPosition(MoveSource.TopRight),
+                ComponentEdge.BottomLeft => transform.GetCornerPosition(MoveSource.BottomLeft),
+                ComponentEdge.Bottom => transform.GetCornerPosition(MoveSource.BottomLeft),
+                ComponentEdge.BottomRight => transform.GetCornerPosition(MoveSource.BottomRight),
                 _ => throw new ArgumentOutOfRangeException(nameof(edge), edge, null)
             };
         }
 
+        /// <summary>
+        /// Sets the position of the edge on a RectTransform.
+        /// </summary>
+        /// <param name="edge">The edge.</param>
+        /// <param name="transform">The RectTransform.</param>
+        /// <param name="position">The position.</param>
         public static void SetPosition(this ComponentEdge edge, RectTransform transform, Vector3 position) {
             switch(edge) {
-                case ComponentEdge.None: transform.SetCenterPosition(position); break;
-                case ComponentEdge.TopLeft: transform.SetTopLeftPosition(position); break;
-                case ComponentEdge.Top: transform.SetTopLeftPosition(position); break;
-                case ComponentEdge.TopRight: transform.SetTopRightPosition(position); break;
-                case ComponentEdge.Left: transform.SetTopLeftPosition(position); break;
-                case ComponentEdge.Right: transform.SetTopRightPosition(position); break;
-                case ComponentEdge.BottomLeft: transform.SetBottomLeftPosition(position); break;
-                case ComponentEdge.Bottom: transform.SetBottomLeftPosition(position); break;
-                case ComponentEdge.BottomRight: transform.SetBottomRightPosition(position); break; 
+                case ComponentEdge.None: transform.SetCornerPosition(MoveSource.Center,position); break;
+                case ComponentEdge.TopLeft: transform.SetCornerPosition(MoveSource.TopLeft,position);  break;
+                case ComponentEdge.Top: transform.SetCornerPosition(MoveSource.TopLeft,position);  break;
+                case ComponentEdge.TopRight: transform.SetCornerPosition(MoveSource.TopRight,position);  break;
+                case ComponentEdge.Left: transform.SetCornerPosition(MoveSource.TopLeft,position);  break;
+                case ComponentEdge.Right: transform.SetCornerPosition(MoveSource.TopRight,position);  break;
+                case ComponentEdge.BottomLeft: transform.SetCornerPosition(MoveSource.BottomLeft,position);  break;
+                case ComponentEdge.Bottom: transform.SetCornerPosition(MoveSource.BottomLeft,position);  break;
+                case ComponentEdge.BottomRight: transform.SetCornerPosition(MoveSource.BottomRight,position);  break;
                 default: throw new ArgumentOutOfRangeException(nameof(edge), edge, null);
             }
         }

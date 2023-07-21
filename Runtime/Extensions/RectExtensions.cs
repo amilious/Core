@@ -61,6 +61,32 @@ namespace Amilious.Core.Extensions {
             minY = rect.yMin;
         }
 
+        public static Rect ApplyPadding(this Rect rect, float padding) {
+            rect.x += padding;
+            rect.width -= padding * 2;
+            rect.y += padding;
+            rect.height -= padding * 2;
+            return rect;
+        }
+
+
+        public static Rect ApplyPadding(this Rect rect, float topBottom, float leftRight) {
+            rect.x += leftRight;
+            rect.width -= leftRight * 2;
+            rect.y += topBottom;
+            rect.height -= topBottom * 2;
+            return rect;
+        }
+
+
+        public static Rect ApplyPadding(this Rect rect, float top, float left, float right, float bottom) {
+            rect.x += left;
+            rect.width -= (left + right);
+            rect.y += top;
+            rect.height -= (top + bottom);
+            return rect;
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     }

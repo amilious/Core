@@ -1,12 +1,14 @@
-﻿using Amilious.Core.UI.Component;
+﻿using System.Collections.Generic;
+using Amilious.Core.Extensions;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-namespace Amilious.Core.UI {
+namespace Amilious.Core.UI.Component {
     
-    [RequireComponent(typeof(RectTransform))]
+    [RequireComponent(typeof(RectTransform),typeof(Canvas))]
     [DisallowMultipleComponent,AddComponentMenu("Amilious/UI/UI Controller")]
     public class UIController : AmiliousBehavior {
+        
+        //TODO: Make UIController focussable, vissible, or enabled so that all components can be set at once.
 
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,8 +17,10 @@ namespace Amilious.Core.UI {
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
-        
+
+        private static readonly HashSet<UIController> UIControllers = new HashSet<UIController>();
         private RectTransform _rectTransform;
+        private Canvas _canvas;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -32,23 +36,14 @@ namespace Amilious.Core.UI {
                 return _rectTransform;
             }
         }
+
+        public Canvas Canvas => this.GetCacheComponent(ref _canvas);
         
         /// <summary>
         /// This property contains the focussed component.
         /// </summary>
         public UIComponent FocussedComponent { get; private set; }
 
-        /// <summary>
-        /// This property contains the controllers canvas.
-        /// </summary>
-        public Canvas Canvas {
-            get {
-                if(canvas != null) return canvas;
-                canvas = GetComponentInChildren<Canvas>();
-                return canvas;
-            }
-        }
-        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Delegates //////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,16 +67,25 @@ namespace Amilious.Core.UI {
         /// <returns>True if the component is focussed, otherwise false.</returns>
         public bool FocusUIComponent(UIComponent uiComponent) {
             if(!uiComponent.Focusable) return false;
-            var hadFocus = uiComponent != FocussedComponent;
+            if(!uiComponent.Visible) return false;
+            if(!uiComponent.Enabled) return false;
+            var lastFocussed = FocussedComponent;
+            var newFocus = uiComponent == lastFocussed;
+            //make sure on top
             uiComponent.transform.SetAsLastSibling();
-            if(!hadFocus) FocussedComponent.OnLoseFocus();
-            FocussedComponent = uiComponent;
-            if(!hadFocus) FocussedComponent.OnGainFocus();
-            OnFocusChanged?.Invoke(this,FocussedComponent);
+            if(!newFocus && lastFocussed!=null) lastFocussed.OnLoseFocus();
+            FocussedComponent = uiComponent; //change the focus
+            if(!newFocus  && FocussedComponent!=null) FocussedComponent.OnGainFocus();
+            if(!newFocus && FocussedComponent!=null) OnFocusChanged?.Invoke(this,FocussedComponent);
             return true;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
+        private void Awake() {
+
+            //add reference to the ui controller for static methods that will be added later.
+            UIControllers.Add(this);
+        }
     }
 }

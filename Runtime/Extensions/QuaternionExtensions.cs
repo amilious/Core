@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using UnityEngine;
 using Amilious.Core.Serializables;
 
@@ -33,6 +34,23 @@ namespace Amilious.Core.Extensions {
         /// <returns>A Serializable version of the given Quaternion.</returns>
         public static SerializableQuaternion ToSerializable(this Quaternion quaternion) {
             return new SerializableQuaternion(quaternion);
+        }
+        
+        public static Quaternion SetAxis(this Quaternion quaternion, int axis, float value) {
+            var euler = quaternion.eulerAngles;
+            if(axis == 0) euler.x = value;
+            else if(axis == 1) euler.y = value;
+            else if(axis == 2) euler.z = value;
+            else throw new IndexOutOfRangeException("A Quaternion is represented as a three-axis rotation.");
+            return Quaternion.Euler(euler);
+        }
+
+        public static float GetAxis(this Quaternion quaternion, int axis) {
+            var euler = quaternion.eulerAngles;
+            if(axis == 0) return euler.x;
+            if(axis == 1) return euler.y;
+            if(axis == 2) return euler.z;
+            throw new IndexOutOfRangeException("A Quaternion is represented as a three-axis rotation.");
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

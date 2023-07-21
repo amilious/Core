@@ -22,7 +22,9 @@ using Amilious.Core.Extensions;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using System.Collections.Generic;
+using Amilious.Core.UI.Component.ShowHide;
 using Amilious.Core.UI.Component.States;
+
 namespace Amilious.Core.UI.Component {
     
     /// <summary>
@@ -30,7 +32,7 @@ namespace Amilious.Core.UI.Component {
     /// </summary>
     /// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     [AmiHelpBox(HELP_MESSAGE,HelpBoxType.Info)]
-    [DisallowMultipleComponent,AddComponentMenu("Amilious/UI/UI Component")]
+    [DisallowMultipleComponent,AddComponentMenu("Amilious/UI/Component/UI Component")]
     [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
     public class UIComponent : AmiliousBehavior, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerDownHandler, 
         IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler, IPointerUpHandler {
@@ -42,8 +44,7 @@ namespace Amilious.Core.UI.Component {
         private const string OPTIONS = "Options";
         private const string EVENTS = "Events";
 
-        [Serializable]
-        public class StateEvent : UnityEvent<UIStatesType> { }
+        [Serializable] public class StateEvent : UnityEvent<UIStatesType> { }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -86,6 +87,7 @@ namespace Amilious.Core.UI.Component {
         private RectTransform _rectTransform;
         private UIState _state;
         private Dictionary<UIStatesType, UIState> UIStates = new Dictionary<UIStatesType, UIState>();
+        private AbstractUIShowHide _uiShowHide;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -93,9 +95,7 @@ namespace Amilious.Core.UI.Component {
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
-        public UIState CurrentState {
-            get => _state;
-        }
+        public UIState CurrentState => _state;
 
         public Vector2 MinSize => minSize;
 
@@ -128,9 +128,16 @@ namespace Amilious.Core.UI.Component {
         /// </summary>
         public CanvasGroup CanvasGroup => this.GetCacheComponent(ref _canvasGroup);
 
+        public bool IsFocussed => (UIController!=null) && UIController.FocussedComponent == this;
+        
         public bool Focusable {
             get => focusable;
-            set => focusable = value;
+            set {
+                focusable = value;
+                if(UIController && UIController.FocussedComponent == this) {
+                    UIController.FocusUIComponent(null);
+                }
+            }
         }
 
         public bool Movable {
@@ -154,26 +161,40 @@ namespace Amilious.Core.UI.Component {
         public bool Visible {
             get => _visible;
             set {
+                if(_visible == value) return;
                 _visible = value;
-                if(_visible) {
-                    CanvasGroup.alpha = 1f;
+                SetState(UIStatesType.Idle,null);
+                if(value) {
+                    if(!_uiShowHide) CanvasGroup.alpha = 1f;
+                    else _uiShowHide.OnShow(CanvasGroup);
                     CanvasGroup.blocksRaycasts = true;
                 }else {
-                    CanvasGroup.alpha = 0f;
+                    if(!_uiShowHide)CanvasGroup.alpha = 0f;
+                    else _uiShowHide.OnHide(CanvasGroup);
                     CanvasGroup.blocksRaycasts = false;
+                    if(UIController && UIController.FocussedComponent == this) {
+                        UIController.FocusUIComponent(null);
+                    }
                 }
             }
         }
 
         public bool Enabled {
             get => gameObject.activeSelf;
-            set => gameObject.SetActive(value);
+            set {
+                gameObject.SetActive(value);
+                if(UIController && UIController.FocussedComponent == this) {
+                    UIController.FocusUIComponent(null);
+                }
+            }
         }
-        
+
         /// <summary>
         /// This property is true when the component is being moved.
         /// </summary>
-        public bool IsMoving => _isMoving;
+        public bool IsMoving => CurrentState.Type == UIStatesType.Moving;
+
+        public bool IsResizing => CurrentState.Type == UIStatesType.Resizing;
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -182,15 +203,22 @@ namespace Amilious.Core.UI.Component {
             UIStates.Add(UIStatesType.Moving, new Moving(this));
             UIStates.Add(UIStatesType.Resizing, new Resizing(this));
             SetState(UIStatesType.Idle,null);
+            _uiShowHide = GetComponent<AbstractUIShowHide>();
         }
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
 
+        public void Show() { Visible = true; }
+
+        public void Hide() { Visible = false; }
+        
         /// <summary>
         /// This method is used to focus the ui component and move it to the topmost position.
         /// </summary>
         public bool FocusUIComponent() {
             if(!Focusable) return false;
+            if(!Visible) return false;
+            if(!Enabled) return false;
             return UIController != null && UIController.FocusUIComponent(this);
         }
 
@@ -205,6 +233,14 @@ namespace Amilious.Core.UI.Component {
         
         public void RemoveOnEnterStateListener(UnityAction<UIStatesType> callback) =>
             onEnterState.RemoveListener(callback);
+
+        public void AddOnGainedFocusListener(UnityAction callback) => onGainedFocus.AddListener(callback);
+
+        public void RemoveOnGainedFocusListener(UnityAction callback) => onGainedFocus.RemoveListener(callback);
+
+        public void AddOnLostFocusListener(UnityAction callback) => onLostFocus.AddListener(callback);
+
+        public void RemoveLostFocusListener(UnityAction callback) => onLostFocus.RemoveListener(callback);
         
         /// <summary>
         /// This method is called when the ui component gains focus.
@@ -238,6 +274,8 @@ namespace Amilious.Core.UI.Component {
             FocusUIComponent();
             CurrentState?.OnPointerDown(eventData);
         }
+
+        public void InteractableMouseDown(PointerEventData eventData) { FocusUIComponent();        }
 
         /// <inheritdoc />
         public void OnPointerEnter(PointerEventData eventData) => CurrentState?.OnPointerEnter(eventData);
@@ -288,7 +326,6 @@ namespace Amilious.Core.UI.Component {
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
         
     }

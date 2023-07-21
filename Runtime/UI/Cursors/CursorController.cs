@@ -15,7 +15,8 @@ namespace Amilious.Core.UI.Cursors {
         private const string DEFAULT_CURSORS = "Default Cursors";
 
         [SerializeField, AmiTab(OPTIONS)] private CursorMode cursorMode = CursorMode.Auto;
-        [SerializeField, AmiTab(OPTIONS), AmiBool(true)] private bool forceAutoInEditor = true;
+        [SerializeField, AmiTab(OPTIONS), AmiBool(true)]
+        [AmiShowIf(nameof(cursorMode), CursorMode.ForceSoftware)] private bool forceAutoInEditor = true;
         [SerializeField, AmiTab(OPTIONS), Range(.1f,2f),  AmiShowIf(nameof(cursorMode),CursorMode.ForceSoftware)] 
         private float cursorScale = 1;
         [SerializeField, AmiTab((OPTIONS))] private CursorInfo defaultCursor;

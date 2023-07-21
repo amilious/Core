@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Amilious.Core.Chat.Requests;
 using Amilious.Core.Extensions;
+using Amilious.Core.UI.Chat.Requests;
 using TMPro;
 using UnityEngine;
 

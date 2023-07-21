@@ -14,11 +14,13 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Amilious.Core.Attributes;
 using Amilious.Core.Editor.Extensions;
+using Amilious.Core.Extensions;
 
 namespace Amilious.Core.Editor.Drawers {
     
@@ -31,11 +33,16 @@ namespace Amilious.Core.Editor.Drawers {
         #region Cache //////////////////////////////////////////////////////////////////////////////////////////////////
 
         private AmiVectorAttribute _attribute;
+        private GUIStyle _labelStyle = new GUIStyle(GUI.skin.label) {
+            fontSize = 10, fontStyle = FontStyle.Bold, padding = { right = 4 }
+        };
+
+        private readonly GUIContent _sizeContent = new GUIContent();
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Override Methods ///////////////////////////////////////////////////////////////////////////////////////
-        
+
         /// <inheritdoc />
         protected override void AmiliousOnGUI(Rect position, SerializedProperty property, GUIContent label) {
             
@@ -45,7 +52,7 @@ namespace Amilious.Core.Editor.Drawers {
             if(att.Layout == VLayout.TripleLine) position.y -= EditorGUIUtility.singleLineHeight;
             EditorGUI.BeginProperty(position, label, property);
             EditorGUI.LabelField(position, label);
-            
+
             switch(property.propertyType) {
                 case SerializedPropertyType.Vector2: 
                     property.vector2Value = DrawVector2(position,property.vector2Value,att); break;
@@ -97,11 +104,10 @@ namespace Amilious.Core.Editor.Drawers {
         /// <returns>The result value.</returns>
         private Vector2 DrawVector2(Rect position, Vector2 value, AmiVectorAttribute att) {
             var move = CalculateMove(2, att, ref position, out var position2);
-            EditorGUI.LabelField(position,att.XLabel);
-            value.x = EditorGUI.FloatField(position2, value.x);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.YLabel);
-            value.y = EditorGUI.FloatField(position2, value.y);
+            for(var axis = 0; axis < 2; axis++) {
+                value = value.SetAxis(axis, DrawField(axis, value.GetAxis(axis), position, 
+                    position2, att, 25)); position.x += move; position2.x += move;
+            }
             return value; 
         }
         
@@ -114,13 +120,11 @@ namespace Amilious.Core.Editor.Drawers {
         /// <returns>The result value.</returns>
         private Vector2Int DrawVector2Int(Rect position, Vector2Int value, AmiVectorAttribute att) {
             var move = CalculateMove(2, att, ref position, out var position2);
-            EditorGUI.LabelField(position,att.XLabel);
-            value.x = EditorGUI.IntField(position2, value.x);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.YLabel);
-            value.y = EditorGUI.IntField(position2, value.y);
-            position.x += move; position2.x += move;
-            return value; 
+            for(var axis = 0; axis < 2; axis++) {
+                value = value.SetAxis(axis, DrawField(axis, value.GetAxis(axis), position, 
+                    position2, att, 25)); position.x += move; position2.x += move;
+            }
+            return value;
         }
         
         /// <summary>
@@ -132,14 +136,10 @@ namespace Amilious.Core.Editor.Drawers {
         /// <returns>The result value.</returns>
         private Vector3 DrawVector3(Rect position, Vector3 value, AmiVectorAttribute att) {
             var move = CalculateMove(3, att, ref position, out var position2);
-            EditorGUI.LabelField(position,att.XLabel);
-            value.x = EditorGUI.FloatField(position2, value.x);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.YLabel);
-            value.y = EditorGUI.FloatField(position2, value.y);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.ZLabel);
-            value.z = EditorGUI.FloatField(position2, value.z);
+            for(var axis = 0; axis < 3; axis++) {
+                value = value.SetAxis(axis, DrawField(axis, value.GetAxis(axis), position, 
+                    position2, att, 25)); position.x += move; position2.x += move;
+            }
             return value; 
         }
         
@@ -152,14 +152,10 @@ namespace Amilious.Core.Editor.Drawers {
         /// <returns>The result value.</returns>
         private Vector3Int DrawVector3Int(Rect position, Vector3Int value, AmiVectorAttribute att) {
             var move = CalculateMove(3, att, ref position, out var position2);
-            EditorGUI.LabelField(position,att.XLabel);
-            value.x = EditorGUI.IntField(position2, value.x);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.YLabel);
-            value.y = EditorGUI.IntField(position2, value.y);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.ZLabel);
-            value.z = EditorGUI.IntField(position2, value.z);
+            for(var axis = 0; axis < 3; axis++) {
+                value = value.SetAxis(axis, DrawField(axis, value.GetAxis(axis), position, 
+                    position2, att, 25)); position.x += move; position2.x += move;
+            }
             return value; 
         }
         
@@ -172,18 +168,11 @@ namespace Amilious.Core.Editor.Drawers {
         /// <returns>The result value.</returns>
         private Vector4 DrawVector4(Rect position, Vector4 value, AmiVectorAttribute att) {
             var move = CalculateMove(4, att, ref position, out var position2);
-            EditorGUI.LabelField(position,att.XLabel);
-            value.x = EditorGUI.FloatField(position2, value.x);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.YLabel);
-            value.y = EditorGUI.FloatField(position2, value.y);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.ZLabel);
-            value.z = EditorGUI.FloatField(position2, value.z);
-            position.x += move; position2.x += move;
-            EditorGUI.LabelField(position,att.WLabel);
-            value.w = EditorGUI.FloatField(position2, value.w);
-            return value;
+            for(var axis = 0; axis < 4; axis++) {
+                value = value.SetAxis(axis, DrawField(axis, value.GetAxis(axis), position, 
+                    position2, att, 25)); position.x += move; position2.x += move;
+            }
+            return value; 
         }
 
         /// <summary>
@@ -224,6 +213,35 @@ namespace Amilious.Core.Editor.Drawers {
             if(att.Layout!=VLayout.DoubleLine&&att.Layout!=VLayout.TripleLine) position2.x += width-2;
             if(att.IsFull||att.Layout == VLayout.TripleLine) position.y += EditorGUIUtility.singleLineHeight+2;
             return move;
+        }
+
+        private T DrawField<T>(int axis, T value, Rect label, Rect field, AmiVectorAttribute att, float minField) 
+            where T : struct, IComparable, IConvertible, IFormattable {
+            var text = att.GetLabel(axis);
+            if(att.IsSingleLine || att.Layout == VLayout.FullDoubleLine) {
+                _sizeContent.text = text;
+                var width = _labelStyle.CalcSize(_sizeContent).x;
+                width = Mathf.Min(width,  label.width + field.width - minField);
+                var offset = label.width - width;
+                var fixedLabel = new Rect(label.x, label.y, width, label.height);
+                var fixedField = new Rect(field.x - offset, field.y, field.width + offset, field.height);
+                EditorGUI.LabelField(fixedLabel,text, _labelStyle);
+                if (typeof(T) == typeof(float) && value is float floatValue) {
+                    return (T)(object)EditorGUI.FloatField(fixedField, floatValue);
+                }
+                if(typeof(T) == typeof(int) && value is int intValue) {
+                    return (T)(object)EditorGUI.IntField(fixedField, intValue);
+                }
+                return value;
+            }
+            EditorGUI.LabelField(label,text);
+            if (typeof(T) == typeof(float) && value is float floatValue2) {
+                EditorGUI.FloatField(field, floatValue2);
+            }
+            if (typeof(T) == typeof(int) && value is int intValue2) {
+                return (T)(object)EditorGUI.IntField(field, intValue2);
+            }
+            return value;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -21,8 +21,9 @@ using UnityEngine;
 using System.Reflection;
 using Amilious.Core.Attributes;
 using System.Collections.Generic;
+using Amilious.Core.Editor.Editors.Links;
+using Amilious.Core.Editor.Editors.Tabs;
 using Amilious.Core.Editor.Extensions;
-using Amilious.Core.Editor.Tabs;
 
 namespace Amilious.Core.Editor.Editors {
     
@@ -56,6 +57,8 @@ namespace Amilious.Core.Editor.Editors {
         private readonly List<string> _dontDraw = new List<string>();
         private readonly List<string> _disabled = new List<string>();
         private readonly List<LinkInfo> _links = new List<LinkInfo>();
+        private readonly Dictionary<string, int> _memberIndexes = new Dictionary<string, int>();
+        private readonly List<AmiButtonAttribute> _buttons = new List<AmiButtonAttribute>();
         private List<AmiHelpBoxAttribute> _helpBoxAttributes = new List<AmiHelpBoxAttribute>();
         private TabController _tabController;
         
@@ -94,6 +97,19 @@ namespace Amilious.Core.Editor.Editors {
                     TabController.TryDrawTabGroup(iterator.name);
                     //DrawTabGroup(iterator.name);
                 }
+            }
+            //draw the buttons
+            foreach(var button in _buttons) {
+                if(button.OnlyWhenPlaying && !Application.isPlaying) continue;
+                if(button.Modifiers.Any(x => x.ShouldHide(serializedObject))) continue;
+                var disable = button.Modifiers.Any(x => x.ShouldDisable(serializedObject));
+                if(disable)EditorGUI.BeginDisabledGroup(true);
+                if(GUILayout.Button(button.Name)) {
+                    if (button.MethodInfo.IsStatic) { button.MethodInfo.Invoke(null, null); }
+                    else { button.MethodInfo.Invoke(target, null); }
+                    serializedObject.UpdateIfRequiredOrScript();
+                }
+                if(disable)EditorGUI.EndDisabledGroup();
             }
             //end draw default properties
             AfterDefaultDraw();
@@ -308,7 +324,6 @@ namespace Amilious.Core.Editor.Editors {
             //hide the script
             _disabled.Add(SCRIPT);
             if(!AmiliousCoreEditor.ShowScripts && !_dontDraw.Contains(SCRIPT)) _dontDraw.Add(SCRIPT);
-            
             //check link attributes
             var linkAttributes = 
                 target.GetType().GetCustomAttributes<AmiLinkAttribute>(true);
@@ -318,6 +333,20 @@ namespace Amilious.Core.Editor.Editors {
             //check hide property attributes
             foreach(var hide in target.GetType().GetCustomAttributes<AmiHideAttribute>())
                 _dontDraw.Add(hide.PropertyName);
+            // Get all the methods, public and non-public, on the instance.
+            var methods = target.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            foreach (MethodInfo method in methods) {
+                // Check if the method has the AmiButtonAttribute, returns void, and takes no parameters.
+                var buttonAtt = (AmiButtonAttribute)method.GetCustomAttribute(typeof(AmiButtonAttribute), false);
+                if(buttonAtt==null) continue;
+                if(method.ReturnType != typeof(void))continue;
+                if(method.GetParameters().Length != 0)continue;
+                var tab = method.GetCustomAttribute<AmiTabAttribute>();
+                buttonAtt.MethodInfo = method;
+                buttonAtt.Modifiers = method.GetCustomAttributes<AmiModifierAttribute>(true).ToArray();
+                if(tab!=null) TabController.AddToGroup(tab,buttonAtt);
+                else _buttons.Add(buttonAtt);
+            }
             //get tabs
             var iterator = serializedObject.GetIterator( );
             var enterChildren = true;

@@ -14,6 +14,7 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
 using UnityEngine;
 using Amilious.Core.Serializables;
 
@@ -47,34 +48,6 @@ namespace Amilious.Core.Extensions {
         }
 
         /// <summary>
-        /// This method is used to get the width or the x value.
-        /// </summary>
-        /// <param name="vector2">The vector that you want to get the x or width value of.</param>
-        /// <returns>The width or x value of the vector.</returns>
-        public static float Width(this Vector2 vector2) => vector2.x;
-
-        /// <summary>
-        /// This method is used to set the width or the x value.
-        /// </summary>
-        /// <param name="vector2">The vector that you want to set the x or width value of.</param>
-        /// <param name="width">The width or x value.</param>
-        public static void Width(this Vector2 vector2, int width) => vector2.x = width;
-
-        /// <summary>
-        /// This method is used to get the height or the y value.
-        /// </summary>
-        /// <param name="vector2">The vector that you want to get the y or height value of.</param>
-        /// <returns>The height or y value of the vector.</returns>
-        public static float Height(this Vector2 vector2) => vector2.y;
-
-        /// <summary>
-        /// This method is used to set the height or the y value.
-        /// </summary>
-        /// <param name="vector2">The vector that you want to set the y or height value of.</param>
-        /// <param name="height">The height or y value.</param>
-        public static void Height(this Vector2 vector2, int height) => vector2.y = height;
-
-        /// <summary>
         /// This method is used to check if a vector2 is within the box made from two vectors.
         /// </summary>
         /// <param name="checkPoint">The point you want to check for.</param>
@@ -86,6 +59,31 @@ namespace Amilious.Core.Extensions {
             var maxPoint = Vector2.Max(pointA, pointB);
             return (checkPoint.x >= minPoint.x && checkPoint.x <= maxPoint.x && checkPoint.y >= minPoint.y &&
                 checkPoint.y <= maxPoint.y);
+        }
+
+        /// <summary>
+        /// Sets the value of the specified axis in the vector.
+        /// </summary>
+        /// <param name="vector">The vector to modify.</param>
+        /// <param name="axis">The axis index (0 for X-axis, 1 for Y-axis).</param>
+        /// <param name="value">The new value for the axis.</param>
+        /// <returns>The modified vector.</returns>
+        public static Vector2 SetAxis(this Vector2 vector, int axis, float value) {
+            if(axis == 0) vector.x = value;
+            else if(axis == 1) vector.y = value;
+            return vector;
+        }
+        
+        /// <summary>
+        /// Gets the value of the specified axis from the vector.
+        /// </summary>
+        /// <param name="vector">The vector to retrieve the value from.</param>
+        /// <param name="axis">The axis index (0 for X-axis, 1 for Y-axis).</param>
+        /// <returns>The value of the specified axis.</returns>
+        public static float GetAxis(this Vector2 vector, int axis) {
+            if(axis == 0) return vector.x;
+            if(axis == 1) return vector.y;
+            throw new IndexOutOfRangeException("A Vector2 is a two-axis vector.");
         }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

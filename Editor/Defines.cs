@@ -21,8 +21,8 @@ using UnityEngine;
 using Amilious.Core.IO;
 using UnityEditorInternal;
 using Amilious.Core.Extensions;
-using Amilious.Core.Definitions;
 using System.Collections.Generic;
+using Amilious.Core.Definitions;
 using Amilious.Core.Editor.Extensions;
 
 namespace Amilious.Core.Editor {

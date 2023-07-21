@@ -14,11 +14,14 @@
 //  using it legally. Check the asset store or join the discord for the license that applies for this script.         //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
+using System;
+
 namespace Amilious.Core.Attributes {
     
     /// <summary>
     /// This attribute is used to enable a property if a condition is met, otherwise the property will be disabled.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
     public class AmiEnableIfAttribute : AmiModifierAttribute {
 
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////

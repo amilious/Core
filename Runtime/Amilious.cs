@@ -25,21 +25,22 @@ namespace Amilious.Core {
     public static class Amilious {
 
         public const string TITLE_COLOR = "FFFF88";
-        
-        
+
         /// <summary>
         /// This method is used to find a <see cref="GameObject"/> by its name.  This method should not be used in any
         /// update methods.
         /// </summary>
         /// <param name="name">The name of the <see cref="GameObject"/> that you want to find.</param>
         /// <param name="parent">The parent <see cref="GameObject"/> or null for scene root.</param>
+        /// <param name="onlyRoot">If true only root objects will be checked.</param>
         /// <returns>The found <see cref="GameObject"/> or null.</returns>
-        public static GameObject FindGameObjectByName(string name, GameObject parent = null) {
+        public static GameObject FindGameObjectByName(string name, GameObject parent = null, bool onlyRoot = false) {
             if(parent == null) { // if no parent is given
                 var activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
                 var sceneRoots = activeScene.GetRootGameObjects();
                 foreach(var root in sceneRoots) {
                     if(root.name.Equals(name)) return root;
+                    if(onlyRoot) continue;
                     var result = FindGameObjectByName(name, root);
                     if(result != null) return result;
                 }
@@ -52,6 +53,8 @@ namespace Amilious.Core {
             }
             return null;
         }
+        
+        
         
         /// <summary>
         /// This method is used to make a title for a log message.

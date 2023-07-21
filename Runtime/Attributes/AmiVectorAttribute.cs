@@ -114,7 +114,7 @@ namespace Amilious.Core.Attributes {
         /// <param name="yLabel">The label of the y value of the vector.</param>
         /// <param name="zLabel">The label of the z value of the vector if it exists.</param>
         /// <param name="wLabel">The label of the w value of the vector if it exists.</param>
-        public AmiVectorAttribute(VLayout layout = Attributes.VLayout.SingleLine, string xLabel="x",
+        public AmiVectorAttribute(VLayout layout, string xLabel="x",
             string yLabel = "y", string zLabel = "z", string wLabel = "w") {
             Layout = layout;
             XLabel = xLabel;
@@ -123,6 +123,38 @@ namespace Amilious.Core.Attributes {
             WLabel = wLabel;
         }
 
+        /// <summary>
+        /// This attribute is used to customize the look of a vector in the inspector.
+        /// </summary>
+        /// <param name="xLabel">The label of the x value of the vector.</param>
+        /// <param name="yLabel">The label of the y value of the vector.</param>
+        /// <param name="zLabel">The label of the z value of the vector if it exists.</param>
+        /// <param name="wLabel">The label of the w value of the vector if it exists.</param>
+        public AmiVectorAttribute(string xLabel = "x", string yLabel = "y", string zLabel = "z", string wLabel = "w") {
+            Layout = VLayout.SingleLine;
+            XLabel = xLabel;
+            YLabel = yLabel;
+            ZLabel = zLabel;
+            WLabel = wLabel;
+        }
+
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This method is used to get the label for the given axis.
+        /// </summary>
+        /// <param name="axis">The axis.</param>
+        /// <returns>The label for the given axis.</returns>
+        public string GetLabel(int axis) {
+            if(axis == 0) return XLabel;
+            if(axis == 1) return YLabel;
+            if(axis == 2) return ZLabel;
+            if(axis == 4) return WLabel;
+            return string.Empty;
+        }
+        
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
     }
