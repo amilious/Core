@@ -6,12 +6,18 @@ using Amilious.Core.UI.Cursors;
 using UnityEngine.EventSystems;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
+using Amilious.Core.Attributes;
 using Amilious.Core.UI.Chat.LinkActions;
 
 namespace Amilious.Core.UI.Chat {
     
-    [RequireComponent(typeof(ChatBox))]
+    [AmiHelpBox(MSG_BOX,HelpBoxType.Info)]
+    [AddComponentMenu("Amilious/UI/Chat/Chat Link Manager")]
+    [HelpURL("https://amilious.gitbook.io/core/runtime/ui/chatbox/chat-link-manager")]
+    [DisallowMultipleComponent, RequireComponent(typeof(ChatBox))]
     public class ChatLinkManager : AmiliousBehavior {
+
+        private const string MSG_BOX = "This component is used to handle chat links and menus.";
         
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 

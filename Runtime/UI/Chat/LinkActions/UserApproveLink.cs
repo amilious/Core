@@ -1,7 +1,18 @@
-﻿using Amilious.Core.Identity.User;
+﻿using Amilious.Core.Attributes;
+using Amilious.Core.Identity.User;
+using UnityEngine;
 
 namespace Amilious.Core.UI.Chat.LinkActions {
+    
+    [AmiHelpBox(MSG_BOX,HelpBoxType.Info)]
+    [AddComponentMenu("Amilious/UI/Links/User Approve Friend Link")]
     public class UserApproveLink : AbstractUserLink {
+        
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+
+        private const string MSG_BOX = "This component is responsible for adding and handling user friendship approval links.";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
         

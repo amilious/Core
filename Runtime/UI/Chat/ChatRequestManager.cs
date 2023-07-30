@@ -1,17 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using Amilious.Core.Extensions;
-using Amilious.Core.UI.Chat.Requests;
+﻿
 using TMPro;
 using UnityEngine;
+using Amilious.Core.Extensions;
+using System.Collections.Generic;
+using Amilious.Core.Attributes;
+using Amilious.Core.UI.Chat.Requests;
 
 namespace Amilious.Core.UI.Chat {
     
-    [RequireComponent(typeof(ChatBox))]
+    [AmiHelpBox(MSG_BOX,HelpBoxType.Info)]
+    [AddComponentMenu("Amilious/UI/Chat/Chat Request Manager")]
+    [DisallowMultipleComponent,RequireComponent(typeof(ChatBox))]
+    [HelpURL("https://amilious.gitbook.io/core/runtime/ui/chatbox/chat-request-manager")]
     public class ChatRequestManager : AmiliousBehavior {
 
         #region Static Stuff ///////////////////////////////////////////////////////////////////////////////////////////
-        
+
+        private const string MSG_BOX = "This component is responsible for handling chat input requests.";
         private static List<ChatRequestManager> Instances = new List<ChatRequestManager>();
         private static Queue<IChatRequest> Requests = new Queue<IChatRequest>();
         private static IChatRequest CurrentRequest;

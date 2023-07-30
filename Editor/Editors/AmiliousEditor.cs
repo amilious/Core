@@ -21,11 +21,12 @@ using UnityEngine;
 using System.Reflection;
 using Amilious.Core.Attributes;
 using System.Collections.Generic;
-using Amilious.Core.Editor.Editors.Links;
-using Amilious.Core.Editor.Editors.Tabs;
 using Amilious.Core.Editor.Extensions;
+using Amilious.Core.Editor.Editors.Tabs;
+using Amilious.Core.Editor.Editors.Links;
 
 namespace Amilious.Core.Editor.Editors {
+    
     
     /// <summary>
     /// This is the base class for the amilious editor.
@@ -70,6 +71,7 @@ namespace Amilious.Core.Editor.Editors {
         /// <inheritdoc />
         public override void OnInspectorGUI() {
             InitializeAmiliousEditor();
+            
             TabController.ClearDraw();
             //_drawnTabs.Clear();
             DrawLinks();
@@ -100,9 +102,9 @@ namespace Amilious.Core.Editor.Editors {
             }
             //draw the buttons
             foreach(var button in _buttons) {
-                if(button.OnlyWhenPlaying && !Application.isPlaying) continue;
                 if(button.Modifiers.Any(x => x.ShouldHide(serializedObject))) continue;
                 var disable = button.Modifiers.Any(x => x.ShouldDisable(serializedObject));
+                disable = disable || button.OnlyWhenPlaying && !Application.isPlaying;
                 if(disable)EditorGUI.BeginDisabledGroup(true);
                 if(GUILayout.Button(button.Name)) {
                     if (button.MethodInfo.IsStatic) { button.MethodInfo.Invoke(null, null); }

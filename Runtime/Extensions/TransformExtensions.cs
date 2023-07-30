@@ -80,9 +80,9 @@ namespace Amilious.Core.Extensions {
         /// </summary>
         /// <param name="transform">The transform you want to get the path of.</param>
         /// <returns>The path of the given <see cref="transform"/>.</returns>
-        public static string GetPath(this Transform transform) {
+        public static string GetScenePath(this Transform transform) {
             if(transform.parent == null) return "/" + transform.name;
-            return transform.parent.GetPath() + "/" + transform.name;
+            return transform.parent.GetScenePath() + "/" + transform.name;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

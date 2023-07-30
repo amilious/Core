@@ -55,6 +55,8 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// This property contains the draw order for the property on the tab.
         /// </summary>
         public int Order { get; set; }
+        
+        public int TabOrder { get; set; }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -69,6 +71,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
             TabGroup = attribute.TabGroup;
             TabName = attribute.TabName;
             Order = attribute.Order;
+            TabOrder = attribute.TabOrder;
             Property = property;
             HasHeader = property.GetAttribute<HeaderAttribute>()!=null;
         }
@@ -82,6 +85,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
             TabGroup = attribute.TabGroup;
             TabName = attribute.TabName;
             Order = attribute.Order;
+            TabOrder = attribute.TabOrder;
             Property = null;
             HasHeader = false;
             ButtonAttribute = buttonAttribute;
@@ -99,6 +103,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
             TabGroup = tabGroup;
             TabName = tabName;
             Property = property;
+            TabOrder = 0;
             Order = order;
             HasHeader = property.GetAttribute<HeaderAttribute>()!=null;
         }
@@ -115,6 +120,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
             TabName = tabName;
             Property = null;
             Order = order;
+            TabOrder = 0;
             HasHeader = false;
             ButtonAttribute = buttonAttribute;
         }

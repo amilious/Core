@@ -18,13 +18,18 @@ using Amilious.Core.UI.Component;
 
 namespace Amilious.Core.UI.Chat {
     
+    [AddComponentMenu("Amilious/UI/Chat/Chat Box")]
+    [HelpURL("https://amilious.gitbook.io/core/runtime/ui/chatbox")]
     [DisallowMultipleComponent, RequireComponent(typeof(UIComponent))]
     public class ChatBox : AmiliousBehavior, IChatBox {
         
-        private const string OPTIONS = "Options";
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+        
         private const string COMPONENTS = "Components";
         private const string DRAWING = "Drawing";
         private const string COMMANDS = "Commands";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -432,7 +437,5 @@ namespace Amilious.Core.UI.Chat {
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-        
     }
 }

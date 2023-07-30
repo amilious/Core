@@ -15,13 +15,14 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
+using System.Linq;
 
 namespace Amilious.Core.Attributes {
     
     /// <summary>
     /// This attribute is used to enable a property if a condition is met, otherwise the property will be disabled.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public class AmiEnableIfAttribute : AmiModifierAttribute {
 
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +40,7 @@ namespace Amilious.Core.Attributes {
         /// <summary>
         /// This property contains the value that you want to compare to.
         /// </summary>
-        private object Value { get; set; }
+        private object[] Values { get; set; }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -58,9 +59,9 @@ namespace Amilious.Core.Attributes {
         /// </summary>
         /// <param name="propertyName">The name of the field that you want use as a condition.</param>
         /// <param name="value">The value that you want to use for comparison.</param>
-        public AmiEnableIfAttribute(string propertyName, object value){
+        public AmiEnableIfAttribute(string propertyName, params object[] value){
             PropertyName = propertyName;
-            Value = value;
+            Values = value;
             SetValue = true;
         }
         
@@ -72,9 +73,12 @@ namespace Amilious.Core.Attributes {
         public override bool ShouldHide<T>(T property) => false;
         
         /// <inheritdoc />
-        public override bool ShouldDisable<T>(T property) =>
-            !CompareProperty(property, PropertyName, SetValue, Value);
-        
+        public override bool ShouldDisable<T>(T property) {
+            if(Values == null) return !CompareProperty(property, PropertyName, SetValue, null);
+            return Values.Any(x => !CompareProperty(property, PropertyName, SetValue, x));
+            //return !CompareProperty(property, PropertyName, SetValue, Value);
+        }
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
     }
     

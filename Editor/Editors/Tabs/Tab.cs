@@ -15,6 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -58,6 +59,11 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// This property can be used to get the number of properties that belong to this tab.
         /// </summary>
         public int Count => _properties.Count;
+
+        /// <summary>
+        /// This property is used to get the greatest set tab order.
+        /// </summary>
+        public int Order => _properties.Max(x => x.TabOrder);
         
         /// <summary>
         /// This static property contains the tab style.
@@ -89,7 +95,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// <param name="property">The property that you want to add to the tab.</param>
         /// <returns>True if the property was added, otherwise false if the tab already contained the tab.</returns>
         public bool AddProperty(TabProperty property) {
-            if(_properties.Contains(property)) return false;
+            if(property.Property!=null && _properties.Contains(property)) { return false; }
             _properties.Add(property);
             _properties.Sort(SortTabs);
             return true;
@@ -102,6 +108,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// <returns>True if the tab contains the property with the given name, otherwise false.</returns>
         public bool ContainsProperty(string propertyName) {
             foreach(var prop in _properties) {
+                if(prop.Property==null)continue;
                 if(prop.Property.name == propertyName) return true;
             }
             return false;

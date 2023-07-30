@@ -107,10 +107,10 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         public void AddToGroup(TabProperty tabProperty) {
             if(!_tabGroups.ContainsKey(tabProperty.TabGroup))
                 _tabGroups[tabProperty.TabGroup] = new TabGroup(tabProperty.TabGroup,_editor.serializedObject);
-            _tabGroups[tabProperty.TabGroup].TryAddProperty(tabProperty);
-            _editor.SkipPropertyDraw(tabProperty.Property);
+            var result = _tabGroups[tabProperty.TabGroup].TryAddProperty(tabProperty);
+            if(tabProperty.Property!=null) _editor.SkipPropertyDraw(tabProperty.Property);
         }
-        
+
         /// <summary>
         /// This method is used to add the property and its attribute to the appropriate tab.
         /// </summary>
@@ -182,13 +182,15 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// This method is used to draw the tab group for the given property name if it exist and hasn't been drawn.
         /// </summary>
         /// <param name="propertyName">The name property that you want to draw the tab group for.</param>
-        /// <param name="editor">The calling editor.</param>
         /// <returns>True if the tab group was drawn, otherwise false.</returns>
         public bool TryDrawTabGroup(string propertyName) {
             if(_drawnTabs.Contains(propertyName)) return false;
             if(!TryGetTabGroup(propertyName, out var tabGroup)) return false;
             //mark all of the properties in the tab group as read
-            foreach(var prop in tabGroup.Properties) _drawnTabs.Add(prop.Property.name);
+            foreach(var prop in tabGroup.Properties) {
+                if(prop.Property == null) continue;
+                _drawnTabs.Add(prop.Property.name);
+            }
             //draw tabs
             EditorGUILayout.Separator();
             //draw title
@@ -199,11 +201,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
             DrawCurrentTabContent(tabGroup);
             return true;
         }
-        
-        
-        
-        
-        
+
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
         #region Private Methods ////////////////////////////////////////////////////////////////////////////////////////
@@ -325,14 +323,14 @@ namespace Amilious.Core.Editor.Editors.Tabs {
             var first = true;
             foreach(var tabItem in tabGroup.SelectedTabProperties) {
                 if(tabItem.ButtonAttribute != null) {
-                    if(tabItem.ButtonAttribute.OnlyWhenPlaying && !Application.isPlaying) continue;
                     //only add the separator if the first property does not have a header.
                     if(first&&!tabItem.HasHeader) EditorGUILayout.Separator();
                     if(tabItem.ButtonAttribute.Modifiers.Any(x => x.ShouldHide(_editor.serializedObject))) continue;
                     var bdisable = tabItem.ButtonAttribute.Modifiers.Any(x => x.ShouldDisable(_editor.serializedObject));
+                    bdisable = bdisable || tabItem.ButtonAttribute.OnlyWhenPlaying && !Application.isPlaying;
                     if(bdisable)EditorGUI.BeginDisabledGroup(true);
                     if(GUILayout.Button(tabItem.ButtonAttribute.Name)) {
-                        if (tabItem.ButtonAttribute.MethodInfo.IsStatic) { tabItem.ButtonAttribute.MethodInfo.Invoke(null, null); }
+                        if(tabItem.ButtonAttribute.MethodInfo.IsStatic) { tabItem.ButtonAttribute.MethodInfo.Invoke(null, null); }
                         else { tabItem.ButtonAttribute.MethodInfo.Invoke(_editor.target, null); }
                     }
                     if(bdisable)EditorGUI.EndDisabledGroup();

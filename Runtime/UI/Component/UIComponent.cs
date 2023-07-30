@@ -32,6 +32,7 @@ namespace Amilious.Core.UI.Component {
     /// </summary>
     /// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     [AmiHelpBox(HELP_MESSAGE,HelpBoxType.Info)]
+    [HelpURL("https://amilious.gitbook.io/core/runtime/ui/ui-component")]
     [DisallowMultipleComponent,AddComponentMenu("Amilious/UI/Component/UI Component")]
     [RequireComponent(typeof(RectTransform), typeof(CanvasGroup))]
     public class UIComponent : AmiliousBehavior, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerDownHandler, 
@@ -50,15 +51,20 @@ namespace Amilious.Core.UI.Component {
         
         #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
 
+        [Tooltip("If true the component will be visible.")]
+        [SerializeField, AmiTab(OPTIONS), AmiBool(true)] private bool visible = true;
         [Tooltip("If true the component will be focusable.")]
         [SerializeField, AmiTab(OPTIONS), AmiBool(true)] private bool focusable = true;
         [Tooltip("If true the component will be movable.")]
         [SerializeField, AmiTab(OPTIONS), AmiBool(true)] private bool movable = true;
-        [Tooltip("If true the component will be resizable.")] 
+        [Tooltip("If true the component will be resizable.")]
+        [SerializeField, AmiTab(OPTIONS), AmiBool(true)] private bool resizable = false;
         
-        [Header("Resizing")]
-        [SerializeField, AmiTab(OPTIONS), AmiBool(true)] private bool resizable;
-        [SerializeField, AmiTab(OPTIONS), AmiShowIf(nameof(resizable))] private float edgeDetectionThreshold = 4;
+        [FormerlySerializedAs("edgeDetectionThreshold")]
+        [Header("Resizing Options")]
+        [Tooltip("This value controls the resizing edge size.")]
+        [SerializeField, AmiTab(OPTIONS), AmiShowIf(nameof(resizable))] private float edgeThreshold = 4;
+        [Tooltip("This value is the minimum size of the component.")]
         [SerializeField, AmiTab(OPTIONS), AmiShowIf(nameof(resizable)), AmiVector(xLabel:"width",yLabel:"height")] 
         private Vector2 minSize = new Vector2(200,200);
         
@@ -79,7 +85,6 @@ namespace Amilious.Core.UI.Component {
         
         private Vector3 _moveOffset;
         private bool _isMoving;
-        private bool _visible = true;
         private bool _isResizing;
         private bool _overChild;
         private CanvasGroup _canvasGroup;
@@ -90,8 +95,6 @@ namespace Amilious.Core.UI.Component {
         private AbstractUIShowHide _uiShowHide;
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -159,10 +162,10 @@ namespace Amilious.Core.UI.Component {
         }
 
         public bool Visible {
-            get => _visible;
+            get => visible;
             set {
-                if(_visible == value) return;
-                _visible = value;
+                if(visible == value) return;
+                visible = value;
                 SetState(UIStatesType.Idle,null);
                 if(value) {
                     if(!_uiShowHide) CanvasGroup.alpha = 1f;
@@ -204,6 +207,24 @@ namespace Amilious.Core.UI.Component {
             UIStates.Add(UIStatesType.Resizing, new Resizing(this));
             SetState(UIStatesType.Idle,null);
             _uiShowHide = GetComponent<AbstractUIShowHide>();
+            if(visible) {
+                CanvasGroup.blocksRaycasts = true;
+                CanvasGroup.alpha = 1f;
+            } else {
+                CanvasGroup.blocksRaycasts = false;
+                CanvasGroup.alpha = 0f;
+            }
+        }
+
+        private void OnValidate() {
+            if(Application.isPlaying) return;
+            if(visible) {
+                CanvasGroup.blocksRaycasts = true;
+                CanvasGroup.alpha = 1f;
+            } else {
+                CanvasGroup.blocksRaycasts = false;
+                CanvasGroup.alpha = 0f;
+            }
         }
 
         #region Public Methods /////////////////////////////////////////////////////////////////////////////////////////
@@ -310,10 +331,10 @@ namespace Amilious.Core.UI.Component {
             var corners = new Vector3[4];
             RectTransform.GetWorldCorners(corners);
             //get basic directions
-            var isLeft = Mathf.Abs(corners[1].x - mousePosition.x)<=edgeDetectionThreshold;
-            var isTop = Mathf.Abs(corners[1].y - mousePosition.y) <= edgeDetectionThreshold;
-            var isRight = Mathf.Abs(corners[3].x - mousePosition.x)<=edgeDetectionThreshold;
-            var isBottom = Mathf.Abs(corners[3].y - mousePosition.y)<=edgeDetectionThreshold;
+            var isLeft = Mathf.Abs(corners[1].x - mousePosition.x)<=edgeThreshold;
+            var isTop = Mathf.Abs(corners[1].y - mousePosition.y) <= edgeThreshold;
+            var isRight = Mathf.Abs(corners[3].x - mousePosition.x)<=edgeThreshold;
+            var isBottom = Mathf.Abs(corners[3].y - mousePosition.y)<=edgeThreshold;
             // Check the relative position of the mouse to determine the edge
             if (isLeft && isTop) return ComponentEdge.TopLeft;
             if (!isRight && isTop) return ComponentEdge.Top;

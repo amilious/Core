@@ -15,6 +15,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Amilious.Core.Attributes {
@@ -22,7 +23,7 @@ namespace Amilious.Core.Attributes {
     /// <summary>
     /// This attribute is used to hide a property if a condition is met.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public class AmiShowIfAttribute : AmiModifierAttribute {
         
         #region Properties /////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +41,7 @@ namespace Amilious.Core.Attributes {
         /// <summary>
         /// This property contains the value that you want to compare to.
         /// </summary>
-        private object Value { get; set; }
+        private object[] Values { get; set; }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,9 +60,9 @@ namespace Amilious.Core.Attributes {
         /// </summary>
         /// <param name="propertyName">The name of the field that you want use as a condition.</param>
         /// <param name="value">The value that you want to use for comparison.</param>
-        public AmiShowIfAttribute(string propertyName, object value){
+        public AmiShowIfAttribute(string propertyName, params object[] value){
             PropertyName = propertyName;
-            Value = value;
+            Values = value;
             SetValue = true;
         }
         
@@ -71,7 +72,9 @@ namespace Amilious.Core.Attributes {
         
         /// <inheritdoc />
         public override bool ShouldHide<T>(T property) {
-            return !CompareProperty(property, PropertyName, SetValue, Value);
+            if(Values == null) return !CompareProperty(property, PropertyName, SetValue, null);
+            return Values.Any(x => !CompareProperty(property, PropertyName, SetValue, x));
+            //return !CompareProperty(property, PropertyName, SetValue, Value);
         }
         
         /// <inheritdoc />

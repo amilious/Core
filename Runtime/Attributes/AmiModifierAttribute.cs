@@ -155,11 +155,13 @@ namespace Amilious.Core.Attributes {
             #endif
         }
 
+        #if UNITY_EDITOR
         private bool _hasTriedToGet = false;
         private bool _hasFound = false;
         private FieldInfo _field;
         private PropertyInfo _property;
         private MethodInfo _method;
+        #endif
         
         #if UNITY_EDITOR
         

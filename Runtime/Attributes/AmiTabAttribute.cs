@@ -40,6 +40,8 @@ namespace Amilious.Core.Attributes {
         /// This property contains the order of the item within the tab.
         /// </summary>
         public int Order { get; }
+        
+        public int TabOrder { get; }
 
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
         
@@ -51,10 +53,11 @@ namespace Amilious.Core.Attributes {
         /// <param name="tabName">The name of the tab that the property belongs to.</param>
         /// <param name="order">The property order for this property on the tab.</param>
         /// <seealso cref="AmiTabAttribute(string,string,int)"/>
-        public AmiTabAttribute(string tabName, int order = 0) {
+        public AmiTabAttribute(string tabName, int order = 0, int tabOrder = 0) {
             TabGroup = string.Empty;
             TabName = tabName ?? string.Empty;
             Order = order;
+            TabOrder = tabOrder;
         }
 
         /// <summary>
@@ -64,10 +67,11 @@ namespace Amilious.Core.Attributes {
         /// <param name="tabName">The name of the tab that the property belongs to.</param>
         /// <param name="order">The property order for this property on the tab.</param>
         /// <seealso cref="AmiTabAttribute(string,int)"/>
-        public AmiTabAttribute(string tabGroup, string tabName, int order = 0) {
+        public AmiTabAttribute(string tabGroup, string tabName, int order = 0, int tabOrder = 0) {
             TabGroup = tabGroup ?? string.Empty;
             TabName = tabName ?? string.Empty;
             Order = order;
+            TabOrder = tabOrder;
         }
         
         #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -51,7 +51,7 @@ namespace Amilious.Core.Extensions {
         /// <param name="name">The name of the child <see cref="GameObject"/> that you want to find.</param>
         /// <returns>The found <see cref="GameObject"/> or null.</returns>
         public static GameObject FindChild(this GameObject gameObject, string name) {
-            return GameObject.Find($"{gameObject.transform.GetPath()}/{name}");
+            return GameObject.Find($"{gameObject.transform.GetScenePath()}/{name}");
         }
         
         /// <summary>

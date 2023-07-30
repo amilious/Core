@@ -11,25 +11,38 @@ using Amilious.Core.Identity.Group;
 
 namespace Amilious.Core.Networking {
     
-    [DisallowMultipleComponent]
+    [AddComponentMenu("Amilious/UI/Chat/Network Chat Connector")]
+    [HelpURL("https://amilious.gitbook.io/core/runtime/ui/chatbox/network-chat-connector")]
     [RequireComponent(typeof(ChatBox),typeof(AbstractNetworkManagers))]
     public class NetworkChatConnector : AmiliousBehavior {
 
+        #region Constants //////////////////////////////////////////////////////////////////////////////////////////////
+        
         private const string DISPLAY = "Display Settings";
         private const string NOTIFICATIONS = "Notifications";
+        
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #region Inspector Fields ///////////////////////////////////////////////////////////////////////////////////////
+        
         [SerializeField, AmiTab(DISPLAY)] private bool showTime = true;
         [SerializeField, AmiTab(DISPLAY), AmiShowIf(nameof(showTime))] private string timeFormat = "hh:mm:ss tt";
 
         [SerializeField, AmiTab(NOTIFICATIONS), AmiBool(true)] private bool showSelfConnection = true;
         [SerializeField, AmiTab(NOTIFICATIONS), AmiBool(true)] private bool showFriendConnections = true;
 
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
+        
+        private ChatBox _chatBox;
         private bool _successfulConnection;
         private AbstractNetworkManagers _networkManager;
         private Utf16ValueStringBuilder _sb = new Utf16ValueStringBuilder(false);
 
-        public ChatBox ChatBox { get; private set; }
+        #endregion /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        public ChatBox ChatBox => this.GetCacheComponent(ref _chatBox);
         public AbstractNetworkManagers NetworkManager => this.GetCacheComponent(ref _networkManager);
         public IUserIdentityManager UserManager { get; private set; }
         public IGroupIdentityManager GroupManager { get; private set; }
@@ -38,10 +51,6 @@ namespace Amilious.Core.Networking {
         public IAmiliousAuthenticator Authenticator { get; private set; }
         
         
-        private void Awake() {
-            ChatBox = GetComponent<ChatBox>();
-        }
-
         private void OnEnable() {
             NetworkManager.OnClientStarted += OnClientStarted;
             NetworkManager.OnClientStopped += OnClientStopped;
@@ -272,6 +281,7 @@ namespace Amilious.Core.Networking {
             };
             return withColon ? $"{link}{ZString.Style(StyleFormat.Normal, ":  ")}" : link;
         }
+        
         private string GetGroupLink(GroupIdentity group) {
             if(GroupManager == null || group == GroupIdentity.Default)
                 return $"[<link=group|{group.Id}>group_{group.Id}</link>]";

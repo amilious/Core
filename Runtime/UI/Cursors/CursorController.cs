@@ -4,7 +4,6 @@ using UnityEngine;
 using Amilious.Core.Attributes;
 using Amilious.Core.Extensions;
 using System.Collections.Generic;
-using Amilious.Core.Drawing;
 
 namespace Amilious.Core.UI.Cursors {
     
@@ -134,6 +133,7 @@ namespace Amilious.Core.UI.Cursors {
             var cursorInfo = CursorInfo.CreateInstance(texture, hotSpot);
             SetCursor(cursorInfo);
         }
+        
         public static void SetCursor(DefaultCursors cursor) {
             if(Instance == null) return;
             switch(cursor) {

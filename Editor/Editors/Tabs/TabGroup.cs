@@ -32,6 +32,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         #region Private Fields /////////////////////////////////////////////////////////////////////////////////////////
         
         private readonly Dictionary<string, Tab> _tabs = new Dictionary<string, Tab>();
+        private List<Tab> _tabsList = new List<Tab>();
         private readonly string _targetName;
         private static readonly Dictionary<string, int> SelectedIds = new Dictionary<string, int>();
 
@@ -44,10 +45,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// </summary>
         public IEnumerable<TabProperty> Properties {
             get {
-                foreach(var tab in _tabs.Values) {
-                    for(var i = 0; i < tab.Count; i++)
-                        yield return tab[i];
-                }
+                foreach(var tab in _tabsList) for(var i = 0; i < tab.Count; i++) yield return tab[i];
             }
         }
 
@@ -104,7 +102,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// This property is used to get the tab with the given index.
         /// </summary>
         /// <param name="index">The index of the tab.</param>
-        public Tab this[int index] => _tabs.ElementAt(index).Value;
+        public Tab this[int index] => /*_tabs.ElementAt(index).Value*/_tabsList[index];
 
         /// <summary>
         /// This property is used to get the number of tabs within the tab group.
@@ -196,12 +194,16 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// <returns>True if the property was added, otherwise false.</returns>
         public bool TryAddProperty(TabProperty tabProperty) {
             //make sure the property belongs to the tab group
-            if(tabProperty.TabGroup != Name) return false;
+            if(tabProperty.TabGroup != Name) { return false; }
             //the tab does not exist create it now
-            if(_tabs.TryGetValue(tabProperty.TabName, out var tab)) return tab.AddProperty(tabProperty);
-            _tabs[tabProperty.TabName] = new Tab(tabProperty.TabName);
+            if(!_tabs.TryGetValue(tabProperty.TabName, out var tab)) {
+                tab = new Tab(tabProperty.TabName);
+                _tabs[tabProperty.TabName] = tab;
+                _tabsList.Add(tab);
+            }
+            if(!_tabs[tabProperty.TabName].AddProperty(tabProperty)) return false;
             RecalculateTabs();
-            return _tabs[tabProperty.TabName].AddProperty(tabProperty);
+            return true;
         }
 
         /// <summary>
@@ -231,6 +233,7 @@ namespace Amilious.Core.Editor.Editors.Tabs {
         /// This method is used to recalculate tab values.
         /// </summary>
         private void RecalculateTabs() {
+            _tabsList.Sort((tab1, tab2) => tab1.Order.CompareTo(tab2.Order));
             TabsWidth = 0;
             MaxWidth = 0;
             foreach(var tab in _tabs.Values) {
